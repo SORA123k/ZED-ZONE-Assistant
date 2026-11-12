@@ -36,6 +36,7 @@ namespace ZedZone.UltimateAssistant.Core
         internal static ConfigEntry<int> LimbProbeIntervalMs;
         internal static ConfigEntry<int> LimbProbeHeartbeatSec;
         internal static ConfigEntry<int> LimbProbeChangeFlushSec;
+        internal static ConfigEntry<bool> LimbApiProbe;
 
         // ---- Phase 3A: 一键恢复 ----
         internal static ConfigEntry<bool> EnableRestore;
@@ -127,6 +128,11 @@ namespace ZedZone.UltimateAssistant.Core
             LimbProbeChangeFlushSec = cfg.Bind("Diagnostics", "LimbProbeChangeFlushSec", 1,
                 new ConfigDescription("肢体变化日志的合并间隔（秒）。肢体自然恢复会持续变化，" +
                                       "合并输出可避免刷屏。", new AcceptableValueRange<int>(1, 60)));
+
+            LimbApiProbe = cfg.Bind("Diagnostics", "LimbApiProbe", false,
+                "【只读】恢复接口参数校验：调用 ReadWoundInput / GetRecoveryBuffId / IsBodyPartWounded " +
+                "三个只读接口，打印 bodyPartId 的参数空间与部位→恢复 Buff 映射。" +
+                "**不调用任何恢复/写入接口**，不修改任何肢体数据。");
 
             // ---------------- Phase 3A: 一键恢复 ----------------
             EnableRestore = cfg.Bind("Restore", "EnableRestore", true,

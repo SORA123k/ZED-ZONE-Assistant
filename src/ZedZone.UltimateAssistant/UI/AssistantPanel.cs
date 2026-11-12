@@ -82,6 +82,8 @@ namespace ZedZone.UltimateAssistant.UI
                     try { LimbProbe.Tick(); } catch (Exception le) { Log.ErrorOnce("limb", le); }
                     // Phase 3B-1：肢体只读快照（与上面的节流同频，避免每帧封送）
                     try { LimbData.Refresh(); } catch (Exception ld) { Log.ErrorOnce("limbdata", ld); }
+                    // Phase 3B-2A：恢复接口的只读校验（默认关闭）
+                    try { LimbApiProbe.Tick(); } catch (Exception la) { Log.ErrorOnce("limbapi", la); }
                 }
             }
             catch (Exception e)
