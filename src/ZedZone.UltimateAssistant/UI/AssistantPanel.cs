@@ -63,6 +63,7 @@ namespace ZedZone.UltimateAssistant.UI
                         try { ModConfig.ApplyModuleSwitches(Registry); } catch { }
                         _snap = Reader.Read();
                     }
+                    try { Diagnostics.Tick(); } catch (Exception de) { Log.ErrorOnce("diagnostics", de); }
                 }
             }
             catch (Exception e)

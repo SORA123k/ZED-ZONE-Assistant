@@ -21,6 +21,7 @@ namespace ZedZone.UltimateAssistant.Core
         internal static ConfigEntry<int> RefreshIntervalMs;
         internal static ConfigEntry<bool> LogSnapshotOnChange;
         internal static ConfigEntry<int> LogValuesSeconds;
+        internal static ConfigEntry<bool> DumpBuffTable;
 
         internal static ConfigEntry<bool> ModHealth;
         internal static ConfigEntry<bool> ModHunger;
@@ -60,6 +61,10 @@ namespace ZedZone.UltimateAssistant.Core
                     "每隔多少秒把一次真实读数写进日志（0 = 关闭）。" +
                     "用途：验收时可把日志数字与游戏原生状态面板逐项对照，不必依赖截图。",
                     new AcceptableValueRange<int>(0, 600)));
+
+            DumpBuffTable = cfg.Bind("Diagnostics", "DumpBuffTable", false,
+                "只读诊断：把游戏自身的 Buff 定义表（id/名称/每秒效果）与 GameConfigs 开关打印到日志。" +
+                "仅用于 Phase 3 的 API 验证，为 true 时每次启动转储一次；不修改任何数据。");
 
             ModHealth = cfg.Bind("Modules", "Health", true, "生命模块（只读）。");
             ModHunger = cfg.Bind("Modules", "Hunger", true, "饱食模块（只读）。");

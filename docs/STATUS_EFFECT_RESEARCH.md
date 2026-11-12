@@ -1,5 +1,14 @@
 # 负面状态（Buff / Debuff）静态调研
 
+> ## ⚠ 2026-11-12 运行期更正（Phase 3 补充）
+>
+> 本文多处引用"官方文档 31 条 Buff"。**该数字已过时**：在游戏 **1.0.16** 运行期调用
+> `BuffManager.GetBuffAttrByID` 实际解析到 **62 条**，并包含官方文档中**没有**的 debuff
+> （如 **32 `Bleeding` -3 hp/s**、51–53 辐射病、48 `PetShred` -25 hp/s 可致死）。
+> 因此本文的"清除白名单 11 条"**不可直接用于 Phase 3**，须基于运行期 62 条表重建；
+> 详见 `docs/PHASE_3A_API_RESEARCH.md` §4。本文其余结论（活跃容器 = `CharacterData.buffDataList`、
+> `RemoveBuff`/`ClearDebuffs` 存在性）仍然有效。
+
 > Phase-1 静态代码调研。**未运行游戏，未修改游戏安装，未实机验证任何行为。**
 > 目标程序集：`<游戏目录>\BepInEx\interop\Assembly-CSharp.dll`（Unity 2023.1.18f1 / IL2CPP x64，interop **桩代码**）。
 > 官方离线文档：`<仓库目录>\ZED-ZONE-FPS-Optimization-Mod\research\official-mod-docs\docs\cn\11_Buff列表参考.md`（数据来源 `Assets/Resources/Properties/Buffs/`）。
