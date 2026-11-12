@@ -1,0 +1,11 @@
+bin/
+obj/
+[Bb]in/
+[Oo]bj/
+research/decompiled/
+.vs/
+.idea/
+*.user
+*.suo
+Thumbs.db
+desktop.ini
