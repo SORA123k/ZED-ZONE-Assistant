@@ -64,6 +64,9 @@ namespace ZedZone.UltimateAssistant.UI
                         _snap = Reader.Read();
                     }
                     try { Diagnostics.Tick(); } catch (Exception de) { Log.ErrorOnce("diagnostics", de); }
+                    // 只读实验探针（不写任何数值）
+                    try { GrowthProbe.Tick(); } catch (Exception ge) { Log.ErrorOnce("growth", ge); }
+                    try { FatigueProbe.Tick(); } catch (Exception fe) { Log.ErrorOnce("fatigue", fe); }
                 }
             }
             catch (Exception e)

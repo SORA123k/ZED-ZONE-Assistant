@@ -374,6 +374,8 @@ namespace ZedZone.UltimateAssistant.UI
             y = Row(x, y, w, "读取间隔", ModConfig.RefreshMs + " ms", "配置 [Read] RefreshIntervalMs");
             y = Row(x, y, w, "面板键", Key.ToString(), "配置 [UI] ToggleKey");
             y = Row(x, y, w, "按键冲突", ConflictMsg, "只读调用游戏按键映射表");
+            y = Row(x, y, w, "成长探针", GrowthProbe.Status(), "只读；配置 [Diagnostics] GrowthLog");
+            y = Row(x, y, w, "疲劳探针", FatigueProbe.Status(), "只读；配置 [Diagnostics] FatigueProbe");
             y += LineH * 0.4f;
 
             GUI.Label(new Rect(x, y, w, LineH), "模块状态：", _label);

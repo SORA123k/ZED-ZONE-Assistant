@@ -23,6 +23,13 @@ namespace ZedZone.UltimateAssistant.Core
         internal static ConfigEntry<int> LogValuesSeconds;
         internal static ConfigEntry<bool> DumpBuffTable;
 
+        // ---- Phase 3A 只读实验探针 ----
+        internal static ConfigEntry<bool> GrowthLog;
+        internal static ConfigEntry<int> GrowthLogIntervalSec;
+        internal static ConfigEntry<bool> FatigueProbe;
+        internal static ConfigEntry<int> FatigueProbeIntervalMs;
+        internal static ConfigEntry<int> FatigueProbeSeconds;
+
         // ---- Phase 3A: 一键恢复 ----
         internal static ConfigEntry<bool> EnableRestore;
         internal static ConfigEntry<bool> RestoreHealth;
@@ -74,6 +81,25 @@ namespace ZedZone.UltimateAssistant.Core
             DumpBuffTable = cfg.Bind("Diagnostics", "DumpBuffTable", false,
                 "只读诊断：把游戏自身的 Buff 定义表（id/名称/每秒效果）与 GameConfigs 开关打印到日志。" +
                 "仅用于 Phase 3 的 API 验证，为 true 时每次启动转储一次；不修改任何数据。");
+
+            // ---- Phase 3A 只读实验探针（不写任何数值） ----
+            GrowthLog = cfg.Bind("Diagnostics", "GrowthLog", true,
+                "只读成长探针：定期记录 等级(N/A)/体质成长/HP/三个候选最大生命值/各项加成系数/场景。" +
+                "数值变化时输出 CHANGE 行，无变化时输出 heartbeat。用于升级、换装、加点前后对比。");
+
+            GrowthLogIntervalSec = cfg.Bind("Diagnostics", "GrowthLogIntervalSec", 10,
+                new ConfigDescription("成长探针心跳间隔（秒）。", new AcceptableValueRange<int>(2, 600)));
+
+            FatigueProbe = cfg.Bind("Diagnostics", "FatigueProbe", true,
+                "只读疲劳探针：把 fatigue / energy 与 冲刺请求、移动输入、速度、场景 一起按时间采样，" +
+                "用于判定 fatigue 的数值方向。只读，不写任何数值。");
+
+            FatigueProbeIntervalMs = cfg.Bind("Diagnostics", "FatigueProbeIntervalMs", 500,
+                new ConfigDescription("疲劳探针采样间隔（毫秒）。", new AcceptableValueRange<int>(100, 5000)));
+
+            FatigueProbeSeconds = cfg.Bind("Diagnostics", "FatigueProbeSeconds", 600,
+                new ConfigDescription("疲劳探针最长采样时长（秒），到时会自动停止并输出摘要。",
+                    new AcceptableValueRange<int>(30, 7200)));
 
             // ---------------- Phase 3A: 一键恢复 ----------------
             EnableRestore = cfg.Bind("Restore", "EnableRestore", true,
