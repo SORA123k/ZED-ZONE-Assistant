@@ -15,6 +15,7 @@ namespace ZedZone.UltimateAssistant.Core
         internal static ConfigEntry<KeyboardShortcut> ToggleKey;
         internal static ConfigEntry<float> FontScale;
         internal static ConfigEntry<int> PanelX;
+        internal static ConfigEntry<int> StartTab;
         internal static ConfigEntry<int> PanelY;
         internal static ConfigEntry<bool> ShowNotes;
 
@@ -69,6 +70,10 @@ namespace ZedZone.UltimateAssistant.Core
             PanelY = cfg.Bind("UI", "PanelY", 40,
                 new ConfigDescription("面板左上角 Y。默认 40。",
                     new AcceptableValueRange<int>(0, 4000)));
+            StartTab = cfg.Bind("UI", "StartTab", 0,
+                new ConfigDescription("面板打开时默认显示的标签页：0=玩家 1=生命 2=饱食 3=水分 " +
+                                      "4=体力/精力 5=状态 6=肢体 7=设置。默认 0。",
+                    new AcceptableValueRange<int>(0, 7)));
             ShowNotes = cfg.Bind("UI", "ShowNotes", true,
                 "是否显示每个字段的数据来源说明（排查用，建议开启）。");
 

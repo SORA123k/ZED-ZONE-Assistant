@@ -31,7 +31,7 @@ namespace ZedZone.UltimateAssistant.UI
         internal int PatchCount;
         internal ModuleRegistry Registry;
 
-        private static readonly string[] TabNames = { "玩家", "生命", "饱食", "水分", "体力/精力", "状态", "设置" };
+        private static readonly string[] TabNames = { "玩家", "生命", "饱食", "水分", "体力/精力", "状态", "肢体", "设置" };
 
         private static readonly Color ColText = new Color(0.80f, 0.82f, 0.86f);
         private static readonly Color ColValue = new Color(0.94f, 0.96f, 0.99f);
@@ -294,11 +294,141 @@ namespace ZedZone.UltimateAssistant.UI
                     DrawRows(x, y, w, snap, "sanity", "casEnergy", "buffCount", "deadFlag", "netDeadFlag", "isPlayer");
                     break;
                 case 6:
+                    DrawLimbTab(x, y, w);
+                    break;
+                case 7:
                     DrawSettingsTab(x, y, w, snap);
                     break;
             }
 
             DrawWriteFeedback(x, y, w);
+        }
+
+        /// <summary>
+        /// Phase 3B-1：肢体状态面板（**只读**）。
+        ///
+        /// 数据来自 LimbData（CharacterData.bodypartsData → bodypartDataAry → CharacterBodyPartData），
+        /// 不写任何游戏字段、不调用任何恢复接口。
+        /// 联机时整块功能禁用（只显示提示，不展示数据）。
+        /// 读不到的字段显示"未知/?"，绝不用 0 或猜测值填充。
+        /// </summary>
+        private float DrawLimbTab(float x, float y, float w)
+        {
+            // 联机硬禁用（与写入门同一判定，fail-closed）
+            if (PlayerWriteGate.IsMultiplayer(out string why))
+            {
+                GUI.Label(new Rect(x, y, w, LineH * 2),
+                    "⚠ 联机模式：肢体管理已禁用（" + why + "）", _fail);
+                return y + LineH * 2;
+            }
+
+            GUI.Label(new Rect(x, y, w, LineH),
+                "肢体状态（只读）　场景=" + LimbData.SceneName, _note);
+            y += LineH;
+
+            // 玩家对象无效 → 安全提示，不显示任何假数据
+            if (!LimbData.HasPlayer)
+            {
+                GUI.Label(new Rect(x, y, w, LineH * 2),
+                    "无法读取肢体数据：" + (LimbData.Error ?? "未知原因"), _warn);
+                y += LineH * 2;
+                GUI.Label(new Rect(x, y, w, LineH),
+                    "这是正常状态：进入存档后会自动显示，不会使用上一次的旧数据。", _hint);
+                return y + LineH;
+            }
+
+            if (LimbData.Items.Count == 0)
+            {
+                GUI.Label(new Rect(x, y, w, LineH * 2),
+                    "肢体数据为空：" + (LimbData.Error ?? "部位数为 0"), _warn);
+                return y + LineH * 2;
+            }
+
+            // ---- 概览 ----
+            int unknown = LimbData.CountUnknown();
+            string overview = $"共 {LimbData.Items.Count} 个部位　受伤 {LimbData.CountWounded()}　" +
+                              $"流血 {LimbData.CountBleeding()}　完全恢复 {LimbData.CountRecovered()}";
+            if (unknown > 0) overview += $"　未知 {unknown}";
+            GUI.Label(new Rect(x, y, w, LineH), overview, unknown > 0 ? _warn : _note);
+            y += LineH + 2;
+
+            // ---- 列头 ----
+            float cName = w * 0.20f;
+            float cVal = w * 0.22f;
+            float barX = x + cName + cVal;
+            float barW = Mathf.Max(72f, w * 0.26f);
+            float cPct = w * 0.11f;
+            float stX = barX + barW + 6f + cPct;
+
+            GUI.Label(new Rect(x, y, w, LineH), "部位　　　当前 / 上限　　　百分比　　　状态", _hint);
+            y += LineH + 2;
+
+            for (int i = 0; i < LimbData.Items.Count; i++)
+            {
+                var L = LimbData.Items[i];
+
+                GUI.Label(new Rect(x, y, cName, LineH), L.Name, _label);
+                GUI.Label(new Rect(x + cName, y, cVal, LineH), L.HpText() + " / " + L.MaxText(),
+                    float.IsNaN(L.Hp) || float.IsNaN(L.MaxHp) ? _warn : _value);
+
+                // 进度条（无法计算时只画背景，不画填充）
+                var bg = new Rect(barX, y + 4f, barW, Mathf.Max(8f, LineH - 9f));
+                var oldColor = GUI.color;
+                GUI.color = new Color(0.28f, 0.28f, 0.28f, 0.65f);
+                GUI.DrawTexture(bg, Texture2D.whiteTexture);
+
+                float p = L.Percent01();
+                if (!float.IsNaN(p))
+                {
+                    GUI.color = p >= 0.999f
+                        ? new Color(0.35f, 0.75f, 0.35f, 0.92f)
+                        : (p >= 0.5f ? new Color(0.88f, 0.76f, 0.25f, 0.92f)
+                                     : new Color(0.88f, 0.34f, 0.30f, 0.92f));
+                    GUI.DrawTexture(new Rect(bg.x, bg.y, bg.width * p, bg.height), Texture2D.whiteTexture);
+                }
+                GUI.color = oldColor;
+
+                GUI.Label(new Rect(bg.x + barW + 6f, y, cPct, LineH), L.PercentText(),
+                    L.PercentKnown ? _value : _warn);
+
+                // 状态
+                string st = LimbStatusText(L);
+                GUI.Label(new Rect(stX, y, Mathf.Max(60f, w - (stX - x)), LineH), st, LimbStatusStyle(L));
+
+                y += LineH;
+            }
+
+            if (!string.IsNullOrEmpty(LimbData.Error))
+            {
+                y += 2;
+                GUI.Label(new Rect(x, y, w, LineH), "读取提示：" + LimbData.Error, _warn);
+                y += LineH;
+            }
+
+            y += 2;
+            GUI.Label(new Rect(x, y, w, LineH), "只读展示，不会修改任何数值。", _hint);
+            return y + LineH;
+        }
+
+        private static string LimbStatusText(LimbInfo L)
+        {
+            if (!L.ReadOk) return "读取失败" + (string.IsNullOrEmpty(L.Error) ? "" : "(" + L.Error + ")");
+            if (!L.PercentKnown) return "未知（上限无效）";
+
+            var sb = new System.Text.StringBuilder();
+            if (L.Wounded) sb.Append("受伤 ");
+            if (L.Bleeding) sb.Append("流血 ");
+            if (L.Recovered) sb.Append("已恢复 ");
+            if (sb.Length == 0) sb.Append("正常");
+            return sb.ToString().TrimEnd();
+        }
+
+        private GUIStyle LimbStatusStyle(LimbInfo L)
+        {
+            if (!L.ReadOk || !L.PercentKnown) return _warn;
+            if (L.Bleeding) return _fail;
+            if (L.Wounded) return _warn;
+            return _label;
         }
 
         /// <summary>恢复按钮行。点击后由 PlayerWriteGate 决定是否真的写入。</summary>

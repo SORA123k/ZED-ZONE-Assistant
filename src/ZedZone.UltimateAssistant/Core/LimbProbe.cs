@@ -281,7 +281,6 @@ namespace ZedZone.UltimateAssistant.Core
             sb.AppendLine($"[limb] humanBodyPartCount={count} arrayLen={rows.Count} textIdAryLen={textIds} defaultHPAryLen={defHps} appliedBodyPartConstitution={appliedCon}");
             sb.AppendLine("[limb] idx | bodyPartId | textId | name | hp | maxHP | defaultHP | wounded | bleeding | recovered | hpFloat");
 
-            int mismatch = 0;   // 保留变量以兼容下方逻辑（当前不再逐行比对视觉索引）
             for (int i = 0; i < rows.Count; i++)
             {
                 var r = rows[i];

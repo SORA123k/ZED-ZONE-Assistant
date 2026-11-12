@@ -95,6 +95,13 @@ humanBodyPartCount=6  arrayLen=6  textIdAryLen=6  defaultHPAryLen=6
 → `hpFloat == hp/maxHP`、`isWounded == (hp < maxHP)`、`isFullyRecovered == (hp >= maxHP)`，
 **三个属性与 hp 完全同步**，与源码"只有 getter"一致。
 
+> ⚠ **本结论已在 Phase 3B-1 被部分更正**：
+> 实机看到 `左腿 115.57/124 = 93%` 时 `isWounded = 0`（显示"正常"），
+> 而 `54%`/`69%` 时为 `1`。因此 **`isWounded` 不是 `hp < maxHP`，而是带阈值的派生**，
+> 阈值位于 69%–93% 之间（未精确测出）。
+> `hpFloat == hp/maxHP` 仍然成立（多次验证一致）。
+> 详见 `PHASE_3B_1_TEST_REPORT.md` §4。
+
 ### 2.5 实时性（A 项）
 
 ```

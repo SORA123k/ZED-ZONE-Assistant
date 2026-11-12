@@ -37,6 +37,18 @@ namespace ZedZone.UltimateAssistant.UI
             _renderer.Key = _key;
             _renderer.Registry = Registry;
             _renderer.PatchCount = Patch.PatchManager.InstalledCount;
+            // 初始标签页（默认 0=玩家，保持既有行为；便于直接查看指定页）
+            try
+            {
+                int want = ModConfig.StartTab?.Value ?? 0;
+                _renderer.Tab = Mathf.Clamp(want, 0, 7);
+                Log.Info($"[ui] StartTab 配置={want} -> 实际 Tab={_renderer.Tab}");
+            }
+            catch (Exception e)
+            {
+                _renderer.Tab = 0;
+                Log.WarnOnce("ui.starttab", "[ui] StartTab 读取失败: " + e.GetType().Name);
+            }
         }
 
         private void Update()
@@ -49,7 +61,7 @@ namespace ZedZone.UltimateAssistant.UI
                 if (_visible && KeyDown(KeyCode.Escape)) _visible = false;
                 if (_visible)
                 {
-                    for (int i = 0; i < 7; i++)
+                    for (int i = 0; i < 8; i++)
                         if (KeyDown(KeyCode.Alpha1 + i)) { _renderer.Tab = i; break; }
                 }
 
@@ -68,6 +80,8 @@ namespace ZedZone.UltimateAssistant.UI
                     try { GrowthProbe.Tick(); } catch (Exception ge) { Log.ErrorOnce("growth", ge); }
                     try { FatigueProbe.Tick(); } catch (Exception fe) { Log.ErrorOnce("fatigue", fe); }
                     try { LimbProbe.Tick(); } catch (Exception le) { Log.ErrorOnce("limb", le); }
+                    // Phase 3B-1：肢体只读快照（与上面的节流同频，避免每帧封送）
+                    try { LimbData.Refresh(); } catch (Exception ld) { Log.ErrorOnce("limbdata", ld); }
                 }
             }
             catch (Exception e)
