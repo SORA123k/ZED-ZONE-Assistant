@@ -36,9 +36,9 @@ namespace ZedZone.UltimateAssistant.Core
         internal static ConfigEntry<int> LimbProbeIntervalMs;
         internal static ConfigEntry<int> LimbProbeHeartbeatSec;
         internal static ConfigEntry<int> LimbProbeChangeFlushSec;
-        internal static ConfigEntry<bool> LimbApiProbe;
 
-        // ---- Phase 3A: 一键恢复 ----
+        internal static ConfigEntry<bool> LimbApiProbe;
+// ---- Phase 3A: 一键恢复 ----
         internal static ConfigEntry<bool> EnableRestore;
         internal static ConfigEntry<bool> RestoreHealth;
         internal static ConfigEntry<bool> RestoreEnergy;
