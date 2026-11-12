@@ -211,12 +211,6 @@ namespace ZedZone.UltimateAssistant.Core
                     try { r.Bleeding = d.isBleeding; } catch { }
                     try { r.Recovered = d.isFullyRecovered; } catch { }
                     try { r.HpFloat = d.hpFloat; } catch { }
-                    try
-                    {
-                        var visual = p.GetBodyPartByIndex(i);
-                        if (visual != null) r.VisualDataId = visual.bodypartDataID;
-                    }
-                    catch { }
                     r.ReadOk = true;
                 }
                 catch (Exception e)
@@ -278,7 +272,6 @@ namespace ZedZone.UltimateAssistant.Core
                 if (a != null) defHps = a.Length;
             }
             catch { }
-
             int appliedCon = int.MinValue;
             try { appliedCon = p.characterData.appliedBodyPartConstitution; } catch { }
 
@@ -286,20 +279,12 @@ namespace ZedZone.UltimateAssistant.Core
             sb.AppendLine($"[limb] ===== 肢体枚举 {(identityChanged ? "(重新枚举)" : "")} =====");
             sb.AppendLine($"[limb] scene={scene} ptr=0x{ptr.ToString("X")} isPlayer={SafeBool(() => p.isPlayer)}");
             sb.AppendLine($"[limb] humanBodyPartCount={count} arrayLen={rows.Count} textIdAryLen={textIds} defaultHPAryLen={defHps} appliedBodyPartConstitution={appliedCon}");
-            sb.AppendLine("[limb] idx | bodyPartId | textId | name | hp | maxHP | defaultHP | wounded | bleeding | recovered | hpFloat | visualDataId | match");
+            sb.AppendLine("[limb] idx | bodyPartId | textId | name | hp | maxHP | defaultHP | wounded | bleeding | recovered | hpFloat");
 
-            int mismatch = 0;
+            int mismatch = 0;   // 保留变量以兼容下方逻辑（当前不再逐行比对视觉索引）
             for (int i = 0; i < rows.Count; i++)
             {
                 var r = rows[i];
-                string match = "?";
-                if (r.VisualDataId != int.MinValue)
-                {
-                    // 跳过视觉组件时 match 保持 ?
-                    match = (r.VisualDataId == r.BodyPartId) ? "ok" : "MISMATCH";
-                    if (match == "MISMATCH") mismatch++;
-                }
-
                 sb.Append("[limb] ").Append(r.Index).Append(" | ")
                   .Append(r.BodyPartId).Append(" | ")
                   .Append(r.TextId).Append(" | ")
@@ -310,13 +295,40 @@ namespace ZedZone.UltimateAssistant.Core
                   .Append(r.Wounded ? 1 : 0).Append(" | ")
                   .Append(r.Bleeding ? 1 : 0).Append(" | ")
                   .Append(r.Recovered ? 1 : 0).Append(" | ")
-                  .Append(F(r.HpFloat)).Append(" | ")
-                  .Append(r.VisualDataId == int.MinValue ? "?" : r.VisualDataId.ToString()).Append(" | ")
-                  .Append(match)
+                  .Append(F(r.HpFloat))
                   .Append(string.IsNullOrEmpty(r.Error) ? "" : " | err=" + r.Error)
                   .AppendLine();
             }
-            sb.AppendLine($"[limb] ===== 枚举结束（{rows.Count} 个肢体，ID 交叉校验不匹配 {mismatch} 个）=====");
+            sb.AppendLine($"[limb] ===== 枚举结束（{rows.Count} 个肢体）=====");
+
+            // 数据侧静态表（只读）：确认"数据数组顺序"与"各部位默认 HP"
+            try
+            {
+                var t = CharacterBodyPartsData.humanBodyPartTextIdAry;
+                if (t != null)
+                {
+                    var b = new StringBuilder("[limb] humanBodyPartTextIdAry = [");
+                    for (int i = 0; i < t.Length; i++) { if (i > 0) b.Append(", "); b.Append(t[i]); }
+                    b.Append("]  -> names = [");
+                    for (int i = 0; i < t.Length; i++) { if (i > 0) b.Append(", "); b.Append(ResolveName(t[i])); }
+                    b.Append(']');
+                    sb.AppendLine(b.ToString());
+                }
+            }
+            catch (Exception e) { sb.AppendLine("[limb] humanBodyPartTextIdAry 读取失败: " + e.GetType().Name); }
+
+            try
+            {
+                var d = CharacterBodyPartsData.humanBodyPartDefaultHPAry;
+                if (d != null)
+                {
+                    var b = new StringBuilder("[limb] humanBodyPartDefaultHPAry = [");
+                    for (int i = 0; i < d.Length; i++) { if (i > 0) b.Append(", "); b.Append(d[i].ToString("0.##")); }
+                    b.Append(']');
+                    sb.AppendLine(b.ToString());
+                }
+            }
+            catch (Exception e) { sb.AppendLine("[limb] humanBodyPartDefaultHPAry 读取失败: " + e.GetType().Name); }
 
             // ---- 视觉组件清单：核对 GetBodyPartByIndex 与 bodypartDataAry 是否同一索引空间 ----
             var vis = new StringBuilder();
@@ -328,10 +340,15 @@ namespace ZedZone.UltimateAssistant.Core
                 if (v == null) break;
                 visCount++;
                 int did = int.MinValue, tid = int.MinValue;
+                bool clothing = false, clothingOk = false;
                 try { did = v.bodypartDataID; } catch { }
                 try { tid = v.nameTextId; } catch { }
+                try { clothing = v.IsClothingBodyPart; clothingOk = true; } catch { }
                 vis.Append("[limb]   visual[").Append(i).Append("] bodypartDataID=").Append(did)
-                   .Append(" nameTextId=").Append(tid).Append(" name=").Append(ResolveName(tid)).AppendLine();
+                   .Append(" nameTextId=").Append(tid)
+                   .Append(" name=").Append(ResolveName(tid))
+                   .Append(" clothing=").Append(clothingOk ? (clothing ? "1" : "0") : "?")
+                   .AppendLine();
             }
             sb.AppendLine($"[limb] 视觉组件数量={visCount}（GetBodyPartByIndex 遍历）");
             sb.Append(vis);
