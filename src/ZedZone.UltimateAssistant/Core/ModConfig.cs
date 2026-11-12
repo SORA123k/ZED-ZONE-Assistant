@@ -30,6 +30,12 @@ namespace ZedZone.UltimateAssistant.Core
         internal static ConfigEntry<int> FatigueProbeIntervalMs;
         internal static ConfigEntry<int> FatigueProbeSeconds;
 
+        // ---- Phase 3B-0：肢体只读枚举 ----
+        internal static ConfigEntry<bool> LimbProbe;
+        internal static ConfigEntry<int> LimbProbeIntervalMs;
+        internal static ConfigEntry<int> LimbProbeHeartbeatSec;
+        internal static ConfigEntry<int> LimbProbeChangeFlushSec;
+
         // ---- Phase 3A: 一键恢复 ----
         internal static ConfigEntry<bool> EnableRestore;
         internal static ConfigEntry<bool> RestoreHealth;
@@ -100,6 +106,22 @@ namespace ZedZone.UltimateAssistant.Core
             FatigueProbeSeconds = cfg.Bind("Diagnostics", "FatigueProbeSeconds", 600,
                 new ConfigDescription("疲劳探针最长采样时长（秒），到时会自动停止并输出摘要。",
                     new AcceptableValueRange<int>(30, 7200)));
+
+            // ---- Phase 3B-0：肢体只读枚举（默认关闭） ----
+            LimbProbe = cfg.Bind("Diagnostics", "LimbProbe", false,
+                "【只读】肢体枚举：打印 humanBodyPartCount、每个肢体的 index / bodyPartId / textId / " +
+                "本地化名称 / hp / maxHP / defaultHP / isWounded / isBleeding / isFullyRecovered，" +
+                "并在数值变化时输出 CHANGE 行。不写任何数值、不调用恢复接口、不装补丁。");
+
+            LimbProbeIntervalMs = cfg.Bind("Diagnostics", "LimbProbeIntervalMs", 500,
+                new ConfigDescription("肢体探针采样间隔（毫秒）。", new AcceptableValueRange<int>(100, 5000)));
+
+            LimbProbeHeartbeatSec = cfg.Bind("Diagnostics", "LimbProbeHeartbeatSec", 30,
+                new ConfigDescription("肢体探针心跳间隔（秒）。", new AcceptableValueRange<int>(5, 600)));
+
+            LimbProbeChangeFlushSec = cfg.Bind("Diagnostics", "LimbProbeChangeFlushSec", 1,
+                new ConfigDescription("肢体变化日志的合并间隔（秒）。肢体自然恢复会持续变化，" +
+                                      "合并输出可避免刷屏。", new AcceptableValueRange<int>(1, 60)));
 
             // ---------------- Phase 3A: 一键恢复 ----------------
             EnableRestore = cfg.Bind("Restore", "EnableRestore", true,

@@ -67,6 +67,7 @@ namespace ZedZone.UltimateAssistant.UI
                     // 只读实验探针（不写任何数值）
                     try { GrowthProbe.Tick(); } catch (Exception ge) { Log.ErrorOnce("growth", ge); }
                     try { FatigueProbe.Tick(); } catch (Exception fe) { Log.ErrorOnce("fatigue", fe); }
+                    try { LimbProbe.Tick(); } catch (Exception le) { Log.ErrorOnce("limb", le); }
                 }
             }
             catch (Exception e)

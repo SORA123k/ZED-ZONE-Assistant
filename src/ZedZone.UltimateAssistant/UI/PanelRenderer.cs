@@ -212,7 +212,7 @@ namespace ZedZone.UltimateAssistant.UI
             float cy = rect.y + Pad;
             float inner = rect.width - Pad * 2;
 
-            GUI.Label(new Rect(cx, cy, inner, LineH + 6), "Ultimate Assistant · 只读预览 (Phase 2)", _title);
+            GUI.Label(new Rect(cx, cy, inner, LineH + 6), "Ultimate Assistant · 只读 + 一键恢复 (Phase 3A)", _title);
             cy += LineH + 8;
 
             string sub = snap == null
@@ -368,9 +368,9 @@ namespace ZedZone.UltimateAssistant.UI
 
         private void DrawSettingsTab(float x, float y, float w, PlayerSnapshot snap)
         {
-            y = Row(x, y, w, "模组版本", Plugin.PluginVersion, "Phase 2 = 只读");
+            y = Row(x, y, w, "模组版本", Plugin.PluginVersion, "Phase 3A = 只读 + 一键恢复");
             y = Row(x, y, w, "写模式", "只读（无任何写值代码路径）", "Phase 3 才实现修改");
-            y = Row(x, y, w, "Harmony 补丁", PatchCount + " （要求 0）", "Phase 2 不安装任何修改行为的补丁");
+            y = Row(x, y, w, "Harmony 补丁", PatchCount + " （要求 0）", "不安装任何修改伤害/行为的补丁");
             y = Row(x, y, w, "读取间隔", ModConfig.RefreshMs + " ms", "配置 [Read] RefreshIntervalMs");
             y = Row(x, y, w, "面板键", Key.ToString(), "配置 [UI] ToggleKey");
             y = Row(x, y, w, "按键冲突", ConflictMsg, "只读调用游戏按键映射表");
