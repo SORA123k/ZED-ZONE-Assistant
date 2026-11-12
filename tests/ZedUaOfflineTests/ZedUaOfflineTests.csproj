@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <AssemblyName>ZedUaOfflineTests</AssemblyName>
+    <RootNamespace>ZedUaOfflineTests</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- 只链接不依赖 UnityEngine 的纯逻辑文件，因此可在无游戏环境下运行 -->
+    <Compile Include="..\..\src\ZedZone.UltimateAssistant\Core\PlayerSnapshot.cs" Link="PlayerSnapshot.cs" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,95 @@
+using System;
+using System.Collections.Generic;
+using BepInEx.Configuration;
+using BepInEx.Unity.IL2CPP.Configuration;
+using UnityEngine;
+
+namespace ZedZone.UltimateAssistant.Core
+{
+    /// <summary>配置（中文说明，继承上一项目的写法）。</summary>
+    internal static class ModConfig
+    {
+        internal static ConfigEntry<bool> Enabled;
+        internal static ConfigEntry<bool> ShowOnStart;
+
+        internal static ConfigEntry<KeyboardShortcut> ToggleKey;
+        internal static ConfigEntry<float> FontScale;
+        internal static ConfigEntry<int> PanelX;
+        internal static ConfigEntry<int> PanelY;
+        internal static ConfigEntry<bool> ShowNotes;
+
+        internal static ConfigEntry<int> RefreshIntervalMs;
+        internal static ConfigEntry<bool> LogSnapshotOnChange;
+        internal static ConfigEntry<int> LogValuesSeconds;
+
+        internal static ConfigEntry<bool> ModHealth;
+        internal static ConfigEntry<bool> ModHunger;
+        internal static ConfigEntry<bool> ModThirst;
+        internal static ConfigEntry<bool> ModStamina;
+        internal static ConfigEntry<bool> ModEnergy;
+        internal static ConfigEntry<bool> ModFatigue;
+        internal static ConfigEntry<bool> ModStatus;
+
+        internal static void Bind(ConfigFile cfg)
+        {
+            Enabled = cfg.Bind("General", "Enabled", true, "启用模组总开关。");
+            ShowOnStart = cfg.Bind("General", "ShowOnStart", true,
+                "进入游戏后是否自动显示面板。默认开启便于首次确认模组工作；可按快捷键关闭后保持后台只读。");
+
+            ToggleKey = cfg.Bind("UI", "ToggleKey", new KeyboardShortcut(KeyCode.Insert),
+                "打开/关闭面板的快捷键。默认 Insert。若与游戏按键冲突，启动日志会给出警告。");
+            FontScale = cfg.Bind("UI", "FontScale", 1.0f,
+                new ConfigDescription("界面字号缩放。", new AcceptableValueRange<float>(0.7f, 2.0f)));
+            PanelX = cfg.Bind("UI", "PanelX", 380,
+                new ConfigDescription("面板左上角 X。默认 380 以避开游戏左上角自带读数与 FPS HUD。",
+                    new AcceptableValueRange<int>(0, 4000)));
+            PanelY = cfg.Bind("UI", "PanelY", 40,
+                new ConfigDescription("面板左上角 Y。默认 40。",
+                    new AcceptableValueRange<int>(0, 4000)));
+            ShowNotes = cfg.Bind("UI", "ShowNotes", true,
+                "是否显示每个字段的数据来源说明（排查用，建议开启）。");
+
+            RefreshIntervalMs = cfg.Bind("Read", "RefreshIntervalMs", 100,
+                new ConfigDescription(
+                    "读取间隔（毫秒）。Phase 2 为只读设计，无需每帧读取；100ms 足够实时且能显著降低 IL2CPP 封送开销。",
+                    new AcceptableValueRange<int>(16, 2000)));
+            LogSnapshotOnChange = cfg.Bind("Read", "LogOnPlayerChange", true,
+                "当玩家引用发生变化（重生/换场景/读档）时写一条日志，用于验证引用未被缓存。");
+            LogValuesSeconds = cfg.Bind("Read", "LogValuesSeconds", 10,
+                new ConfigDescription(
+                    "每隔多少秒把一次真实读数写进日志（0 = 关闭）。" +
+                    "用途：验收时可把日志数字与游戏原生状态面板逐项对照，不必依赖截图。",
+                    new AcceptableValueRange<int>(0, 600)));
+
+            ModHealth = cfg.Bind("Modules", "Health", true, "生命模块（只读）。");
+            ModHunger = cfg.Bind("Modules", "Hunger", true, "饱食模块（只读）。");
+            ModThirst = cfg.Bind("Modules", "Thirst", true, "水分模块（只读）。");
+            ModStamina = cfg.Bind("Modules", "Stamina", true,
+                "持久力 STAMINA 模块（只读）。注意：游戏内 STAMINA 与 ENERGY 是同一数值。");
+            ModEnergy = cfg.Bind("Modules", "Energy", true,
+                "精力 ENERGY 模块（只读）。注意：游戏内与 STAMINA 是同一数值。");
+            ModFatigue = cfg.Bind("Modules", "Fatigue", true, "疲劳 FATIGUE 模块（只读）。");
+            ModStatus = cfg.Bind("Modules", "Status", true, "状态模块（只读：精神值/死亡标志/Buff 数量）。");
+        }
+
+        internal static int RefreshMs => Mathf.Clamp(RefreshIntervalMs?.Value ?? 100, 16, 2000);
+        internal static float Scale => Mathf.Clamp(FontScale?.Value ?? 1f, 0.7f, 2f);
+        internal static bool Notes => ShowNotes?.Value ?? true;
+
+        internal static void ApplyModuleSwitches(ModuleRegistry reg)
+        {
+            void Set(string id, ConfigEntry<bool> e)
+            {
+                var m = reg.Find(id);
+                if (m != null && e != null) m.Enabled = e.Value;
+            }
+            Set("health", ModHealth);
+            Set("hunger", ModHunger);
+            Set("thirst", ModThirst);
+            Set("stamina", ModStamina);
+            Set("energy", ModEnergy);
+            Set("fatigue", ModFatigue);
+            Set("status", ModStatus);
+        }
+    }
+}

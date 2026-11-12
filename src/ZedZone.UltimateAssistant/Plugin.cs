@@ -1,0 +1,120 @@
+using System;
+using BepInEx;
+using BepInEx.Unity.IL2CPP;
+using UnityEngine;
+using ZedZone.UltimateAssistant.Core;
+using ZedZone.UltimateAssistant.Modules;
+using ZedZone.UltimateAssistant.Patch;
+using ZedZone.UltimateAssistant.UI;
+
+// 注意：BasePlugin 自带一个 `Log` 属性（ManualLogSource），
+// 与我们的静态日志类 Core.Log 同名。这里用别名避免二义性。
+using CoreLog = ZedZone.UltimateAssistant.Core.Log;
+
+namespace ZedZone.UltimateAssistant
+{
+    /// <summary>
+    /// ZED ZONE Ultimate Assistant —— Phase 2：插件骨架 + 玩家状态只读读取 + GUI 框架。
+    ///
+    /// ★ Phase 2 的硬约束（已写进代码结构）：
+    ///   1. **只读**：没有任何写玩家属性的代码路径（模块基类只有 Read）；
+    ///   2. **不装修改行为的补丁**：PatchManager 安装数必须为 0；
+    ///   3. **不缓存玩家引用**：每次读取都经 PlayerAccessor.Resolve 重新解析；
+    ///   4. **不伪造数据**：读不到就标记失败并在 GUI 上红色显示。
+    /// </summary>
+    [BepInPlugin(PluginGuid, PluginName, PluginVersion)]
+    public class Plugin : BasePlugin
+    {
+        public const string PluginGuid = "zedzone.ultimateassistant";
+        public const string PluginName = "ZED ZONE Ultimate Assistant";
+        public const string PluginVersion = "0.2.0";
+
+        internal static Plugin Instance;
+        internal static ModuleRegistry Registry;
+        internal static PlayerStateReader Reader;
+
+        private AssistantPanel _panel;
+
+        public override void Load()
+        {
+            Instance = this;
+            CoreLog.Init(Log);   // Log 这里是 BasePlugin.Log（ManualLogSource）
+
+            CoreLog.Info($"{PluginName} v{PluginVersion} loading (Phase 2 = read-only)");
+
+            string gameVer = "unknown";
+            try { gameVer = Application.version; } catch { }
+            CoreLog.Info($"detected game version: {gameVer}");
+
+            // ---- 配置 ----
+            ModConfig.Bind(Config);
+
+            if (ModConfig.Enabled != null && !ModConfig.Enabled.Value)
+            {
+                CoreLog.Info("已由配置禁用（General/Enabled=false），不加载任何模块。");
+                return;
+            }
+
+            // ---- 模块注册（只读） ----
+            Registry = new ModuleRegistry();
+            Registry.Add(new HealthModule());
+            Registry.Add(new HungerModule());
+            Registry.Add(new ThirstModule());
+            Registry.Add(new StaminaModule());
+            Registry.Add(new EnergyModule());
+            Registry.Add(new FatigueModule());
+            Registry.Add(new StatusModule());
+            ModConfig.ApplyModuleSwitches(Registry);
+
+            CoreLog.Info("已注册模块: " + string.Join(", ", Map(Registry)));
+
+            Reader = new PlayerStateReader(Registry);
+
+            // ---- 补丁（Phase 2 必须为 0） ----
+            int patches = PatchManager.InstallAll(PluginGuid);
+
+            // ---- GUI ----
+            try
+            {
+                _panel = AddComponent<AssistantPanel>();
+                _panel.Reader = Reader;
+                _panel.Registry = Registry;
+                CoreLog.Info("GUI 组件已注入（快捷键默认 Insert，可在配置中修改）");
+            }
+            catch (Exception e)
+            {
+                CoreLog.Warn("GUI 注入失败：" + e.GetType().Name + ": " + e.Message);
+            }
+
+            // ---- 自查 ----
+            CoreLog.Info("=== Phase 2 自查 ===");
+            CoreLog.Info("  只读模式          : 是（无写入路径）");
+            CoreLog.Info($"  Harmony 补丁数    : {patches}（要求 0）");
+            CoreLog.Info("  玩家引用缓存      : 否（每次 Resolve 重新解析）");
+            CoreLog.Info($"  读取间隔          : {ModConfig.RefreshMs} ms");
+            CoreLog.Info($"  GUI 快捷键        : {SafeKeyName()}");
+            CoreLog.Info("====================");
+        }
+
+        private static string SafeKeyName()
+        {
+            try { return ModConfig.ToggleKey.Value.MainKey.ToString(); }
+            catch { return "Insert"; }
+        }
+
+        private static System.Collections.Generic.List<string> Map(ModuleRegistry reg)
+        {
+            var list = new System.Collections.Generic.List<string>();
+            foreach (var m in reg.All)
+                if (m != null) list.Add(m.Id);
+            return list;
+        }
+
+        public override bool Unload()
+        {
+            try { PatchManager.UninstallAll(); } catch { }
+            CoreLog.Info("unloaded");
+            return true;
+        }
+    }
+}
