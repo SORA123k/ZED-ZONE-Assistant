@@ -1,7 +1,7 @@
 # PHASE_3A_API_RESEARCH.md — 一键恢复的 API 研究
 
 > **阶段**：Phase 3A 技术研究（**本轮不实现写入**）
-> **游戏**：ZED ZONE **1.0.16** / build 26576287 / Unity 2023.1.18f1 / IL2CPP x64
+> **游戏**：ZED ZONE **1.0.16** / build 26600653 / Unity 2023.1.18f1 / IL2CPP x64
 > **interop**：`BepInEx\interop\Assembly-CSharp.dll`（2026-11-12 18:37 生成，晚于 GameAssembly 15:48 → 对应当前版本）
 > **日期**：2026-11-12
 

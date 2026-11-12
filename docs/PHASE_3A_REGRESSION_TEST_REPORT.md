@@ -1,7 +1,7 @@
 # PHASE_3A_REGRESSION_TEST_REPORT.md — 动态最大值修复 · 回归测试报告
 
 > **被测版本**：ZED ZONE Ultimate Assistant **v0.3.0**（含动态范围修复）
-> **游戏**：ZED ZONE **1.0.16** / build 26576287
+> **游戏**：ZED ZONE **1.0.16** / build 26600653
 > **DLL**：`ZedZone.UltimateAssistant.dll`，59,904 字节
 > MD5 `139EF5B8E1ED532EA0EBBE253DDC2DD2`（构建产物与已安装文件**哈希一致**）
 > **日期**：2026-11-12

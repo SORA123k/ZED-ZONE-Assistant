@@ -1,7 +1,7 @@
 # PHASE_3A_DYNAMIC_RANGE_RESEARCH.md — 动态属性范围研究
 
 > **目的**：彻底查清每一项属性的"当前值 / 最大值"真实来源，以及最大值为什么是动态的。
-> **游戏**：ZED ZONE **1.0.16** / build 26576287 / Unity 2023.1.18f1 / IL2CPP x64
+> **游戏**：ZED ZONE **1.0.16** / build 26600653 / Unity 2023.1.18f1 / IL2CPP x64
 > **interop**：`BepInEx\interop\Assembly-CSharp.dll`（2026-11-12 18:37，晚于 GameAssembly 15:48 → 对应当前版本）
 > **日期**：2026-11-12
 

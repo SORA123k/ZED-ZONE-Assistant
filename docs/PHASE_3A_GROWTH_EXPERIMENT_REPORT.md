@@ -1,7 +1,7 @@
 # PHASE_3A_GROWTH_EXPERIMENT_REPORT.md — 成长只读实验 · 首轮报告
 
 > **工具版本**：ZED ZONE Ultimate Assistant v0.3.0（含 `GrowthProbe`）
-> **游戏**：ZED ZONE 1.0.16 / build 26576287
+> **游戏**：ZED ZONE 1.0.16 / build 26600653
 > **日期**：2026-11-12
 > **性质**：只读观测报告。**未修改任何属性、未改全局配置、未改存档、未新增 Harmony Patch。**
 
