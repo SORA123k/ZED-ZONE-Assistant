@@ -8,18 +8,40 @@
 | 引擎 | Unity **2023.1.18f1** / **IL2CPP x64** / URP 15.0.7 |
 | 技术栈 | BepInEx 6 IL2CPP + HarmonyX + Il2CppInterop |
 | 上一项目 | `<仓库目录>\ZED-ZONE-FPS-Optimization-Mod`（已完成的 FPS 优化模组，本项目继承其工程经验） |
-| 当前阶段 | **Phase 1 代码调查 —— 已完成，等待确认** |
+| 当前阶段 | **Phase 2 已完成（只读骨架 + GUI），等待 Phase 3 确认** |
 
 ---
 
 ## 状态
 
-**Phase 1（仅研究，不写功能）已完成。** 按项目要求，在报告确认前不进入 Phase 2 开发。
+**Phase 1（研究）与 Phase 2（只读骨架 + GUI）均已完成。**
 
 - ✅ 6 份研究文档（`docs/`）
 - ✅ 旧项目工程模式提取（`research/LEGACY_PROJECT_PATTERNS.md`）
-- ❌ 尚未编写任何模组功能代码
-- ❌ 尚未进行任何实机测试（所有文档中的「测试」列均为 `未实机验证`）
+- ✅ Phase 2 插件：7 个只读模块 + GUI + 22 项离线测试
+- ✅ [PHASE_2_REPORT.md](PHASE_2_REPORT.md) — 交付与测试报告
+- ❌ **尚未实现任何写值功能**（Phase 3 才做，需确认）
+- ⚠️ 真实玩家数值读取尚未实机验证，原因与用户自测步骤见报告 §4
+
+---
+
+## Phase 2 摘要
+
+```
+玩家：GameController.instance.playerCharacter  (HumanCharacterController)
+状态：playerCharacter.characterData.characterStatusData
+Buff：playerCharacter.characterData.buffDataList
+```
+
+- **只读保证**：所有模块继承 `StateModuleBase`，该基类**只有 `Read`，没有 `Write`**；
+  `PatchManager` 在 Phase 2 安装的 Harmony 补丁数恒为 **0**。
+- **不缓存玩家引用**：每次读取都重新 `Resolve()`。
+- **不伪造数据**：读不到显示"读取失败"并给异常类型，不用 0 填充。
+- **中文**：借用游戏自带 CJK 字体（OS 字体 ICall 在 IL2CPP 构建中被剥离）。
+- **热键**：`Insert` 开关、`Esc` 关闭、数字键 1-7 切页；启动时自动检测按键冲突。
+
+⚠ **属性语义更正**：游戏内 `STAMINA（持久力）` 与 `ENERGY（精力）` 是**同一个数值 `energy`**
+（本地化 id 5431），`FATIGUE（疲劳）` 才是独立第三项。模块分开但同源，不伪造第二个数字。
 
 ---
 
