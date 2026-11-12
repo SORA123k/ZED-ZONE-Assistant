@@ -8,24 +8,53 @@
 | 引擎 | Unity **2023.1.18f1** / **IL2CPP x64** / URP 15.0.7 |
 | 技术栈 | BepInEx 6 IL2CPP + HarmonyX + Il2CppInterop |
 | 上一项目 | `<仓库目录>\ZED-ZONE-FPS-Optimization-Mod`（已完成的 FPS 优化模组，本项目继承其工程经验） |
-| 当前阶段 | **Phase 2 已完成（只读骨架 + GUI），等待 Phase 3 确认** |
+| 当前阶段 | **Phase 3A 一键恢复（已安装，可测试）** |
 
 ---
 
 ## 状态
 
-**Phase 1（研究）与 Phase 2（只读骨架 + GUI）均已完成。**
+**Phase 1（研究）→ Phase 2（只读骨架 + GUI）→ Phase 3A（一键恢复）均已完成。**
 
-- ✅ 6 份研究文档（`docs/`）
-- ✅ 旧项目工程模式提取（`research/LEGACY_PROJECT_PATTERNS.md`）
-- ✅ Phase 2 插件：7 个只读模块 + GUI + 22 项离线测试
-- ✅ [PHASE_2_REPORT.md](PHASE_2_REPORT.md) — 交付与测试报告
-- ❌ **尚未实现任何写值功能**（Phase 3 才做，需确认）
-- ⚠️ 真实玩家数值读取尚未实机验证，原因与用户自测步骤见报告 §4
+- ✅ 6 份研究文档 + Phase 3 四份规划文档（`docs/`）
+- ✅ Phase 2 只读插件：7 个读取模块 + GUI + 22 项离线测试
+- ✅ **Phase 3A：一键恢复（生命 / 精力 / 饱食 / 水分），全部经统一写入门**
+- ⏳ 疲劳恢复默认关闭（方向未确认，见下）
+- ❌ Phase 3B/3C/3D 未开始
+
+### Phase 3A 使用方式
+
+游戏内按 **INSERT** 打开面板：
+
+| 标签页 | 按钮 |
+|---|---|
+| 玩家 | 恢复生命 / 恢复精力 / 恢复饱食 / 恢复水分 / 恢复疲劳 |
+| 生命 | 恢复生命 |
+| 饱食 | 恢复饱食 |
+| 水分 | 恢复水分 |
+| 体力/精力 | 恢复精力/持久力 / 恢复疲劳 |
+
+**安全机制（全部实测生效）**：
+
+- 唯一写入门 `PlayerWriteGate`，固定检查顺序：配置 → **联机(fail-closed)** → 验证状态 → 重取玩家 → 死亡标志 → 重生窗口 → 钳制 → 写入 → 回读校验
+- **联机一律拒绝**（`NetworkManager.isOnline/isHost/isClient`）
+- **只升不降**：实测玩家有效生命上限可超过 `maxHP`（日志见 `hp=1840/1000`），
+  因此恢复绝不把数值往下写
+- 关闭功能只停止写，**不重置**玩家数值
+
+⚠ **疲劳（fatigue）默认不可恢复**：它的方向（越高越好 / 越高越糟）尚未确认。
+在 `[Restore] FatigueDirection` 里填 `resource` 或 `exhaustion` 并打开 `Fatigue` 开关后才会生效。
+
+```ini
+[Restore]
+EnableRestore = true
+Fatigue = false            ; 默认关闭
+FatigueDirection = unconfirmed   ; resource | exhaustion
+```
 
 ---
 
-## Phase 2 摘要
+## Phase 2 摘要（历史）
 
 ```
 玩家：GameController.instance.playerCharacter  (HumanCharacterController)

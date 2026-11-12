@@ -222,6 +222,14 @@ namespace ZedZone.UltimateAssistant.UI
             GUI.Label(new Rect(cx, cy, inner, LineH), sub, _hint);
             cy += LineH + 4;
 
+            // 联机硬禁用提示（fail-closed：检测异常也按联机显示）
+            if (PlayerWriteGate.IsMultiplayer(out string mpWhy))
+            {
+                GUI.Label(new Rect(cx, cy, inner, LineH),
+                    "⚠ 联机模式：所有状态修改已被禁用（" + mpWhy + "）", _fail);
+                cy += LineH + 2;
+            }
+
             float tabW = inner / TabNames.Length;
             for (int i = 0; i < TabNames.Length; i++)
             {
@@ -259,17 +267,92 @@ namespace ZedZone.UltimateAssistant.UI
 
             switch (Tab)
             {
-                case 0: DrawPlayerTab(x, y, w, snap); break;
-                case 1: DrawRows(x, y, w, snap, "hp", "bloodVolume", "bodyTemperature", "radiationDose"); break;
-                case 2: DrawRows(x, y, w, snap, "hunger"); break;
-                case 3: DrawRows(x, y, w, snap, "thirst"); break;
-                case 4: DrawRows(x, y, w, snap, "stamina", "energy", "fatigue"); break;
-                case 5: DrawRows(x, y, w, snap, "sanity", "casEnergy", "buffCount", "deadFlag", "netDeadFlag", "isPlayer"); break;
-                case 6: DrawSettingsTab(x, y, w, snap); break;
+                case 0:
+                    y = DrawPlayerTab(x, y, w, snap);
+                    y = DrawRestoreButtons(x, y, w, new[] { StatId.Hp, StatId.Energy, StatId.Hunger, StatId.Thirst },
+                        new[] { "恢复生命", "恢复精力", "恢复饱食", "恢复水分" });
+                    y = DrawRestoreButtons(x, y, w, new[] { StatId.Fatigue }, new[] { "恢复疲劳" });
+                    break;
+                case 1:
+                    y = DrawRestoreButtons(x, y, w, new[] { StatId.Hp }, new[] { "恢复生命" });
+                    DrawRows(x, y, w, snap, "hp", "bloodVolume", "bodyTemperature", "radiationDose");
+                    break;
+                case 2:
+                    y = DrawRestoreButtons(x, y, w, new[] { StatId.Hunger }, new[] { "恢复饱食" });
+                    DrawRows(x, y, w, snap, "hunger");
+                    break;
+                case 3:
+                    y = DrawRestoreButtons(x, y, w, new[] { StatId.Thirst }, new[] { "恢复水分" });
+                    DrawRows(x, y, w, snap, "thirst");
+                    break;
+                case 4:
+                    y = DrawRestoreButtons(x, y, w, new[] { StatId.Energy, StatId.Fatigue },
+                        new[] { "恢复精力/持久力", "恢复疲劳" });
+                    DrawRows(x, y, w, snap, "stamina", "energy", "fatigue");
+                    break;
+                case 5:
+                    DrawRows(x, y, w, snap, "sanity", "casEnergy", "buffCount", "deadFlag", "netDeadFlag", "isPlayer");
+                    break;
+                case 6:
+                    DrawSettingsTab(x, y, w, snap);
+                    break;
             }
+
+            DrawWriteFeedback(x, y, w);
         }
 
-        private void DrawPlayerTab(float x, float y, float w, PlayerSnapshot snap)
+        /// <summary>恢复按钮行。点击后由 PlayerWriteGate 决定是否真的写入。</summary>
+        private float DrawRestoreButtons(float x, float y, float w, StatId[] stats, string[] labels)
+        {
+            float gap = 8f;
+            float bw = (w - gap * (stats.Length - 1)) / stats.Length;
+            float bh = LineH + 6;
+
+            for (int i = 0; i < stats.Length; i++)
+            {
+                bool avail = RestoreService.IsLikelyAvailable(stats[i], out string reason);
+                string label = avail ? labels[i] : labels[i] + "（" + reason + "）";
+
+                // 不可用时也画出来（置灰），点击仍会走门禁并给出精确拒绝原因
+                var oldColor = GUI.color;
+                if (!avail) GUI.color = new Color(1f, 1f, 1f, 0.45f);
+
+                if (GUI.Button(new Rect(x + i * (bw + gap), y, bw, bh), label, _tab))
+                {
+                    var r = RestoreService.Restore(stats[i]);
+                    Log.Info("[ui] 恢复按钮 " + stats[i] + " -> " + r.Outcome + " " + r.Message);
+                }
+
+                GUI.color = oldColor;
+            }
+
+            return y + bh + 8;
+        }
+
+        /// <summary>上次操作结果反馈（12 秒有效）。</summary>
+        private void DrawWriteFeedback(float x, float y, float w)
+        {
+            float h = LineH * 2;
+
+            if (!string.IsNullOrEmpty(RestoreService.Summary) && RestoreService.SummaryAge < 12f)
+            {
+                GUI.Label(new Rect(x, y, w, h), RestoreService.Summary, _warn);
+                y += LineH;
+            }
+
+            var last = RestoreService.Last;
+            if (last == null || RestoreService.LastAge > 12f) return;
+
+            string text = (last.IsOk ? "✓ " : "✗ ") + last.Stat + "：" + last.OutcomeZh();
+            if (last.IsOk)
+                text += $"  {last.Before:0.#} → {last.After:0.#}";
+            else if (!string.IsNullOrEmpty(last.Message))
+                text += "  " + last.Message;
+
+            GUI.Label(new Rect(x, y, w, h), text, last.IsOk ? _label : _fail);
+        }
+
+        private float DrawPlayerTab(float x, float y, float w, PlayerSnapshot snap)
         {
             y = Row(x, y, w, "玩家类型", snap.PlayerTypeName, "HumanCharacterController:BasicCharacterController");
             y = Row(x, y, w, "访问入口", snap.PlayerGuid, "每次读取重新解析，不缓存");
@@ -280,7 +363,7 @@ namespace ZedZone.UltimateAssistant.UI
             y = Row(x, y, w, "失败字段", snap.FailCount().ToString() + " 项",
                 snap.FailCount() > 0 ? "红色项为读取失败，未用假数据填充" : "无失败项");
             y += LineH * 0.4f;
-            DrawWarnings(x, y, w, snap, 4);
+            return DrawWarnings(x, y, w, snap, 4);
         }
 
         private void DrawSettingsTab(float x, float y, float w, PlayerSnapshot snap)
@@ -376,9 +459,9 @@ namespace ZedZone.UltimateAssistant.UI
             return y;
         }
 
-        private void DrawWarnings(float x, float y, float w, PlayerSnapshot snap, int max)
+        private float DrawWarnings(float x, float y, float w, PlayerSnapshot snap, int max)
         {
-            if (snap.Warnings.Count == 0) return;
+            if (snap.Warnings.Count == 0) return y;
             GUI.Label(new Rect(x, y, w, LineH), "提示 / 警告（" + snap.Warnings.Count + "）", _warn);
             y += LineH;
             for (int i = 0; i < snap.Warnings.Count && i < max; i++)
@@ -387,7 +470,11 @@ namespace ZedZone.UltimateAssistant.UI
                 y += LineH;
             }
             if (snap.Warnings.Count > max)
+            {
                 GUI.Label(new Rect(x, y, w, LineH), "……还有 " + (snap.Warnings.Count - max) + " 条（见日志）", _note);
+                y += LineH;
+            }
+            return y;
         }
     }
 }

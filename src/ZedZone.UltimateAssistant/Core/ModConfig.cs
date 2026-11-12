@@ -23,6 +23,15 @@ namespace ZedZone.UltimateAssistant.Core
         internal static ConfigEntry<int> LogValuesSeconds;
         internal static ConfigEntry<bool> DumpBuffTable;
 
+        // ---- Phase 3A: 一键恢复 ----
+        internal static ConfigEntry<bool> EnableRestore;
+        internal static ConfigEntry<bool> RestoreHealth;
+        internal static ConfigEntry<bool> RestoreEnergy;
+        internal static ConfigEntry<bool> RestoreHunger;
+        internal static ConfigEntry<bool> RestoreThirst;
+        internal static ConfigEntry<bool> RestoreFatigue;
+        internal static ConfigEntry<string> FatigueDirection;
+
         internal static ConfigEntry<bool> ModHealth;
         internal static ConfigEntry<bool> ModHunger;
         internal static ConfigEntry<bool> ModThirst;
@@ -65,6 +74,27 @@ namespace ZedZone.UltimateAssistant.Core
             DumpBuffTable = cfg.Bind("Diagnostics", "DumpBuffTable", false,
                 "只读诊断：把游戏自身的 Buff 定义表（id/名称/每秒效果）与 GameConfigs 开关打印到日志。" +
                 "仅用于 Phase 3 的 API 验证，为 true 时每次启动转储一次；不修改任何数据。");
+
+            // ---------------- Phase 3A: 一键恢复 ----------------
+            EnableRestore = cfg.Bind("Restore", "EnableRestore", true,
+                "【总开关】一键恢复功能。关闭后所有恢复操作都会被拒绝（不会重置你的数值）。");
+
+            RestoreHealth = cfg.Bind("Restore", "Health", true, "允许把生命值恢复到上限。");
+            RestoreEnergy = cfg.Bind("Restore", "Energy", true,
+                "允许把精力/持久力（energy，两者是同一数值）恢复到上限。");
+            RestoreHunger = cfg.Bind("Restore", "Hunger", true, "允许把饱食度恢复到上限。");
+            RestoreThirst = cfg.Bind("Restore", "Thirst", true, "允许把水分恢复到上限。");
+
+            RestoreFatigue = cfg.Bind("Restore", "Fatigue", false,
+                "允许恢复疲劳值。默认关闭：fatigue 的方向（越高越好 / 越高越糟）尚未确认（G2）。" +
+                "确认方向后把下面的 FatigueDirection 改成 resource 或 exhaustion 再打开。");
+
+            FatigueDirection = cfg.Bind("Restore", "FatigueDirection", "unconfirmed",
+                new ConfigDescription(
+                    "fatigue 的方向。unconfirmed = 未确认（禁止写入）；" +
+                    "resource = 疲劳是可消耗资源（越高越好）→ 一键恢复填满；" +
+                    "exhaustion = 疲劳是负面积累（越高越糟）→ 一键恢复清零。",
+                    new AcceptableValueList<string>("unconfirmed", "resource", "exhaustion")));
 
             ModHealth = cfg.Bind("Modules", "Health", true, "生命模块（只读）。");
             ModHunger = cfg.Bind("Modules", "Hunger", true, "饱食模块（只读）。");

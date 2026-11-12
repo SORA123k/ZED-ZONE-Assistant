@@ -27,7 +27,7 @@ namespace ZedZone.UltimateAssistant
     {
         public const string PluginGuid = "zedzone.ultimateassistant";
         public const string PluginName = "ZED ZONE Ultimate Assistant";
-        public const string PluginVersion = "0.2.0";
+        public const string PluginVersion = "0.3.0";
 
         internal static Plugin Instance;
         internal static ModuleRegistry Registry;
@@ -40,7 +40,7 @@ namespace ZedZone.UltimateAssistant
             Instance = this;
             CoreLog.Init(Log);   // Log 这里是 BasePlugin.Log（ManualLogSource）
 
-            CoreLog.Info($"{PluginName} v{PluginVersion} loading (Phase 2 = read-only)");
+            CoreLog.Info($"{PluginName} v{PluginVersion} loading (Phase 3A = 一键恢复)");
 
             string gameVer = "unknown";
             try { gameVer = Application.version; } catch { }
@@ -87,10 +87,20 @@ namespace ZedZone.UltimateAssistant
             }
 
             // ---- 自查 ----
-            CoreLog.Info("=== Phase 2 自查 ===");
-            CoreLog.Info("  只读模式          : 是（无写入路径）");
+            CoreLog.Info("=== 自查（Phase 3A） ===");
+            CoreLog.Info("  阶段              : Phase 3A 一键恢复（含写值）");
+            CoreLog.Info("  写入路径          : 唯一入口 PlayerWriteGate（只写属性 setter）");
+            CoreLog.Info("  只读功能          : 保留（7 个读取模块）");
             CoreLog.Info($"  Harmony 补丁数    : {patches}（要求 0）");
             CoreLog.Info("  玩家引用缓存      : 否（每次 Resolve 重新解析）");
+            CoreLog.Info($"  联机门禁          : fail-closed（NetworkManager.isOnline/isHost/isClient）");
+            CoreLog.Info($"  写入门总开关      : {(ModConfig.EnableRestore?.Value ?? false ? "开" : "关")}");
+            CoreLog.Info($"  恢复项开关        : HP={(ModConfig.RestoreHealth?.Value ?? true)} " +
+                          $"Energy={(ModConfig.RestoreEnergy?.Value ?? true)} " +
+                          $"Hunger={(ModConfig.RestoreHunger?.Value ?? true)} " +
+                          $"Thirst={(ModConfig.RestoreThirst?.Value ?? true)} " +
+                          $"Fatigue={(ModConfig.RestoreFatigue?.Value ?? false)}" +
+                          $"（方向={ModConfig.FatigueDirection?.Value ?? "unconfirmed"}）");
             CoreLog.Info($"  读取间隔          : {ModConfig.RefreshMs} ms");
             CoreLog.Info($"  GUI 快捷键        : {SafeKeyName()}");
             CoreLog.Info("====================");
