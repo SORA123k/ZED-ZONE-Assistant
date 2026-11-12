@@ -21,6 +21,7 @@ internal static class Program
         TestSnapshotCounts();
         TestFailedFactory();
         TestSuspiciousStillUsable();
+        TestRangeSelection();
 
         Console.WriteLine();
         Console.WriteLine($"passed={_pass} failed={_fail}");
@@ -92,5 +93,56 @@ internal static class Program
         var v = new ReadValue { Value = -5f, Max = 100f, HasMax = true, State = ReadState.Suspicious };
         Check("suspicious is usable (shows real value)", v.IsUsable);
         Check("suspicious percent clamps to 0", Math.Abs(v.Percent01()) < 0.001f);
+    }
+
+    // ------------------------------------------------------------------
+    // Phase 3A 严重 Bug 回归：最大值选源
+    // 场景：maxhp=2000（真实）, maxHP=1000（陈旧字段）, current=2000
+    // ------------------------------------------------------------------
+    private static void TestRangeSelection()
+    {
+        System.Collections.Generic.List<RangeSelection.Candidate> C(params (string n, float v)[] xs)
+        {
+            var l = new System.Collections.Generic.List<RangeSelection.Candidate>();
+            foreach (var x in xs) l.Add(new RangeSelection.Candidate(x.n, x.v));
+            return l;
+        }
+
+        // 1) 首选 >= 当前值 → Ok
+        var r = RangeSelection.Select(C(("maxhp", 2000f), ("FullHP", 2000f), ("maxHP", 1000f)),
+                                     1500f, out var ch, out var why);
+        Check("primary ok when >= current", r == RangeSelection.Result.Ok, why);
+        Check("primary ok picks maxhp=2000", ch.Name == "maxhp" && Math.Abs(ch.Value - 2000f) < 0.01f);
+
+        // 2) ★ 本次 Bug：首选 1000 < 当前 2000，但 FullHP=2000 可覆盖 → 回退
+        r = RangeSelection.Select(C(("maxHP", 1000f), ("FullHP", 2000f)),
+                                  2000f, out ch, out why);
+        Check("BUG: fallback used when primary < current", r == RangeSelection.Result.FallbackUsed, why);
+        Check("BUG: fallback picks FullHP=2000", ch.Name == "FullHP" && Math.Abs(ch.Value - 2000f) < 0.01f);
+
+        // 3) 所有候选都 < 当前值 → Unreliable（必须拒绝，绝不截断）
+        r = RangeSelection.Select(C(("maxHP", 1000f)), 2000f, out ch, out why);
+        Check("unreliable when all candidates < current", r == RangeSelection.Result.Unreliable, why);
+
+        // 4) 全无效（0 / 负数 / NaN / Inf） → Unreliable
+        r = RangeSelection.Select(C(("a", 0f), ("b", -5f), ("c", float.NaN), ("d", float.PositiveInfinity)),
+                                  10f, out ch, out why);
+        Check("unreliable when all invalid", r == RangeSelection.Result.Unreliable, why);
+
+        // 5) 首选无效但第二个有效 → 用第二个
+        r = RangeSelection.Select(C(("bad", 0f), ("good", 120f)), 50f, out ch, out why);
+        Check("skips invalid primary", r == RangeSelection.Result.Ok && ch.Name == "good", why);
+
+        // 6) 空候选 → Unreliable
+        r = RangeSelection.Select(new System.Collections.Generic.List<RangeSelection.Candidate>(), 1f, out ch, out why);
+        Check("empty candidates -> unreliable", r == RangeSelection.Result.Unreliable);
+
+        // 7) 边界：当前值正好等于上限 → Ok，不应判为不可靠
+        r = RangeSelection.Select(C(("maxhp", 100f)), 100f, out ch, out why);
+        Check("current == max is ok (no false unreliable)", r == RangeSelection.Result.Ok, why);
+
+        // 8) 边界：当前值略高于上限（0.02，在容差内）→ Ok
+        r = RangeSelection.Select(C(("maxhp", 100f)), 100.02f, out ch, out why);
+        Check("current slightly above max within eps is ok", r == RangeSelection.Result.Ok, why);
     }
 }

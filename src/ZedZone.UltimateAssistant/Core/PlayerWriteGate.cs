@@ -26,6 +26,7 @@ namespace ZedZone.UltimateAssistant.Core
         RejectedRespawnWindow,
         RejectedNotValidated,
         RejectedOutOfRange,
+        RejectedUnreliableRange,
         Failed,
     }
 
@@ -37,6 +38,7 @@ namespace ZedZone.UltimateAssistant.Core
         internal float After;
         internal float Target;
         internal string Message;
+        internal string MaxSource;
         internal DateTime At = DateTime.Now;
 
         internal bool IsOk => Outcome == WriteOutcome.Ok;
@@ -46,7 +48,7 @@ namespace ZedZone.UltimateAssistant.Core
             switch (Outcome)
             {
                 case WriteOutcome.Ok: return "已恢复";
-                case WriteOutcome.SkippedNoChange: return "已是满值";
+                case WriteOutcome.SkippedNoChange: return "无需恢复（只升不降）";
                 case WriteOutcome.RejectedDisabled: return "功能已关闭";
                 case WriteOutcome.RejectedMultiplayer: return "联机模式已拒绝执行";
                 case WriteOutcome.RejectedNoPlayer: return "未找到玩家对象";
@@ -54,6 +56,7 @@ namespace ZedZone.UltimateAssistant.Core
                 case WriteOutcome.RejectedRespawnWindow: return "重生保护窗口内";
                 case WriteOutcome.RejectedNotValidated: return "该功能尚未通过验证";
                 case WriteOutcome.RejectedOutOfRange: return "数值越界/非法";
+                case WriteOutcome.RejectedUnreliableRange: return "属性上限不可靠，拒绝写入";
                 case WriteOutcome.Failed: return "执行异常";
                 default: return "未知";
             }
@@ -65,16 +68,19 @@ namespace ZedZone.UltimateAssistant.Core
     ///
     /// 固定检查顺序（不得调换，见 docs/PHASE_3_SAFETY_DESIGN.md §2.2）：
     ///   1 配置开关 → 2 联机(fail-closed) → 3 验证状态 → 4 重取玩家 →
-    ///   5 死亡标志 → 6 重生窗口 → 7 钳制校验 → 8 写入 → 9 回读校验
+    ///   5 死亡标志 → 6 重生窗口 → 7 **动态范围读取/校验** → 8 写入 → 9 回读校验
     ///
     /// 铁律：
     ///  * 只用**属性 setter**（`player.hp = v`），绝不写 `characterStatusData` 裸字段；
     ///  * 不写 GameConfigs、不写 skillProperty、不碰存档；
-    ///  * 幂等：写"目标值"，不做 `x += n`；
-    ///  * 关闭功能只停止写，绝不回写数值。
+    ///  * **每次操作都重新读取当前值与上限**，绝不缓存；
+    ///  * **只升不降**：恢复绝不把数值往下写（含"当前值高于上限"的情况）；
+    ///  * **上限不可靠就拒绝**，不猜测、不回退到硬编码默认值。
     /// </summary>
     internal static class PlayerWriteGate
     {
+        private const float Eps = 0.05f;
+
         /// <summary>
         /// 联机判定（fail-closed：任何异常都当作联机）。
         /// 依据：NetworkManager.isOnline/isHost/isClient 为 static bool，已在游戏 1.0.16 运行期验证可调用。
@@ -91,14 +97,8 @@ namespace ZedZone.UltimateAssistant.Core
                 var nm = NetworkManager.instance;
                 if (nm != null)
                 {
-                    // mode 是 NetMode 枚举；运行期实测 Offline 时 ToString()=="Offline"。
-                    // 这里用 ToString 比较以避免依赖未在 interop 中列出的 NetMode 类型。
-                    string mode = nm.mode.ToString();
-                    if (mode != "Offline")
-                    {
-                        why = "mode=" + mode;
-                        return true;
-                    }
+                    string mode = nm.mode.ToString();     // 运行期实测 Offline
+                    if (mode != "Offline") { why = "mode=" + mode; return true; }
                 }
                 return false;
             }
@@ -110,30 +110,23 @@ namespace ZedZone.UltimateAssistant.Core
             }
         }
 
-        /// <summary>Fatigue 方向是否已确认（未确认则拒绝写入）。</summary>
         internal static bool FatigueValidated(string dir)
             => !string.IsNullOrEmpty(dir) && dir != "unconfirmed";
 
-        /// <summary>
-        /// 一键恢复到满值。
-        /// </summary>
+        // ==================================================================
         internal static WriteResult Restore(StatId stat)
         {
             var r = new WriteResult { Stat = stat };
 
             // ---------- 1. 总开关 ----------
             if (!(ModConfig.EnableRestore?.Value ?? false))
-            {
                 return Reject(r, WriteOutcome.RejectedDisabled, "一键恢复总开关关闭");
-            }
 
             // ---------- 2. 联机门禁（fail-closed） ----------
             if (IsMultiplayer(out string why))
-            {
                 return Reject(r, WriteOutcome.RejectedMultiplayer, why);
-            }
 
-            // ---------- 3. 该资源的功能开关 + 验证状态 ----------
+            // ---------- 3. 功能开关 + 验证状态 ----------
             switch (stat)
             {
                 case StatId.Hp:
@@ -150,34 +143,29 @@ namespace ZedZone.UltimateAssistant.Core
                     break;
                 case StatId.Fatigue:
                 {
-                    if (!(ModConfig.RestoreFatigue?.Value ?? false)) return Reject(r, WriteOutcome.RejectedDisabled, "Fatigue 恢复已关闭（默认关闭）");
+                    if (!(ModConfig.RestoreFatigue?.Value ?? false))
+                        return Reject(r, WriteOutcome.RejectedDisabled, "Fatigue 恢复已关闭（默认关闭）");
                     string dir = ModConfig.FatigueDirection?.Value ?? "unconfirmed";
                     if (!FatigueValidated(dir))
                         return Reject(r, WriteOutcome.RejectedNotValidated,
-                            "Fatigue 方向未确认（G2）：请先做冲刺/挥砍观察，再把 FatigueDirection 设为 resource 或 exhaustion");
+                            "Fatigue 方向未确认（G2）：观察冲刺后 fatigue 是升还是降，再把 FatigueDirection 设为 resource/exhaustion");
                     break;
                 }
             }
 
             // ---------- 4. 每次重新解析玩家（禁止缓存） ----------
             HumanCharacterController player = null;
-            try { player = PlayerAccessor.Resolve(out _, out string perr); }
+            try { player = PlayerAccessor.Resolve(out _, out _); }
             catch (Exception e) { Log.ErrorOnce("gate.resolve", e); }
 
             if (player == null)
                 return Reject(r, WriteOutcome.RejectedNoPlayer, "playerCharacter == null");
 
             // ---------- 5. 死亡标志 ----------
-            try
-            {
-                if (player.deadFlag) return Reject(r, WriteOutcome.RejectedDead, "deadFlag=true");
-            }
+            try { if (player.deadFlag) return Reject(r, WriteOutcome.RejectedDead, "deadFlag=true"); }
             catch (Exception e) { Log.WarnOnce("gate.dead", "deadFlag 读取失败: " + e.GetType().Name); }
 
-            try
-            {
-                if (player.netDeadFlag) return Reject(r, WriteOutcome.RejectedDead, "netDeadFlag=true");
-            }
+            try { if (player.netDeadFlag) return Reject(r, WriteOutcome.RejectedDead, "netDeadFlag=true"); }
             catch (Exception e) { Log.WarnOnce("gate.netdead", "netDeadFlag 读取失败: " + e.GetType().Name); }
 
             // ---------- 6. 重生无敌窗口 ----------
@@ -190,53 +178,65 @@ namespace ZedZone.UltimateAssistant.Core
             }
             catch (Exception e) { Log.WarnOnce("gate.respawn", "netRespawnInvincibleUntil 读取失败: " + e.GetType().Name); }
 
-            // ---------- 7. 计算目标值 + 钳制 ----------
-            float current, max;
-            if (!TryRead(stat, player, out current, out max, out string readErr))
-                return Reject(r, WriteOutcome.Failed, "读取当前值失败: " + readErr);
+            // ---------- 7. 动态范围读取（每次重新读，绝不缓存） ----------
+            StatRange range;
+            try { range = StatRangeReader.Read(stat, player); }
+            catch (Exception e)
+            {
+                Log.ErrorOnce("gate.range." + stat, e);
+                return Reject(r, WriteOutcome.Failed, "范围读取异常: " + e.GetType().Name);
+            }
 
-            // 上限必须 > 0，否则无法确定合法范围
-            if (float.IsNaN(max) || float.IsInfinity(max) || max <= 0f)
-                return Reject(r, WriteOutcome.RejectedOutOfRange, $"上限异常 max={max}");
+            // 每次点击都完整记录（用户要求可定位"为什么恢复到错误数值"）
+            Log.Info("[range] " + range.Describe());
 
-            string fatigueDir = ModConfig.FatigueDirection?.Value ?? "unconfirmed";
-            bool isLowering = (stat == StatId.Fatigue && fatigueDir == "exhaustion");
-            float target = isLowering ? 0f : max;
+            if (!range.Reliable)
+            {
+                r.MaxSource = range.MaxSource;
+                return Reject(r, WriteOutcome.RejectedUnreliableRange,
+                    string.IsNullOrEmpty(range.Error) ? "上限不可靠" : range.Error);
+            }
+
+            // ---------- 8. 目标值与"只升不降"判定 ----------
+            float current = range.Current;
+            float max = range.Max;
+            float target = StatRangeReader.RecoveryTarget(stat, range);
+
+            r.Before = current;
+            r.Target = target;
+            r.MaxSource = range.MaxSource;
 
             if (float.IsNaN(target) || float.IsInfinity(target))
                 return Reject(r, WriteOutcome.RejectedOutOfRange, "target 非有限值");
 
-            target = Mathf.Clamp(target, 0f, max);
+            string fatigueDir = ModConfig.FatigueDirection?.Value ?? "unconfirmed";
+            bool isLowering = stat == StatId.Fatigue && fatigueDir == "exhaustion";
 
-            r.Before = current;
-            r.Target = target;
-
-            // ★ "恢复"必须是只升不降。
-            //   实测：玩家有效生命上限会超过 maxHP（例如 hp=1840 而 maxHP=1000，来自装备/Buff 加成），
-            //   若无脑写 maxHP 会把 1840 血降到 1000 —— 反向伤害玩家。
-            //   因此：当前值已达到或超过目标时一律不写。
             if (!isLowering)
             {
-                if (current >= target - 0.05f)
+                // ★ 只升不降：当前值已达到或超过目标时一律不写。
+                //   实测：玩家有效生命上限可超过 BasicCharacterController.maxHP（如 1840/1000），
+                //   若无脑写上限会把血量降下去 —— 这就是本次严重 Bug。
+                if (current >= target - Eps)
                 {
                     r.After = current;
-                    string extra = current > target + 0.05f
-                        ? $"（当前 {current:0.##} 高于上限 {max:0.##}，可能来自装备/Buff，保持不动）"
+                    string note = current > max + Eps
+                        ? $"（当前 {current:0.##} 高于读取到的上限 {max:0.##}，保持不动）"
                         : "";
                     return Reject(r, WriteOutcome.SkippedNoChange,
-                        $"当前 {current:0.##} 已不低于目标 {target:0.##}，恢复只升不降{extra}");
+                        $"当前 {current:0.##} 已不低于目标 {target:0.##}{note}");
                 }
             }
             else
             {
-                if (current <= target + 0.05f)
+                if (current <= target + Eps)
                 {
                     r.After = current;
                     return Reject(r, WriteOutcome.SkippedNoChange, $"当前 {current:0.##} 已为 0");
                 }
             }
 
-            // ---------- 8. 写入（只走属性 setter） ----------
+            // ---------- 9. 写入（只走属性 setter） ----------
             try
             {
                 Write(stat, player, target);
@@ -251,68 +251,30 @@ namespace ZedZone.UltimateAssistant.Core
                 return r;
             }
 
-            // ---------- 9. 回读校验 ----------
+            // ---------- 10. 回读校验 ----------
             r.After = TryReadCurrent(stat, player);
             r.Outcome = WriteOutcome.Ok;
-            r.Message = $"before={r.Before:0.##} target={r.Target:0.##} after={r.After:0.##}";
+            r.Message = $"before={r.Before:0.##} target={r.Target:0.##} after={r.After:0.##} maxSource={r.MaxSource}";
 
             Log.Info($"[write] stat={stat} {r.Message}");
 
-            // 回读偏差过大 → 额外告警（不改结果，只提示）
+            // 防回退校验：写入后不得低于写入前（除 fatigue=exhaustion 的刻意降低）
+            if (!isLowering && r.After < r.Before - 1f)
+                Log.Warn($"[write.regress] stat={stat} 写入后反而下降 before={r.Before:0.##} after={r.After:0.##}");
+
             if (Mathf.Abs(r.After - r.Target) > Mathf.Max(0.5f, max * 0.02f))
-                Log.Warn($"[write.verify] stat={stat} 回读值与目标偏差较大 after={r.After:0.##} target={r.Target:0.##}");
+                Log.Warn($"[write.verify] stat={stat} 回读偏差较大 after={r.After:0.##} target={r.Target:0.##} max={max:0.##}");
 
             return r;
         }
 
-        // ------------------------------------------------------------------
+        // ==================================================================
         private static WriteResult Reject(WriteResult r, WriteOutcome o, string msg)
         {
             r.Outcome = o;
             r.Message = msg;
-            // 拒绝日志去重，避免联机/死亡时刷屏
             Log.WarnOnce("gate." + r.Stat + "." + o, $"[write.reject] stat={r.Stat} reason={o} detail={msg}");
             return r;
-        }
-
-        private static bool TryRead(StatId stat, HumanCharacterController p, out float current, out float max, out string err)
-        {
-            current = 0f; max = 0f; err = null;
-            try
-            {
-                var sd = PlayerDataAccess.GetStatusData(p, out string sdErr);
-                if (sd == null) { err = sdErr; return false; }
-
-                switch (stat)
-                {
-                    case StatId.Hp:
-                        current = p.hp;
-                        max = p.maxHP;          // 控制器上的 maxHP（不是 statusData.maxhp）
-                        break;
-                    case StatId.Energy:
-                        current = p.energy;
-                        max = sd.maxEnergy;
-                        break;
-                    case StatId.Fatigue:
-                        current = p.fatigue;
-                        max = sd.maxFatigue;
-                        break;
-                    case StatId.Hunger:
-                        current = p.hunger;
-                        max = sd.maxHunger;
-                        break;
-                    case StatId.Thirst:
-                        current = p.thirst;
-                        max = sd.maxThirst;
-                        break;
-                }
-                return true;
-            }
-            catch (Exception e)
-            {
-                err = e.GetType().Name + ": " + e.Message;
-                return false;
-            }
         }
 
         private static void Write(StatId stat, HumanCharacterController p, float v)

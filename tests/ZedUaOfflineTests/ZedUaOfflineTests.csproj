@@ -10,5 +10,6 @@
   <ItemGroup>
     <!-- 只链接不依赖 UnityEngine 的纯逻辑文件，因此可在无游戏环境下运行 -->
     <Compile Include="..\..\src\ZedZone.UltimateAssistant\Core\PlayerSnapshot.cs" Link="PlayerSnapshot.cs" />
+    <Compile Include="..\..\src\ZedZone.UltimateAssistant\Core\RangeSelection.cs" Link="RangeSelection.cs" />
   </ItemGroup>
 </Project>
