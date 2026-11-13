@@ -1,3 +1,4 @@
+#pragma warning disable CS0649
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -610,3 +611,4 @@ namespace ZedZone.UltimateAssistant.UI
         }
     }
 }
+

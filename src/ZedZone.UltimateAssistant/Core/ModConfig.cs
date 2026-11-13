@@ -17,6 +17,25 @@ namespace ZedZone.UltimateAssistant.Core
         internal static ConfigEntry<int> PanelX;
         internal static ConfigEntry<int> StartTab;
         internal static ConfigEntry<int> PanelY;
+
+        // ---- 最终版功能开关 ----
+        internal static ConfigEntry<bool> InfiniteAmmo;
+        internal static ConfigEntry<bool> NoReload;
+        internal static ConfigEntry<bool> ZombieEsp;
+
+        // ---- Zombie ESP 选项 ----
+        internal static ConfigEntry<bool> EspShowName;
+        internal static ConfigEntry<bool> EspShowDistance;
+        internal static ConfigEntry<float> EspMaxDistance;
+        internal static ConfigEntry<bool> EspDrawBox;
+        internal static ConfigEntry<int> EspRefreshMs;
+
+        // ---- ClickGUI 菜单选项 ----
+        internal static ConfigEntry<string> MenuTheme;
+        internal static ConfigEntry<float> MenuScale;
+        internal static ConfigEntry<bool> MenuAnimations;
+        internal static ConfigEntry<bool> BlockGameInput;
+        internal static ConfigEntry<bool> MenuShowLimbs;
         internal static ConfigEntry<bool> ShowNotes;
 
         internal static ConfigEntry<int> RefreshIntervalMs;
@@ -58,7 +77,7 @@ namespace ZedZone.UltimateAssistant.Core
         internal static void Bind(ConfigFile cfg)
         {
             Enabled = cfg.Bind("General", "Enabled", true, "启用模组总开关。");
-            ShowOnStart = cfg.Bind("General", "ShowOnStart", true,
+            ShowOnStart = cfg.Bind("General", "ShowOnStart", false,
                 "进入游戏后是否自动显示面板。默认开启便于首次确认模组工作；可按快捷键关闭后保持后台只读。");
 
             ToggleKey = cfg.Bind("UI", "ToggleKey", new KeyboardShortcut(KeyCode.Insert),
@@ -185,5 +204,35 @@ namespace ZedZone.UltimateAssistant.Core
             Set("fatigue", ModFatigue);
             Set("status", ModStatus);
         }
+
+        /// <summary>最终版功能与 ClickGUI 的配置项（由 Plugin 在 Bind 之后调用）。</summary>
+        internal static void BindFeatures(ConfigFile cfg)
+        {
+            InfiniteAmmo = cfg.Bind("Features", "InfiniteAmmo", false,
+                "无限弹药：开启后射击不再消耗备用弹药（不影响 NPC / 僵尸 / 其他玩家）。默认关闭。");
+            NoReload = cfg.Bind("Features", "NoReload", false,
+                "无需换弹：开启后射击后自动补满弹匣，不需要换弹流程。与无限弹药相互独立。默认关闭。");
+            ZombieEsp = cfg.Bind("Features", "ZombieEsp", false,
+                "僵尸透视：在屏幕上标记当前已加载的僵尸，可显示名称与距离。默认关闭。");
+
+            EspShowName = cfg.Bind("Esp", "ShowName", true, "ESP 显示僵尸名称/类型。");
+            EspShowDistance = cfg.Bind("Esp", "ShowDistance", true, "ESP 显示与玩家的距离。");
+            EspMaxDistance = cfg.Bind("Esp", "MaxDistance", 200f,
+                new ConfigDescription("ESP 最大显示距离（米）。", new AcceptableValueRange<float>(5f, 1000f)));
+            EspDrawBox = cfg.Bind("Esp", "DrawBox", true, "ESP 绘制方框（关闭则只显示标记点）。");
+            EspRefreshMs = cfg.Bind("Esp", "RefreshMs", 150,
+                new ConfigDescription("ESP 刷新间隔（毫秒）。越大越省性能。", new AcceptableValueRange<int>(50, 2000)));
+
+            MenuTheme = cfg.Bind("Menu", "Theme", "Violet",
+                new ConfigDescription("菜单主题配色。", new AcceptableValueList<string>("Violet", "Azure", "Crimson", "Emerald")));
+            MenuScale = cfg.Bind("Menu", "Scale", 1.0f,
+                new ConfigDescription("菜单整体缩放。", new AcceptableValueRange<float>(0.7f, 1.6f)));
+            MenuAnimations = cfg.Bind("Menu", "Animations", true, "菜单动画（淡入/悬停/开关过渡）。");
+            BlockGameInput = cfg.Bind("Menu", "BlockGameInput", true,
+                "菜单打开时阻止游戏操作（移动/射击/使用物品）。关闭后菜单打开时仍可操作角色。");
+            MenuShowLimbs = cfg.Bind("Menu", "ShowLimbs", true,
+                "在 Player 页显示肢体状态（只读）。关闭可让菜单更简洁。");
+        }
     }
 }
+

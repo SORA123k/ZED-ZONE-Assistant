@@ -1,29 +1,30 @@
 using System;
+using Il2CppInterop.Runtime;
 using UnityEngine;
 using ZedZone.UltimateAssistant.Core;
+using ZedZone.UltimateAssistant.Modules;
+using ZedZone.UltimateAssistant.Patch;
 
 namespace ZedZone.UltimateAssistant.UI
 {
     /// <summary>
-    /// 面板宿主（MonoBehaviour）。
-    ///
-    /// 刻意保持"薄"：只保留 Unity 生命周期方法（Awake / Start / Update / OnGUI），
-    /// 所有绘制与样式逻辑都在 <see cref="PanelRenderer"/>（普通类）里。
-    /// 这样 Il2CppInterop 不会为本类生成带自定义参数的方法包装，避免出现
-    /// "has unsupported parameter ... PlayerSnapshot" 之类的注入警告。
+    /// 面板宿主（刻意保持"薄"）：只做生命周期、热键、节流读取与绘制调度。
+    /// 具体绘制在 ClickGui / ZombieEsp 内完成，避免把 IL2CPP 类型放进 MonoBehaviour 签名。
     /// </summary>
-    internal sealed class AssistantPanel : MonoBehaviour
+    internal class AssistantPanel : MonoBehaviour
     {
-        internal PlayerStateReader Reader;
-        internal ModuleRegistry Registry;
+        public AssistantPanel(IntPtr ptr) : base(ptr) { }
 
-        private readonly PanelRenderer _renderer = new PanelRenderer();
+        internal ModuleRegistry Registry;
+        internal PlayerStateReader Reader;
+
         private PlayerSnapshot _snap;
-        private bool _visible;
         private float _nextReadAt;
         private bool _gameInputOk = true;
         private bool _conflictChecked;
+        private bool _firstSync = true;
         private KeyCode _key = KeyCode.Insert;
+        private float _lastToggleAt = -10f;
 
         private void Awake()
         {
@@ -33,22 +34,10 @@ namespace ZedZone.UltimateAssistant.UI
         private void Start()
         {
             try { _key = ModConfig.ToggleKey.Value.MainKey; } catch { _key = KeyCode.Insert; }
-            try { _visible = ModConfig.ShowOnStart?.Value ?? false; } catch { _visible = false; }
-            _renderer.Key = _key;
-            _renderer.Registry = Registry;
-            _renderer.PatchCount = Patch.PatchManager.InstalledCount;
-            // 初始标签页（默认 0=玩家，保持既有行为；便于直接查看指定页）
-            try
-            {
-                int want = ModConfig.StartTab?.Value ?? 0;
-                _renderer.Tab = Mathf.Clamp(want, 0, 7);
-                Log.Info($"[ui] StartTab 配置={want} -> 实际 Tab={_renderer.Tab}");
-            }
-            catch (Exception e)
-            {
-                _renderer.Tab = 0;
-                Log.WarnOnce("ui.starttab", "[ui] StartTab 读取失败: " + e.GetType().Name);
-            }
+            try { ClickGui.Open = ModConfig.ShowOnStart?.Value ?? false; } catch { ClickGui.Open = false; }
+            if (ClickGui.Open) InputGuard.Hold();
+            try { Features.SyncFromConfig(); } catch (Exception e) { Log.ErrorOnce("features.start", e); }
+            Log.Info("[ui] ClickGUI 已就绪（INSERT 开关，当前" + (ClickGui.Open ? "打开" : "关闭") + "）");
         }
 
         private void Update()
@@ -56,55 +45,88 @@ namespace ZedZone.UltimateAssistant.UI
             try
             {
                 if (!_conflictChecked) CheckKeyConflict();
+                if (_firstSync) { _firstSync = false; try { Features.SyncFromConfig(); } catch { } }
 
-                if (KeyDown(_key)) _visible = !_visible;
-                if (_visible && KeyDown(KeyCode.Escape)) _visible = false;
-                if (_visible)
-                {
-                    for (int i = 0; i < 8; i++)
-                        if (KeyDown(KeyCode.Alpha1 + i)) { _renderer.Tab = i; break; }
-                }
+                // 热键
+                if (KeyDown(_key)) ToggleMenu();
+                if (ClickGui.Open && KeyDown(KeyCode.Escape)) ToggleMenu();
 
-                // 节流读取（只读，无需每帧封送）
+                // 节流读取
                 if (Time.unscaledTime * 1000f >= _nextReadAt)
                 {
                     _nextReadAt = Time.unscaledTime * 1000f + ModConfig.RefreshMs;
                     if (Reader != null)
                     {
-                        // 每次读取前同步模块开关（配置可能在运行期被改）
                         try { ModConfig.ApplyModuleSwitches(Registry); } catch { }
-                        _snap = Reader.Read();
+                        try { _snap = Reader.Read(); } catch (Exception e) { Log.ErrorOnce("panel.read", e); }
                     }
-                    try { Diagnostics.Tick(); } catch (Exception de) { Log.ErrorOnce("diagnostics", de); }
-                    // 只读实验探针（不写任何数值）
-                    try { GrowthProbe.Tick(); } catch (Exception ge) { Log.ErrorOnce("growth", ge); }
-                    try { FatigueProbe.Tick(); } catch (Exception fe) { Log.ErrorOnce("fatigue", fe); }
-                    try { LimbProbe.Tick(); } catch (Exception le) { Log.ErrorOnce("limb", le); }
-                    // Phase 3B-1：肢体只读快照（与上面的节流同频，避免每帧封送）
-                    try { LimbData.Refresh(); } catch (Exception ld) { Log.ErrorOnce("limbdata", ld); }
-                    // Phase 3B-2A：恢复接口的只读校验（默认关闭）
-                    try { LimbApiProbe.Tick(); } catch (Exception la) { Log.ErrorOnce("limbapi", la); }
+                    try { LimbData.Refresh(); } catch (Exception e) { Log.ErrorOnce("limbdata", e); }
+                    try { ZombieEsp.Refresh(); } catch (Exception e) { Log.ErrorOnce("esp", e); }
+                    try { Diagnostics.Tick(); } catch (Exception e) { Log.ErrorOnce("diagnostics", e); }
+                    try { GrowthProbe.Tick(); } catch (Exception e) { Log.ErrorOnce("growth", e); }
+                    try { FatigueProbe.Tick(); } catch (Exception e) { Log.ErrorOnce("fatigue", e); }
+                    try { LimbProbe.Tick(); } catch (Exception e) { Log.ErrorOnce("limb", e); }
+                    try { LimbApiProbe.Tick(); } catch (Exception e) { Log.ErrorOnce("limbapi", e); }
                 }
             }
             catch (Exception e)
             {
                 Log.ErrorOnce("AssistantPanel.Update", e);
-                enabled = false;
             }
         }
 
-        /// <summary>
-        /// 按键检测：同时检查游戏输入抽象与 Unity 传统 Input。
-        ///
-        /// 为什么要 OR 两个源：`GameInputManager.GetKeyDown` 带焦点门控
-        /// （focusGateEnabled / windowFocused / inputAllowed），窗口失焦时会返回 false，
-        /// 但它能正确处理游戏自己的按键映射；而 `UnityEngine.Input` 不受该门控，
-        /// 用于兜底。两者取 OR —— 只要任一路径看到按下就切换，避免重复切换。
-        /// </summary>
+        private void ToggleMenu()
+        {
+            // 去抖：两套输入源（GameInputManager / Unity Input）可能在不同帧各报一次，
+            // 250ms 内只接受一次切换，避免"一次按键开关两下"。
+            if (Time.unscaledTime - _lastToggleAt < 0.25f) return;
+            _lastToggleAt = Time.unscaledTime;
+
+            bool open = !ClickGui.Open;
+            ClickGui.Open = open;
+
+            bool block = true;
+            try { block = ModConfig.BlockGameInput?.Value ?? true; } catch { }
+
+            if (open) { if (block) InputGuard.Hold(); }
+            else { InputGuard.Release(); }
+
+            Log.Info("[ui] 菜单 " + (open ? "打开（输入已阻断）" : "关闭（输入已恢复）"));
+        }
+
+        private void OnGUI()
+        {
+            try
+            {
+                // 世界叠层：无论菜单是否打开都绘制（只要功能开启）
+                ZombieEsp.Draw();
+
+                if (ClickGui.Open) ClickGui.Draw(_snap);
+                else if (InputGuard.Held) InputGuard.Release();
+            }
+            catch (Exception e)
+            {
+                Log.ErrorOnce("AssistantPanel.OnGUI", e);
+                try { ClickGui.Open = false; InputGuard.Release(); } catch { }
+            }
+        }
+
+        private void OnDestroy()
+        {
+            try { InputGuard.Release(); } catch { }
+            try { Features.Shutdown(); } catch { }
+        }
+
+        private void OnApplicationQuit()
+        {
+            try { InputGuard.Release(); } catch { }
+            try { Features.Shutdown(); } catch { }
+        }
+
+        /// <summary>同时检查游戏输入抽象与 Unity 传统 Input，任一命中即算按下。</summary>
         private bool KeyDown(KeyCode k)
         {
             bool a = false, b = false;
-
             if (_gameInputOk)
             {
                 try { a = GameInputManager.GetKeyDown(k); }
@@ -114,57 +136,31 @@ namespace ZedZone.UltimateAssistant.UI
                     Log.WarnOnce("input.fallback", "GameInputManager.GetKeyDown 不可用: " + e.GetType().Name);
                 }
             }
-
             try { b = UnityEngine.Input.GetKeyDown(k); } catch { }
-
             return a || b;
         }
 
-        /// <summary>快捷键冲突检测：只读调用游戏自身按键映射表。</summary>
         private void CheckKeyConflict()
         {
             _conflictChecked = true;
             try
             {
                 var names = GameInputManager.GetButtonNamesByKeycode(_key);
-                int n = names == null ? 0 : names.Count;
-                if (n > 0)
+                if (names == null || names.Count == 0)
                 {
-                    var sb = new System.Text.StringBuilder();
-                    for (int i = 0; i < n && i < 6; i++)
-                    {
-                        if (i > 0) sb.Append(", ");
-                        sb.Append(names[i]);
-                    }
-                    _renderer.ConflictMsg = "冲突！已被游戏绑定到 " + sb;
-                    Log.Warn("[keybind] " + _key + " 与游戏按键冲突: " + sb +
-                             " —— 可在 BepInEx\\config\\zedzone.ultimateassistant.cfg 修改 [UI] ToggleKey");
+                    Log.Info($"[keybind] {_key} 未被游戏占用，无冲突");
+                    return;
                 }
-                else
-                {
-                    _renderer.ConflictMsg = "无冲突";
-                    Log.Info("[keybind] " + _key + " 未被游戏占用，无冲突");
-                }
+                var sb = string.Empty;
+                for (int i = 0; i < names.Count && i < 3; i++)
+                    sb += (i > 0 ? ", " : "") + names[i];
+                Log.Warn($"[keybind] {_key} 已被游戏绑定到: {sb}（可能冲突）");
             }
             catch (Exception e)
             {
-                _renderer.ConflictMsg = "无法检测";
                 Log.WarnOnce("keybind.check", "快捷键冲突检测不可用（不影响使用）: " + e.GetType().Name);
-            }
-        }
-
-        private void OnGUI()
-        {
-            if (!_visible) return;
-            try
-            {
-                _renderer.Draw(_snap);
-            }
-            catch (Exception e)
-            {
-                Log.ErrorOnce("AssistantPanel.OnGUI", e);
-                _visible = false;
             }
         }
     }
 }
+
