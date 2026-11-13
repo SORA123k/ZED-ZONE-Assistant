@@ -71,7 +71,6 @@ namespace ZedZone.UltimateAssistant.UI
                     try { LimbApiProbe.Tick(); } catch (Exception e) { Log.ErrorOnce("limbapi", e); }
                     try { DurabilityDiag.Tick(); } catch (Exception e) { Log.ErrorOnce("duragdiag", e); }
                     try { DurabilityLock.Tick(); } catch (Exception e) { Log.ErrorOnce("durlock", e); }
-                    try { DurabilityLock.TickGuns(); } catch (Exception e) { Log.ErrorOnce("durgun", e); }
                     try { Il2CppMetaDiag.Tick(); } catch (Exception e) { Log.ErrorOnce("metadiag", e); }
                 }
             }
@@ -173,6 +172,7 @@ namespace ZedZone.UltimateAssistant.UI
         }
     }
 }
+
 
 
 

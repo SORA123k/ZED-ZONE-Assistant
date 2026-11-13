@@ -30,7 +30,7 @@ namespace ZedZone.UltimateAssistant.Patch
 
         private const int FakeAmmo = 9999;
 
-        private static int _logCanFire, _logAmmoTotal, _logRemove, _logTemp, _logDur;
+        private static int _logCanFire, _logAmmoTotal, _logRemove, _logTemp, _logDur, _logDf;
 
         // ==================================================================
         internal static void Install(Harmony harmony)
@@ -65,6 +65,15 @@ namespace ZedZone.UltimateAssistant.Patch
 
 
 
+            // 枪械耐久：读取层覆盖（原生层维护，无托管存储字段可写）
+            Try(harmony, "get_durabilityFloat", () =>
+            {
+                var m = AccessTools.Method(typeof(BasicRangedWeapon), "get_durabilityFloat");
+                if (m == null) { Log.Warn("[weapons] 未找到 get_durabilityFloat"); return; }
+                harmony.Patch(m, postfix: new HarmonyMethod(typeof(WeaponPatches), nameof(DurabilityPostfix)));
+                Installed++;
+            });
+
             Try(harmony, "GetGunTemperature", () =>
             {
                 var m = AccessTools.Method(typeof(BasicRangedWeapon), "GetGunTemperature", new[] { typeof(ItemData) });
@@ -88,6 +97,7 @@ namespace ZedZone.UltimateAssistant.Patch
                 Unpatch(harmony, typeof(InventoryData), "CostItemDurability", new[] { typeof(ItemData), typeof(float) });
                 Unpatch(harmony, typeof(HumanCharacterController), "CostItemDurability", new[] { typeof(ItemData), typeof(float) });
                 Unpatch(harmony, typeof(HumanCharacterController), "CostItemDurabilityExecute", new[] { typeof(ItemData), typeof(float) });
+                Unpatch(harmony, typeof(BasicRangedWeapon), "get_durabilityFloat", null);
                 Unpatch(harmony, typeof(BasicRangedWeapon), "GetGunTemperature", new[] { typeof(ItemData) });
             }
             _hooked = false;
@@ -229,6 +239,35 @@ namespace ZedZone.UltimateAssistant.Patch
             catch { return true; }
         }
 
+        /// <summary>
+        /// 枪械耐久：**读取层覆盖**。
+        ///
+        /// 实测依据（Diagnostics\il2cpp_meta_*.log）：
+        ///  * BasicRangedWeapon 108 个实例字段全部与 durabilityFloat 不匹配；
+        ///  * ItemData 29 个字段同样零匹配；
+        ///  * weapon.weaponData.durability 恒 100，与 durabilityFloat 无关。
+        ///  => 枪械耐久由原生层维护，托管侧**没有可写的存储字段**。
+        ///
+        /// 因此不猜存储、不写未知内存，改为在 getter 返回值上覆盖：
+        /// 对本地玩家武器恒返回 1（满耐久），使 UI 与游戏内判定都视作完好。
+        /// 关闭开关即自动卸载，恢复原生读数。
+        /// </summary>
+        internal static void DurabilityPostfix(BasicRangedWeapon __instance, ref float __result)
+        {
+            try
+            {
+                if (!Features.WeaponDurabilityOn) return;
+                if (__instance == null) return;
+                if (!IsLocalPlayer(__instance.character)) return;
+
+                if (__result < 0.999f)
+                    Once(ref _logDf, $"get_durabilityFloat 已覆盖：{__result:0.####} -> 1（满耐久）");
+
+                __result = 1f;
+            }
+            catch { }
+        }
+
         /// <summary>取消过热：只把玩家自己的武器温度读作 0。</summary>
         internal static void GunTempPostfix(ItemData m_weaponData, ref float __result)
         {
@@ -244,6 +283,7 @@ namespace ZedZone.UltimateAssistant.Patch
         }
     }
 }
+
 
 
 
