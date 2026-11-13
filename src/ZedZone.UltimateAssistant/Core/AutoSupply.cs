@@ -195,6 +195,8 @@ namespace ZedZone.UltimateAssistant.Core
         }
 
         private static float _nextBoatTick;
+        private static float _nextBoatDiag;
+        private static float _nextBoatDiag2;
         private static readonly System.Collections.Generic.Dictionary<int, float> _lastSpawn = new System.Collections.Generic.Dictionary<int, float>();
 
         /// <summary>
@@ -216,7 +218,24 @@ namespace ZedZone.UltimateAssistant.Core
                 Vector3 ppos = pl.transform.position;
 
                 var tods = Resources.FindObjectsOfTypeAll<TerrainObject>();
-                if (tods == null) return;
+                if (tods == null) { Log.WarnOnce("supply.tods", "[supply] TerrainObject 枚举为空"); return; }
+
+                // 诊断：最近 TOD 距离 + 邻近 TOD 的成本数量
+                int near = 0; float nearest = 999f; int nearestIdx = -1;
+                for (int i = 0; i < tods.Length; i++)
+                {
+                    var t = tods[i];
+                    if (t == null) continue;
+                    float d = 999f;
+                    try { d = Vector3.Distance(t.transform.position, ppos); } catch { continue; }
+                    if (d < nearest) { nearest = d; nearestIdx = i; }
+                    if (d <= 8f) near++;
+                }
+                if (Time.unscaledTime >= _nextBoatDiag)
+                {
+                    _nextBoatDiag = Time.unscaledTime + 3f;
+                    Log.Info($"[supply] TOD 总数={tods.Length} 8米内={near} 最近距离={nearest:0.##}");
+                }
 
                 for (int i = 0; i < tods.Length; i++)
                 {
@@ -229,6 +248,19 @@ namespace ZedZone.UltimateAssistant.Core
 
                         var plan = MeleeWeapon_RepairHammer.ComputeTodRepairPlan(tod);
                         var costs = plan.costs;
+                        if (Time.unscaledTime >= _nextBoatDiag2 && i == nearestIdx)
+                        {
+                            _nextBoatDiag2 = Time.unscaledTime + 3f;
+                            Log.Info($"[supply] 最近TOD(0x{tod.Pointer.ToInt64():X}) costs={(costs == null ? -1 : costs.Count)} 距离={Vector3.Distance(tp, ppos):0.##}");
+                            if (costs != null)
+                            {
+                                for (int q = 0; q < costs.Count && q < 10; q++)
+                                {
+                                    var ce = costs[q];
+                                    Log.Info($"[supply]   cost[{q}] itemId={ce.itemId} x{ce.count}");
+                                }
+                            }
+                        }
                         if (costs == null || costs.Count == 0) continue;
 
                         var inv = pl.characterData?.inventoryData;
@@ -271,6 +303,7 @@ namespace ZedZone.UltimateAssistant.Core
         }
     }
 }
+
 
 
 
