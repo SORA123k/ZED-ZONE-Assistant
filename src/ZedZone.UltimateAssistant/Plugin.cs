@@ -27,7 +27,7 @@ namespace ZedZone.UltimateAssistant
     {
         public const string PluginGuid = "zedzone.ultimateassistant";
         public const string PluginName = "ZED ZONE Ultimate Assistant";
-        public const string PluginVersion = "1.9.2";
+        public const string PluginVersion = "2.0.0";
 
         internal static Plugin Instance;
         internal static ModuleRegistry Registry;
@@ -135,6 +135,7 @@ namespace ZedZone.UltimateAssistant
         }
     }
 }
+
 
 
 

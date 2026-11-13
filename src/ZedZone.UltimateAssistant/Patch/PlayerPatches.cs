@@ -50,7 +50,7 @@ namespace ZedZone.UltimateAssistant.Patch
                 var m = AccessTools.Method(typeof(MeleeWeapon_RepairHammer), "CanAfford",
                     new[] { typeof(BuildingWallDamageSystem.WallRepairPlan) });
                 if (m == null) { Log.Warn("[supply] 未找到 CanAfford(WallRepairPlan)"); return; }
-                harmony.Patch(m, prefix: new HarmonyMethod(typeof(PlayerPatches), nameof(AffordPrefix)));
+                harmony.Patch(m, prefix: new HarmonyMethod(typeof(PlayerPatches), nameof(AffordPlanPrefix)));
                 Installed++;
             });
 
@@ -59,7 +59,7 @@ namespace ZedZone.UltimateAssistant.Patch
                 var m = AccessTools.Method(typeof(MeleeWeapon_RepairHammer), "CanAfford",
                     new[] { typeof(Il2CppSystem.Collections.Generic.List<BuildingWallDamageSystem.RepairCostEntry>) });
                 if (m == null) { Log.Warn("[supply] 未找到 CanAfford(List<RepairCostEntry>)"); return; }
-                harmony.Patch(m, prefix: new HarmonyMethod(typeof(PlayerPatches), nameof(AffordPrefix)));
+                harmony.Patch(m, prefix: new HarmonyMethod(typeof(PlayerPatches), nameof(AffordListPrefix)));
                 Installed++;
             });
 
@@ -168,6 +168,49 @@ namespace ZedZone.UltimateAssistant.Patch
         // ---------------- 补丁实现 ----------------
 
         private static int _supplyLog;
+
+        /// <summary>修复/建造：先自动补齐材料，再让原逻辑判断。</summary>
+        internal static bool AffordListPrefix(Il2CppSystem.Collections.Generic.List<BuildingWallDamageSystem.RepairCostEntry> costs)
+        {
+            try
+            {
+                if (!Features.AutoSupplyOn) return true;
+                if (costs == null) return true;
+                var ids = new System.Collections.Generic.List<int>();
+                var nums = new System.Collections.Generic.List<int>();
+                for (int i = 0; i < costs.Count; i++)
+                {
+                    var e = costs[i];
+                    ids.Add(e.itemId);
+                    nums.Add(e.count);
+                }
+                AutoSupply.EnsureMaterials(ids, nums);
+            }
+            catch (Exception e) { Log.WarnOnce("supply.affordlist", "[supply] 补齐失败: " + e.GetType().Name); }
+            return true;
+        }
+
+        /// <summary>修复/建造（墙体计划）：先自动补齐材料，再让原逻辑判断。</summary>
+        internal static bool AffordPlanPrefix(BuildingWallDamageSystem.WallRepairPlan plan)
+        {
+            try
+            {
+                if (!Features.AutoSupplyOn) return true;
+                var costs = plan.costs;
+                if (costs == null) return true;
+                var ids = new System.Collections.Generic.List<int>();
+                var nums = new System.Collections.Generic.List<int>();
+                for (int i = 0; i < costs.Count; i++)
+                {
+                    var e = costs[i];
+                    ids.Add(e.itemId);
+                    nums.Add(e.count);
+                }
+                AutoSupply.EnsureMaterials(ids, nums);
+            }
+            catch (Exception e) { Log.WarnOnce("supply.affordplan", "[supply] 补齐失败: " + e.GetType().Name); }
+            return true;
+        }
 
         /// <summary>自动补充材料：修复（船只/车辆/建筑）材料检查直接通过。</summary>
         internal static bool AffordPrefix(ref bool __result)
@@ -309,6 +352,8 @@ namespace ZedZone.UltimateAssistant.Patch
         }
     }
 }
+
+
 
 
 
