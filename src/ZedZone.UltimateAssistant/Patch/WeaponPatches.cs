@@ -66,6 +66,17 @@ namespace ZedZone.UltimateAssistant.Patch
 
 
             // 枪械耐久：读取层覆盖（原生层维护，无托管存储字段可写）
+            // 诊断：Fire 前后耐久变化（定位扣减是否发生在 Fire 内部）
+            Try(harmony, "Fire.probe", () =>
+            {
+                var m = AccessTools.Method(typeof(BasicRangedWeapon), "Fire", new[] { typeof(float) });
+                if (m == null) return;
+                harmony.Patch(m,
+                    prefix: new HarmonyMethod(typeof(WeaponPatches), nameof(FireProbePrefix)),
+                    postfix: new HarmonyMethod(typeof(WeaponPatches), nameof(FireProbePostfix)));
+                Installed++;
+            });
+
             Try(harmony, "get_durabilityFloat", () =>
             {
                 var m = AccessTools.Method(typeof(BasicRangedWeapon), "get_durabilityFloat");
@@ -239,6 +250,52 @@ namespace ZedZone.UltimateAssistant.Patch
             catch { return true; }
         }
 
+        private static readonly System.Collections.Generic.Dictionary<IntPtr, float> _fireBefore =
+            new System.Collections.Generic.Dictionary<IntPtr, float>();
+        private static int _fireProbeBudget = 20;
+
+        internal static void FireProbePrefix(BasicRangedWeapon __instance)
+        {
+            try
+            {
+                if (_fireProbeBudget <= 0) return;
+                if (__instance == null) return;
+                var wd = __instance.weaponData;
+                if (wd == null) return;
+                var pr = wd.properties;
+                if (pr == null || pr.Length <= 0) return;
+                _fireBefore[__instance.Pointer] = pr[0];
+            }
+            catch { }
+        }
+
+        internal static void FireProbePostfix(BasicRangedWeapon __instance)
+        {
+            try
+            {
+                if (_fireProbeBudget <= 0) return;
+                if (__instance == null) return;
+                var wd = __instance.weaponData;
+                if (wd == null) return;
+                var pr = wd.properties;
+                if (pr == null || pr.Length <= 0) return;
+
+                if (!_fireBefore.TryGetValue(__instance.Pointer, out float before))
+                {
+                    _fireBefore[__instance.Pointer] = pr[0];
+                    return;
+                }
+                float after = pr[0];
+                if (Math.Abs(after - before) > 0.0001f)
+                {
+                    _fireProbeBudget--;
+                    Log.Info($"[dur-probe] Fire 内部扣减：itemId={wd.itemId} props[0] {before:0.####} -> {after:0.####} " +
+                             $"delta={after - before:0.####} weapon=0x{__instance.Pointer.ToInt64():X} time={Time.unscaledTime:0.###}");
+                }
+            }
+            catch { }
+        }
+
         /// <summary>
         /// 枪械耐久：**读取层覆盖**。
         ///
@@ -283,6 +340,7 @@ namespace ZedZone.UltimateAssistant.Patch
         }
     }
 }
+
 
 
 

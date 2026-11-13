@@ -124,7 +124,7 @@ namespace ZedZone.UltimateAssistant.Core
 
         // ---------------- Phase 8：枪械耐久（基于组件持有的 weaponData） ----------------
         private static readonly Dictionary<IntPtr, float> _gunMaxSeen = new Dictionary<IntPtr, float>();
-        private static float _nextGunTick;
+        private static float _nextGunStatus;
         private static int _gunLogBudget = 20;
 
         internal static int GunWriteCount { get; private set; }
@@ -148,9 +148,7 @@ namespace ZedZone.UltimateAssistant.Core
             {
                 if (!Features.WeaponDurabilityOn) return;
 
-                float now = Time.unscaledTime;
-                if (now < _nextGunTick) return;
-                _nextGunTick = now + 0.25f;
+                // 每帧执行：射击扣减可能发生在任意帧，250ms 轮询会留下可见下降窗口
 
                 HumanCharacterController pl = PlayerAccessor.Resolve(out _, out _);
                 if (pl == null) return;
@@ -170,6 +168,20 @@ namespace ZedZone.UltimateAssistant.Core
 
                         ItemData wd = w.weaponData;
                         if (wd == null) continue;
+
+                        if (Time.unscaledTime >= _nextGunStatus)
+                        {
+                            _nextGunStatus = Time.unscaledTime + 1f;
+                            try
+                            {
+                                var ps = wd.properties;
+                                float d0 = (ps != null && ps.Length > 0) ? ps[0] : -1f;
+                                Log.Info($"[dur] gun-status itemId={wd.itemId} weapon=0x{w.Pointer.ToInt64():X} " +
+                                         $"weaponData=0x{wd.Pointer.ToInt64():X} props=0x{(ps == null ? 0 : ps.Pointer.ToInt64()):X} " +
+                                         $"props[0]={d0:0.####} df={SafeDf(w)} writes={GunWriteCount}");
+                            }
+                            catch { }
+                        }
 
                         // 反编译实证（RVA 0x146B8A0）：
                         //   durabilityFloat = weaponData.properties[0] / weaponAttr.durabilityMax
@@ -191,12 +203,25 @@ namespace ZedZone.UltimateAssistant.Core
                         if (max <= cur + 0.01f) continue;
 
                         props[0] = max;
+
+                        // 写后立即回读验证（同帧）
+                        float afterProps = props[0];
+                        float afterDf = -1f;
+                        try { afterDf = w.durabilityFloat; } catch { }
                         GunWriteCount++;
+
                         if (_gunLogBudget > 0)
                         {
                             _gunLogBudget--;
-                            Log.Info($"[dur] 枪械耐久锁定：itemId={wd.itemId} properties[0] {cur:0.###} -> {max:0.###}" +
-                                     $"（durabilityFloat {df:0.####} -> 1）");
+                            Log.Info($"[dur] gun-lock itemId={wd.itemId} " +
+                                     $"weapon=0x{w.Pointer.ToInt64():X} weaponData=0x{wd.Pointer.ToInt64():X} props=0x{props.Pointer.ToInt64():X} len={props.Length} | " +
+                                     $"props[0] {cur:0.####} -> {afterProps:0.####} | durabilityFloat {df:0.####} -> {afterDf:0.####} | max~{max:0.####}");
+                        }
+
+                        if (Math.Abs(afterProps - max) > 0.01f || afterDf < 0.99f)
+                        {
+                            Log.WarnOnce("dur.gun.noeffect",
+                                $"[dur] gun-lock 写入未生效：props[0]={afterProps:0.####} df={afterDf:0.####}（props 类型可能不可写或对象为副本）");
                         }
                     }
                     catch { }
@@ -214,5 +239,7 @@ namespace ZedZone.UltimateAssistant.Core
             => $"普通耐久锁定={(Features.ItemDurabilityLockOn ? "开" : "关")} 跟踪={_maxSeen.Count}";
     }
 }
+
+
 
 
