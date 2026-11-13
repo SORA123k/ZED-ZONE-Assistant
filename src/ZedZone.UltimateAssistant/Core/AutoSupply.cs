@@ -276,8 +276,24 @@ namespace ZedZone.UltimateAssistant.Core
                         }
                         if (costs == null || costs.Count == 0)
                         {
-                            // 该对象没有 TOD 成本清单（实测 costs=null）：
-                            // 若它是可修复对象，直接调用游戏自己的 RepairToFull() 修满
+                            // 实测（v2.2.3 日志）：该船按 id 查询库存，玩家全为 0。
+                            // 因此把这套材料直接铺到船边地面，玩家捡起后即可建造。
+                            try
+                            {
+                                if (Time.unscaledTime >= _nextKit)
+                                {
+                                    _nextKit = Time.unscaledTime + 15f;
+                                    for (int q = 0; q < BoatKitIds.Length; q++)
+                                    {
+                                        int id = BoatKitIds[q];
+                                        TrySpawnGround(id, id < 1000 ? 100 : 5);
+                                    }
+                                    Log.Info("[supply] 已在船边放置整套建造材料（9 种）");
+                                }
+                            }
+                            catch { }
+
+                            // 若它是可修复对象，再尝试直接修满
                             try
                             {
                                 if (tod.isRepairable)
@@ -354,6 +370,7 @@ namespace ZedZone.UltimateAssistant.Core
         }
     }
 }
+
 
 
 
