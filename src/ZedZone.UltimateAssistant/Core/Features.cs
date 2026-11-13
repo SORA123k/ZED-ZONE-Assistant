@@ -18,6 +18,7 @@ namespace ZedZone.UltimateAssistant.Core
         private static Harmony _harmony;
         private static bool _patchesInstalled;
         private static bool _playerPatchesInstalled;
+        private static bool _movePatchesInstalled;
 
         internal static bool InfiniteAmmoOn { get; private set; }
         internal static bool NoReloadOn { get; private set; }
@@ -29,6 +30,9 @@ namespace ZedZone.UltimateAssistant.Core
         internal static bool NoHungerLossOn { get; private set; }
         internal static bool NoThirstLossOn { get; private set; }
         internal static bool NoJamOn { get; private set; }
+        internal static bool AlwaysSprintOn { get; private set; }
+        internal static bool MoveSpeedOn { get; private set; }
+        internal static bool TimerOn { get; private set; }
         internal static bool NoOverheatOn { get; private set; }
         internal static bool JamBypassOn { get; private set; }
 
@@ -47,6 +51,9 @@ namespace ZedZone.UltimateAssistant.Core
             bool wantNoHunger = ModConfig.NoHungerLoss?.Value ?? false;
             bool wantNoThirst = ModConfig.NoThirstLoss?.Value ?? false;
             bool wantNoJam = ModConfig.NoJam?.Value ?? false;
+            bool wantSprint = ModConfig.AlwaysSprint?.Value ?? false;
+            bool wantSpeed = ModConfig.MoveSpeed?.Value ?? false;
+            bool wantTimer = ModConfig.Timer?.Value ?? false;
             bool wantAmmo = ModConfig.InfiniteAmmo?.Value ?? false;
             bool wantReload = ModConfig.NoReload?.Value ?? false;
             bool wantEsp = ModConfig.ZombieEsp?.Value ?? false;
@@ -79,6 +86,9 @@ namespace ZedZone.UltimateAssistant.Core
             SetNoHungerLoss(wantNoHunger);
             SetNoThirstLoss(wantNoThirst);
             SetNoJam(wantNoJam);
+            SetAlwaysSprint(wantSprint);
+            SetMoveSpeed(wantSpeed);
+            SetTimer(wantTimer);
             ZombieEspOn = wantEsp;
         }
 
@@ -122,6 +132,30 @@ namespace ZedZone.UltimateAssistant.Core
             NoOverheatOn = on;
             Apply();
             Log.Info("[features] NoOverheat = " + on);
+        }
+
+        internal static void SetAlwaysSprint(bool on)
+        {
+            if (AlwaysSprintOn == on) return;
+            AlwaysSprintOn = on;
+            Apply();
+            Log.Info("[features] AlwaysSprint = " + on);
+        }
+
+        internal static void SetMoveSpeed(bool on)
+        {
+            if (MoveSpeedOn == on) return;
+            MoveSpeedOn = on;
+            Apply();
+            Log.Info("[features] MoveSpeed = " + on);
+        }
+
+        internal static void SetTimer(bool on)
+        {
+            if (TimerOn == on) return;
+            TimerOn = on;
+            Apply();
+            Log.Info("[features] Timer = " + on);
         }
 
         internal static void SetNoHungerLoss(bool on)
@@ -231,22 +265,43 @@ namespace ZedZone.UltimateAssistant.Core
                 }
             }
             catch (Exception e) { Log.ErrorOnce("features.apply.player", e); }
+
+            // 移动类补丁（强制奔跑 / 移动加速 / Timer）
+            try
+            {
+                bool needMove = AlwaysSprintOn || MoveSpeedOn || TimerOn;
+                if (needMove && !_movePatchesInstalled)
+                {
+                    if (_harmony == null) _harmony = new Harmony(Plugin.PluginGuid);
+                    Patch.PlayerMovePatches.Install(_harmony);
+                    _movePatchesInstalled = true;
+                }
+                else if (!needMove && _movePatchesInstalled)
+                {
+                    Patch.PlayerMovePatches.Uninstall(_harmony);
+                    _movePatchesInstalled = false;
+                }
+            }
+            catch (Exception e) { Log.ErrorOnce("features.apply.move", e); }
         }
 
         internal static void Shutdown()
         {
             try { if (_patchesInstalled) Patch.WeaponPatches.Uninstall(_harmony); } catch { }
             try { if (_playerPatchesInstalled) Patch.PlayerPatches.Uninstall(_harmony); } catch { }
+            try { if (_movePatchesInstalled) Patch.PlayerMovePatches.Uninstall(_harmony); } catch { }
             _patchesInstalled = false;
             InfiniteAmmoOn = NoReloadOn = ZombieEspOn = false;
             WeaponDurabilityOn = NoOverheatOn = JamBypassOn = ItemDurabilityLockOn = false;
             NoHpLossOn = NoStaminaLossOn = NoHungerLossOn = NoThirstLossOn = NoJamOn = false;
+            AlwaysSprintOn = MoveSpeedOn = TimerOn = false;
         }
 
         internal static string StatusText()
             => $"弹药={(InfiniteAmmoOn ? "开" : "关")} 免换弹={(NoReloadOn ? "开" : "关")} ESP={(ZombieEspOn ? "开" : "关")}";
     }
 }
+
 
 
 

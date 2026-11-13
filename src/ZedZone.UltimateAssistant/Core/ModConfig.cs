@@ -33,6 +33,11 @@ namespace ZedZone.UltimateAssistant.Core
         internal static ConfigEntry<bool> NoHungerLoss;
         internal static ConfigEntry<bool> NoThirstLoss;
         internal static ConfigEntry<bool> NoJam;
+        internal static ConfigEntry<bool> AlwaysSprint;
+        internal static ConfigEntry<bool> MoveSpeed;
+        internal static ConfigEntry<float> MoveSpeedMultiplier;
+        internal static ConfigEntry<bool> Timer;
+        internal static ConfigEntry<float> TimerMultiplier;
 
         // ---- Zombie ESP 选项 ----
         internal static ConfigEntry<bool> EspShowName;
@@ -45,6 +50,8 @@ namespace ZedZone.UltimateAssistant.Core
         internal static ConfigEntry<string> MenuTheme;
         internal static ConfigEntry<float> MenuScale;
         internal static ConfigEntry<bool> MenuAnimations;
+        internal static ConfigEntry<int> MenuFontSize;
+        internal static ConfigEntry<string> MenuLanguage;
         internal static ConfigEntry<bool> BlockGameInput;
         internal static ConfigEntry<bool> MenuShowLimbs;
         internal static ConfigEntry<bool> ShowNotes;
@@ -239,6 +246,16 @@ namespace ZedZone.UltimateAssistant.Core
                 "不会扣饱食度：开启后本地玩家饱食度不减少（进食仍可增加）。默认关闭。");
             NoThirstLoss = cfg.Bind("Features", "NoThirstLoss", false,
                 "不会扣水分：开启后本地玩家水分不减少（饮水仍可增加）。默认关闭。");
+            AlwaysSprint = cfg.Bind("Features", "AlwaysSprint", false,
+                "强制奔跑：开枪/攻击时不再被强制切换为走路。默认关闭。");
+            MoveSpeed = cfg.Bind("Features", "MoveSpeed", false,
+                "移动加速开关。默认关闭。");
+            MoveSpeedMultiplier = cfg.Bind("Features", "MoveSpeedMultiplier", 1.0f,
+                new ConfigDescription("移动速度倍率（1.0 - 3.0）。", new AcceptableValueRange<float>(1f, 3f)));
+            Timer = cfg.Bind("Features", "Timer", false,
+                "Timer（玩家身体速度）：只加快玩家自身动作与状态更新，不影响世界时间。默认关闭。");
+            TimerMultiplier = cfg.Bind("Features", "TimerMultiplier", 1.0f,
+                new ConfigDescription("Timer 倍率（1.0 - 5.0）。", new AcceptableValueRange<float>(1f, 5f)));
             NoJam = cfg.Bind("Features", "NoJam", false,
                 "不会卡壳：开启后阻止本地玩家枪械进入卡壳状态，并清除已存在的卡壳标记。默认关闭。");
             NoStaminaLoss = cfg.Bind("Features", "NoStaminaLoss", false,
@@ -258,11 +275,16 @@ namespace ZedZone.UltimateAssistant.Core
             EspRefreshMs = cfg.Bind("Esp", "RefreshMs", 150,
                 new ConfigDescription("ESP 刷新间隔（毫秒）。越大越省性能。", new AcceptableValueRange<int>(50, 2000)));
 
-            MenuTheme = cfg.Bind("Menu", "Theme", "Violet",
-                new ConfigDescription("菜单主题配色。", new AcceptableValueList<string>("Violet", "Azure", "Crimson", "Emerald")));
+            MenuTheme = cfg.Bind("Menu", "Theme", "Dark",
+                new ConfigDescription("菜单主题配色。", new AcceptableValueList<string>("Dark", "BlackGold", "BlueTech", "Purple", "Teal", "Light", "RedBlack")));
             MenuScale = cfg.Bind("Menu", "Scale", 1.0f,
                 new ConfigDescription("菜单整体缩放。", new AcceptableValueRange<float>(0.7f, 1.6f)));
             MenuAnimations = cfg.Bind("Menu", "Animations", true, "菜单动画（淡入/悬停/开关过渡）。");
+            MenuFontSize = cfg.Bind("Menu", "FontSize", 14,
+                new ConfigDescription("菜单字体大小（12 - 24 px）。", new AcceptableValueRange<int>(12, 24)));
+            MenuLanguage = cfg.Bind("Menu", "Language", "zhCN",
+                new ConfigDescription("菜单语言：zhCN 简体中文 / en English / zhTW 繁體中文。",
+                    new AcceptableValueList<string>("zhCN", "en", "zhTW")));
             BlockGameInput = cfg.Bind("Menu", "BlockGameInput", true,
                 "菜单打开时阻止游戏操作（移动/射击/使用物品）。关闭后菜单打开时仍可操作角色。");
             MenuShowLimbs = cfg.Bind("Menu", "ShowLimbs", true,
@@ -270,6 +292,7 @@ namespace ZedZone.UltimateAssistant.Core
         }
     }
 }
+
 
 
 
