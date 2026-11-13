@@ -129,6 +129,7 @@ namespace ZedZone.UltimateAssistant.Core
                 }
                 DumpClass(_klass, TargetClass);
                 _dumpedClass = true;
+                LogMethodPointers("get_durabilityFloat");
 
                 try
                 {
@@ -443,6 +444,76 @@ namespace ZedZone.UltimateAssistant.Core
             W($"    （ItemData 字段 {idx} 个，匹配 {hits} 个）");
         }
 
+        /// <summary>
+        /// 记录指定方法在原生层的函数指针（只读）：
+        /// MethodInfo* 的候选指针（offset 0 / 8）、模块基址、RVA、前 64 字节机器码。
+        /// 用于把托管方法映射到 GameAssembly 的真实代码位置（Phase 2）。
+        /// </summary>
+        internal static void LogMethodPointers(string methodName)
+        {
+            try
+            {
+                W("");
+                W("=== 原生方法指针（只读）: " + methodName + " ===");
+
+                long modBase = 0;
+                try
+                {
+                    var proc = System.Diagnostics.Process.GetCurrentProcess();
+                    foreach (System.Diagnostics.ProcessModule pm in proc.Modules)
+                    {
+                        if (pm.ModuleName != null && pm.ModuleName.Equals("GameAssembly.dll", StringComparison.OrdinalIgnoreCase))
+                        {
+                            modBase = pm.BaseAddress.ToInt64();
+                            W($"[MODULE] GameAssembly base=0x{modBase:X} size=0x{pm.ModuleMemorySize:X} file={pm.FileName}");
+                            break;
+                        }
+                    }
+                    if (modBase == 0) W("[MODULE] 未找到 GameAssembly.dll 模块（不猜测）");
+                }
+                catch (Exception e) { W("[MODULE] 读取基址失败: " + e.GetType().Name); }
+
+                IntPtr iter = IntPtr.Zero;
+                int found = 0;
+                while (true)
+                {
+                    IntPtr m = il2cpp_class_get_methods(_klass, ref iter);
+                    if (m == IntPtr.Zero) break;
+
+                    string nm = Str(il2cpp_method_get_name(m));
+                    if (nm != methodName) continue;
+                    found++;
+
+                    W($"[METHOD] {nm} MethodInfo*=0x{m.ToInt64():X} params={(il2cpp_method_get_param_count(m))}");
+
+                    for (int slot = 0; slot <= 8; slot += 8)
+                    {
+                        try
+                        {
+                            IntPtr fptr = Marshal.ReadIntPtr(m, slot);
+                            long a = fptr.ToInt64();
+                            string rva = (modBase > 0 && a > modBase) ? ("0x" + (a - modBase).ToString("X")) : "n/a";
+                            W($"  slot+{slot}: ptr=0x{a:X} rva={rva}");
+
+                            if (modBase > 0 && a > modBase && a < modBase + 0x6000000)
+                            {
+                                var buf = new byte[64];
+                                Marshal.Copy(fptr, buf, 0, 64);
+                                var sb = new StringBuilder();
+                                for (int i = 0; i < buf.Length; i++) sb.Append(buf[i].ToString("X2")).Append(' ');
+                                W($"    bytes[64]: {sb}");
+                            }
+                        }
+                        catch (Exception e) { W($"  slot+{slot}: 读取失败 {e.GetType().Name}"); }
+                    }
+                    if (found >= 4) break;
+                }
+                if (found == 0) W("[METHOD] 未找到同名方法（不猜测）");
+            }
+            catch (Exception e) { W("[METHOD] 异常: " + e.GetType().Name + ": " + e.Message); }
+            W("");
+        }
+
         private static void W(string s)
         {
             try { _w?.WriteLine(s); } catch { }
@@ -466,5 +537,7 @@ namespace ZedZone.UltimateAssistant.Core
         }
     }
 }
+
+
 
 

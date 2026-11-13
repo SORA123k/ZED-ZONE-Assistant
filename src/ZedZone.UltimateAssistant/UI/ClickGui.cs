@@ -353,7 +353,7 @@ namespace ZedZone.UltimateAssistant.UI
             y = ModuleCard(c, s, y, pad, cw, "Tool / Melee Durability", "工具/近战/装备耐久不消耗（只增不减，已实测）",
                 Features.ItemDurabilityLockOn, v => { ModConfig.ItemDurabilityLock.Value = v; Features.SetItemDurabilityLock(v); });
 
-            y = ModuleCard(c, s, y, pad, cw, "Infinite Durability", "枪械耐久保持满值（读取层覆盖，仅本地玩家）",
+            y = ModuleCard(c, s, y, pad, cw, "Infinite Durability", "枪械耐久锁定（写入 properties[0]，仅本地玩家）",
                 Features.WeaponDurabilityOn, v => { ModConfig.WeaponDurability.Value = v; Features.SetWeaponDurability(v); });
 
             y = ModuleCard(c, s, y, pad, cw, "No Overheat", "取消自己枪械的过热（不影响 NPC）",
@@ -719,6 +719,7 @@ namespace ZedZone.UltimateAssistant.UI
         }
     }
 }
+
 
 
 

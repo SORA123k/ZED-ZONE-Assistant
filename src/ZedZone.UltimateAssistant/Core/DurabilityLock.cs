@@ -171,28 +171,32 @@ namespace ZedZone.UltimateAssistant.Core
                         ItemData wd = w.weaponData;
                         if (wd == null) continue;
 
-                        float d = wd.durability;
-                        if (d <= 0f) continue;
+                        // 反编译实证（RVA 0x146B8A0）：
+                        //   durabilityFloat = weaponData.properties[0] / weaponAttr.durabilityMax
+                        // 真实耐久 = ItemData.properties[0]（Single[] 首元素），不是 durability 字段。
+                        var props = wd.properties;
+                        if (props == null || props.Length <= 0) continue;
 
-                        IntPtr wdp = wd.Pointer;
-                        if (wdp == IntPtr.Zero) continue;
+                        float cur = props[0];
+                        if (cur <= 0f) continue;
 
-                        if (!_gunMaxSeen.TryGetValue(wdp, out float max))
+                        float df = -1f;
+                        try { df = w.durabilityFloat; } catch { }
+
+                        // 由公式反推最大耐久：max = cur / durabilityFloat（df 已被游戏钳制在 (0,1]）
+                        float max = cur;
+                        if (df > 0.001f && df <= 1.0001f) max = cur / df;
+
+                        if (df >= 0.999f && max <= cur + 0.01f) continue;   // 已满，无需写入
+                        if (max <= cur + 0.01f) continue;
+
+                        props[0] = max;
+                        GunWriteCount++;
+                        if (_gunLogBudget > 0)
                         {
-                            _gunMaxSeen[wdp] = d;
-                            continue;
-                        }
-                        if (d > max + 0.0001f) { _gunMaxSeen[wdp] = d; continue; }
-                        if (d < max - 0.0001f)
-                        {
-                            wd.durability = max;
-                            GunWriteCount++;
-                            if (_gunLogBudget > 0)
-                            {
-                                _gunLogBudget--;
-                                Log.Info($"[dur] 枪械耐久锁定：itemId={wd.itemId} {d:0.##} -> {max:0.##}" +
-                                         $"（durabilityFloat={SafeDf(w)}）");
-                            }
+                            _gunLogBudget--;
+                            Log.Info($"[dur] 枪械耐久锁定：itemId={wd.itemId} properties[0] {cur:0.###} -> {max:0.###}" +
+                                     $"（durabilityFloat {df:0.####} -> 1）");
                         }
                     }
                     catch { }
@@ -210,4 +214,5 @@ namespace ZedZone.UltimateAssistant.Core
             => $"普通耐久锁定={(Features.ItemDurabilityLockOn ? "开" : "关")} 跟踪={_maxSeen.Count}";
     }
 }
+
 

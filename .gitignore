@@ -9,3 +9,7 @@ research/decompiled/
 *.suo
 Thumbs.db
 desktop.ini
+
+# 原生分析大文件（可重新生成，不入库）
+Diagnostics/NativeAnalysis/*.copy
+Diagnostics/NativeAnalysis/ghidraproj/
