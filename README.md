@@ -1,17 +1,54 @@
 # ZED ZONE Ultimate Assistant
 
-《隔离区-丧尸末日生存》（ZED ZONE, Steam AppID **1211600**）单人生存辅助模组。
+《隔离区-丧尸末日生存》（ZED ZONE, Steam AppID **1211600**）单人**离线**生存辅助模组。
 
 | 项 | 值 |
 |---|---|
-| 游戏版本 | build **26576287**（游戏内 1.0.14） |
+| 版本 | **v1.0.0（最终版）** |
+| 游戏版本 | 游戏内 **1.0.17** / Steam build **26627937** |
 | 引擎 | Unity **2023.1.18f1** / **IL2CPP x64** / URP 15.0.7 |
 | 技术栈 | BepInEx 6 IL2CPP + HarmonyX + Il2CppInterop |
-| 上一项目 | `<仓库目录>\ZED-ZONE-FPS-Optimization-Mod`（已完成的 FPS 优化模组，本项目继承其工程经验） |
-| 当前阶段 | **Phase 3A 一键恢复（已安装，可测试）** |
+| 菜单 | **ClickGUI 风格**，按 **INSERT** 开关 |
+| 旧项目 | `<仓库目录>\ZED-ZONE-FPS-Optimization-Mod`（**未改动**） |
 
 ---
 
+## 功能
+
+| 分类 | 功能 | 说明 |
+|---|---|---|
+| **Player** | Health Restore | 恢复到当前角色真实上限（动态读取，只升不降） |
+| | Energy / Stamina Restore | 同一数值（游戏内 STAMINA 与 ENERGY 同源） |
+| | Hunger Restore | 动态上限 |
+| | Thirst Restore | 动态上限 |
+| | 肢体状态（只读） | 六个部位 HP / 伤口 / 绷带，只读展示 |
+| **Combat** | Infinite Ammo | 射击不消耗备用弹药（仅本地玩家） |
+| | No Reload | 开火后自动补满弹匣，无需换弹流程 |
+| **Visuals** | Zombie ESP | 标记已加载僵尸（名称 / 距离 / 方框），只读 |
+
+## 使用
+
+1. 启动游戏（**离线单机**），进入存档；
+2. 按 **INSERT** 打开菜单，左侧切换 `Combat / Player / Visuals / Settings`；
+3. 点击功能卡片切换开关；`Player` 页点「恢复」按钮；
+4. 再按 **INSERT** 关闭菜单，恢复角色操作。
+
+配置文件：`BepInEx\config\zedzone.ultimateassistant.cfg`（`[Features]` / `[Esp]` / `[Menu]` 等段）。
+
+## 安全约束
+
+- 仅**离线单机**；联机下弹药类功能与 ESP 一律拒绝（fail-closed）；
+- 不修改全局 `GameConfigs`、不修改存档结构、不修改其他角色/NPC；
+- 不绕过 / 隐藏游戏 MOD 安全提示；
+- 玩家对象**每次重新解析**，不缓存；正确处理死亡、重生、场景切换；
+- 所有功能默认关闭，可独立开关；关闭补丁立即卸载。
+
+## 详细报告
+
+- [FINAL_RELEASE_REPORT.md](FINAL_RELEASE_REPORT.md) — 最终交付报告
+- `docs/` — 各阶段研究与验证文档（Phase 1 / 2 / 3A / 3B）
+
+---
 ## 状态
 
 **Phase 1（研究）→ Phase 2（只读骨架 + GUI）→ Phase 3A（一键恢复）均已完成。**
@@ -139,3 +176,4 @@ D 全局：GameConfigs.playerInvincible / hungerCostPerDay / ...
 | ILSpy 反编译器 | `<tools>` |
 | NuGet 包缓存 | `<nuget-cache>` |
 | dotnet CLI 缓存 | `<dotnet>-home` |
+
