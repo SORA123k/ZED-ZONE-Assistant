@@ -44,6 +44,25 @@ namespace ZedZone.UltimateAssistant.Patch
             });
 
             // 自动补充材料：材料是否足够的判定 + 数量查询 + 实际扣除
+            // 修复（船只/车辆/建筑）材料可负担判定
+            Try(harmony, "CanAfford(WallRepairPlan)", () =>
+            {
+                var m = AccessTools.Method(typeof(MeleeWeapon_RepairHammer), "CanAfford",
+                    new[] { typeof(BuildingWallDamageSystem.WallRepairPlan) });
+                if (m == null) { Log.Warn("[supply] 未找到 CanAfford(WallRepairPlan)"); return; }
+                harmony.Patch(m, prefix: new HarmonyMethod(typeof(PlayerPatches), nameof(AffordPrefix)));
+                Installed++;
+            });
+
+            Try(harmony, "CanAfford(List<RepairCostEntry>)", () =>
+            {
+                var m = AccessTools.Method(typeof(MeleeWeapon_RepairHammer), "CanAfford",
+                    new[] { typeof(Il2CppSystem.Collections.Generic.List<BuildingWallDamageSystem.RepairCostEntry>) });
+                if (m == null) { Log.Warn("[supply] 未找到 CanAfford(List<RepairCostEntry>)"); return; }
+                harmony.Patch(m, prefix: new HarmonyMethod(typeof(PlayerPatches), nameof(AffordPrefix)));
+                Installed++;
+            });
+
             Try(harmony, "HasItem", () =>
             {
                 var m = AccessTools.Method(typeof(InventoryData), "HasItem", new[] { typeof(int), typeof(float) });
@@ -104,6 +123,10 @@ namespace ZedZone.UltimateAssistant.Patch
                 Unpatch(harmony, typeof(HumanCharacterController), "CostEnergy", new[] { typeof(float) });
                 Unpatch(harmony, typeof(HumanCharacterController), "RunInput", new[] { typeof(bool) });
                 Unpatch(harmony, typeof(BasicCharacterController), "set_hunger", new[] { typeof(float) });
+                Unpatch(harmony, typeof(MeleeWeapon_RepairHammer), "CanAfford",
+                    new[] { typeof(BuildingWallDamageSystem.WallRepairPlan) });
+                Unpatch(harmony, typeof(MeleeWeapon_RepairHammer), "CanAfford",
+                    new[] { typeof(Il2CppSystem.Collections.Generic.List<BuildingWallDamageSystem.RepairCostEntry>) });
                 Unpatch(harmony, typeof(InventoryData), "HasItem", new[] { typeof(int), typeof(float) });
                 Unpatch(harmony, typeof(InventoryData), "GetTotalItemNumberByID", new[] { typeof(int) });
                 Unpatch(harmony, typeof(InventoryData), "RemoveItems", new[] { typeof(int), typeof(float) });
@@ -145,6 +168,19 @@ namespace ZedZone.UltimateAssistant.Patch
         // ---------------- 补丁实现 ----------------
 
         private static int _supplyLog;
+
+        /// <summary>自动补充材料：修复（船只/车辆/建筑）材料检查直接通过。</summary>
+        internal static bool AffordPrefix(ref bool __result)
+        {
+            try
+            {
+                if (!Features.AutoSupplyOn) return true;
+                __result = true;
+                if (_supplyLog < 3) { _supplyLog++; Log.Info("[supply] CanAfford 已拦截 → 修复材料视为充足"); }
+                return false;
+            }
+            catch { return true; }
+        }
 
         /// <summary>自动补充材料：HasItem 恒定返回 true（制造/修复的材料检查通过）。</summary>
         internal static void HasItemPostfix(ref bool __result)
@@ -273,5 +309,6 @@ namespace ZedZone.UltimateAssistant.Patch
         }
     }
 }
+
 
 

@@ -24,7 +24,7 @@ namespace ZedZone.UltimateAssistant.Core
             {
                 if (!Features.MoveSpeedOn) { Restore(); return; }
 
-                float mult = Mathf.Clamp(ModConfig.MoveSpeedMultiplier?.Value ?? 1f, 1f, 3f);
+                float mult = Mathf.Clamp(ModConfig.MoveSpeedMultiplier?.Value ?? 1f, 1f, 20f);
                 if (mult <= 1.001f) { Restore(); return; }
 
                 var p = PlayerAccessor.Resolve(out _, out _);
@@ -78,3 +78,4 @@ namespace ZedZone.UltimateAssistant.Core
         }
     }
 }
+

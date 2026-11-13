@@ -376,7 +376,7 @@ namespace ZedZone.UltimateAssistant.UI
                 v => { ModConfig.AlwaysSprint.Value = v; Features.SetAlwaysSprint(v); }, cx, cw, s, ref y);
             Card("move_speed", "move_speed_d", "move_speed", Features.MoveSpeedOn,
                 v => { ModConfig.MoveSpeed.Value = v; Features.SetMoveSpeed(v); }, cx, cw, s, ref y);
-            SliderRow("multiplier", "move_speed", ModConfig.MoveSpeedMultiplier.Value, 1.0f, 3.0f, 0.1f,
+            SliderRow("multiplier", "move_speed", ModConfig.MoveSpeedMultiplier.Value, 1.0f, 20.0f, 0.5f,
                 v => ModConfig.MoveSpeedMultiplier.Value = v, "0.0'x'", cx, cw, s, ref y);
             ActionCard("reset", "move_speed_d", () => ModConfig.MoveSpeedMultiplier.Value = 1.0f, cx, cw, s, ref y);
 
@@ -736,6 +736,7 @@ namespace ZedZone.UltimateAssistant.UI
         }
     }
 }
+
 
 
 

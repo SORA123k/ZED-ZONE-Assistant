@@ -114,7 +114,7 @@ namespace ZedZone.UltimateAssistant.Patch
             {
                 if (!Features.MoveSpeedOn) return;
                 if (!IsLocalPlayer(__instance)) return;
-                float mult = Mathf.Clamp(ModConfig.MoveSpeedMultiplier?.Value ?? 1f, 1f, 3f);
+                float mult = Mathf.Clamp(ModConfig.MoveSpeedMultiplier?.Value ?? 1f, 1f, 20f);
                 if (mult <= 1.0001f) return;
                 __result *= mult;
                 if (_speedLog < 3) { _speedLog++; Log.Info($"[move] realMoveSpeed x{mult:0.0} → {__result:0.##}"); }
@@ -144,6 +144,7 @@ namespace ZedZone.UltimateAssistant.Patch
         }
     }
 }
+
 
 
 
