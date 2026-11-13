@@ -63,31 +63,7 @@ namespace ZedZone.UltimateAssistant.Patch
                 Installed++;
             });
 
-            Try(harmony, "CostItemDurability", () =>
-            {
-                var m = AccessTools.Method(typeof(InventoryData), "CostItemDurability", new[] { typeof(ItemData), typeof(float) });
-                if (m == null) { Log.Warn("[weapons] 未找到 CostItemDurability"); return; }
-                harmony.Patch(m, prefix: new HarmonyMethod(typeof(WeaponPatches), nameof(CostDurabilityPrefix)));
-                Installed++;
-            });
 
-            Try(harmony, "HCC.CostItemDurability", () =>
-            {
-                var m = AccessTools.Method(typeof(HumanCharacterController), "CostItemDurability",
-                    new[] { typeof(ItemData), typeof(float) });
-                if (m == null) { Log.Warn("[weapons] 未找到 HCC.CostItemDurability"); return; }
-                harmony.Patch(m, prefix: new HarmonyMethod(typeof(WeaponPatches), nameof(HccCostDurPrefix)));
-                Installed++;
-            });
-
-            Try(harmony, "HCC.CostItemDurabilityExecute", () =>
-            {
-                var m = AccessTools.Method(typeof(HumanCharacterController), "CostItemDurabilityExecute",
-                    new[] { typeof(ItemData), typeof(float) });
-                if (m == null) { Log.Warn("[weapons] 未找到 HCC.CostItemDurabilityExecute"); return; }
-                harmony.Patch(m, prefix: new HarmonyMethod(typeof(WeaponPatches), nameof(HccCostDurExecPrefix)));
-                Installed++;
-            });
 
             Try(harmony, "GetGunTemperature", () =>
             {
@@ -268,6 +244,7 @@ namespace ZedZone.UltimateAssistant.Patch
         }
     }
 }
+
 
 
 

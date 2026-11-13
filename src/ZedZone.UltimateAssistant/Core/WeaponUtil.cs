@@ -23,7 +23,6 @@ namespace ZedZone.UltimateAssistant.Core
 
         private static readonly HashSet<IntPtr> _playerWeapons = new HashSet<IntPtr>();
         private static float _nextRefresh;
-        private static float _nextRestore;
         private static float _nextProbe;
         private static float _nextTemp;
         private static float _nextGunProbe;
@@ -60,12 +59,10 @@ namespace ZedZone.UltimateAssistant.Core
             catch (Exception e) { Log.ErrorOnce("weaponutil.refresh", e); }
 
             // 耐久开关：持续把携带物耐久补回（每次刷新最多执行一次）
-            try { if (Features.WeaponDurabilityOn && Time.unscaledTime >= _nextRestore) { _nextRestore = Time.unscaledTime + 2f; RestoreAllDurability(); } } catch { }
-            try { ProbeDurabilityFields(); } catch { }
+                        try { ProbeDurabilityFields(); } catch { }
             try { ResetGunTemperature(); } catch { }
             try { ProbeHeldWeapon(); } catch { }
-            try { ZeroDurabilityCost(); } catch { }
-        }
+                    }
 
         /// <summary>该 ItemData 是否属于玩家携带物（用于耐久扣除拦截）。</summary>
         internal static bool IsPlayerItem(IntPtr ptr)
@@ -572,6 +569,8 @@ namespace ZedZone.UltimateAssistant.Core
             => $"武器={_playerWeapons.Count} 耐久修复={(Features.WeaponDurabilityOn ? "开" : "关")} 过热={(Features.NoOverheatOn ? "已取消" : "正常")}";
     }
 }
+
+
 
 
 

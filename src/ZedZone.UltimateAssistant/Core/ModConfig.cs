@@ -26,6 +26,8 @@ namespace ZedZone.UltimateAssistant.Core
         internal static ConfigEntry<bool> NoOverheat;
         internal static ConfigEntry<bool> JamBypass;
         internal static ConfigEntry<bool> DurabilityDiag;
+        internal static ConfigEntry<bool> MetaDiag;
+        internal static ConfigEntry<bool> ItemDurabilityLock;
 
         // ---- Zombie ESP 选项 ----
         internal static ConfigEntry<bool> EspShowName;
@@ -226,6 +228,10 @@ namespace ZedZone.UltimateAssistant.Core
             JamBypass = cfg.Bind("Features", "JamBypass", false,
                 "卡壳不阻止开火：游戏未公开清除卡壳的接口，此开关让卡壳状态不再阻止射击。默认关闭。");
 
+            ItemDurabilityLock = cfg.Bind("Features", "ItemDurabilityLock", true,
+                "工具/近战/装备耐久锁定：以实测有效的 ItemData.durability 为依据，只增不减（不会超过你已有的最高耐久）。默认开启。");
+            MetaDiag = cfg.Bind("Diagnostics", "MetaDiag", true,
+                "IL2CPP 私有字段元数据探查（只读）：列出 BasicRangedWeapon 全部字段/偏移/方法并采样实例值，写入 Diagnostics 目录。默认开启，定位完成后可关闭。");
             DurabilityDiag = cfg.Bind("Diagnostics", "DurabilityDiag", true,
                 "耐久只读诊断：记录运行时、装备槽物品、武器耐久字段与变化前后及调用栈，写入 Diagnostics 目录。只读，不修改任何对象。");
 
@@ -249,6 +255,7 @@ namespace ZedZone.UltimateAssistant.Core
         }
     }
 }
+
 
 
 

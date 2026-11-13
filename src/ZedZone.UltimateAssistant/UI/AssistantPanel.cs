@@ -70,6 +70,9 @@ namespace ZedZone.UltimateAssistant.UI
                     try { LimbProbe.Tick(); } catch (Exception e) { Log.ErrorOnce("limb", e); }
                     try { LimbApiProbe.Tick(); } catch (Exception e) { Log.ErrorOnce("limbapi", e); }
                     try { DurabilityDiag.Tick(); } catch (Exception e) { Log.ErrorOnce("duragdiag", e); }
+                    try { DurabilityLock.Tick(); } catch (Exception e) { Log.ErrorOnce("durlock", e); }
+                    try { DurabilityLock.TickGuns(); } catch (Exception e) { Log.ErrorOnce("durgun", e); }
+                    try { Il2CppMetaDiag.Tick(); } catch (Exception e) { Log.ErrorOnce("metadiag", e); }
                 }
             }
             catch (Exception e)
@@ -118,6 +121,7 @@ namespace ZedZone.UltimateAssistant.UI
         {
             try { InputGuard.Release(); } catch { }
             try { DurabilityDiag.Shutdown(); } catch { }
+            try { Il2CppMetaDiag.Shutdown(); } catch { }
             try { Features.Shutdown(); } catch { }
         }
 
@@ -125,6 +129,7 @@ namespace ZedZone.UltimateAssistant.UI
         {
             try { InputGuard.Release(); } catch { }
             try { DurabilityDiag.Shutdown(); } catch { }
+            try { Il2CppMetaDiag.Shutdown(); } catch { }
             try { Features.Shutdown(); } catch { }
         }
 
@@ -168,6 +173,8 @@ namespace ZedZone.UltimateAssistant.UI
         }
     }
 }
+
+
 
 
 

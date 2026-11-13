@@ -22,6 +22,7 @@ namespace ZedZone.UltimateAssistant.Core
         internal static bool NoReloadOn { get; private set; }
         internal static bool ZombieEspOn { get; private set; }
         internal static bool WeaponDurabilityOn { get; private set; }
+        internal static bool ItemDurabilityLockOn { get; private set; }
         internal static bool NoOverheatOn { get; private set; }
         internal static bool JamBypassOn { get; private set; }
 
@@ -34,6 +35,7 @@ namespace ZedZone.UltimateAssistant.Core
             bool wantDur = ModConfig.WeaponDurability?.Value ?? false;
             bool wantHeat = ModConfig.NoOverheat?.Value ?? false;
             bool wantJam = ModConfig.JamBypass?.Value ?? false;
+            bool wantItemDur = ModConfig.ItemDurabilityLock?.Value ?? false;
             bool wantAmmo = ModConfig.InfiniteAmmo?.Value ?? false;
             bool wantReload = ModConfig.NoReload?.Value ?? false;
             bool wantEsp = ModConfig.ZombieEsp?.Value ?? false;
@@ -60,6 +62,7 @@ namespace ZedZone.UltimateAssistant.Core
             SetWeaponDurability(wantDur);
             SetNoOverheat(wantHeat);
             SetJamBypass(wantJam);
+            SetItemDurabilityLock(wantItemDur);
             ZombieEspOn = wantEsp;
         }
 
@@ -84,11 +87,17 @@ namespace ZedZone.UltimateAssistant.Core
         /// 多次实机测试仍无法确定真实耐久字段与扣减调用链，
         /// 按用户要求先做只读诊断，此方法不再启用任何写操作。
         /// </summary>
+        /// <summary>
+        /// 枪械耐久锁定（保守实现，Phase 8）。
+        /// 依据：组件持有的 weaponData.durability 是唯一可写且可观测的耐久字段；
+        /// 采用"只增不减"策略，只在检测到下降时写回历史最高值。
+        /// </summary>
         internal static void SetWeaponDurability(bool on)
         {
-            WeaponDurabilityOn = false;
-            if (on)
-                Log.Warn("[features] 耐久锁定功能已暂停（诊断阶段），本次不会修改任何耐久数据。");
+            if (WeaponDurabilityOn == on) return;
+            WeaponDurabilityOn = on;
+            if (!on) DurabilityLock.Reset();
+            Log.Info("[features] WeaponDurability(gun lock) = " + on);
         }
 
         internal static void SetNoOverheat(bool on)
@@ -97,6 +106,14 @@ namespace ZedZone.UltimateAssistant.Core
             NoOverheatOn = on;
             Apply();
             Log.Info("[features] NoOverheat = " + on);
+        }
+
+        internal static void SetItemDurabilityLock(bool on)
+        {
+            if (ItemDurabilityLockOn == on) return;
+            ItemDurabilityLockOn = on;
+            if (!on) DurabilityLock.Reset();
+            Log.Info("[features] ItemDurabilityLock = " + on);
         }
 
         internal static void SetJamBypass(bool on)
@@ -147,13 +164,15 @@ namespace ZedZone.UltimateAssistant.Core
             try { if (_patchesInstalled) Patch.WeaponPatches.Uninstall(_harmony); } catch { }
             _patchesInstalled = false;
             InfiniteAmmoOn = NoReloadOn = ZombieEspOn = false;
-            WeaponDurabilityOn = NoOverheatOn = JamBypassOn = false;
+            WeaponDurabilityOn = NoOverheatOn = JamBypassOn = ItemDurabilityLockOn = false;
         }
 
         internal static string StatusText()
             => $"弹药={(InfiniteAmmoOn ? "开" : "关")} 免换弹={(NoReloadOn ? "开" : "关")} ESP={(ZombieEspOn ? "开" : "关")}";
     }
 }
+
+
 
 
 

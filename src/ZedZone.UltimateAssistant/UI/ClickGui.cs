@@ -350,7 +350,10 @@ namespace ZedZone.UltimateAssistant.UI
             y = ModuleCard(c, s, y, pad, cw, "No Reload", "弹匣为 0 也能射击；按 R 仍可正常换弹",
                 Features.NoReloadOn, v => { ModConfig.NoReload.Value = v; Features.SetNoReload(v); });
 
-            y = ModuleCard(c, s, y, pad, cw, "Infinite Durability", "工具/武器使用时不消耗耐久（保持当前耐久）",
+            y = ModuleCard(c, s, y, pad, cw, "Tool / Melee Durability", "工具/近战/装备耐久不消耗（只增不减，已实测）",
+                Features.ItemDurabilityLockOn, v => { ModConfig.ItemDurabilityLock.Value = v; Features.SetItemDurabilityLock(v); });
+
+            y = ModuleCard(c, s, y, pad, cw, "Infinite Durability", "枪械耐久不消耗（只增不减，实测验证中）",
                 Features.WeaponDurabilityOn, v => { ModConfig.WeaponDurability.Value = v; Features.SetWeaponDurability(v); });
 
             y = ModuleCard(c, s, y, pad, cw, "No Overheat", "取消自己枪械的过热（不影响 NPC）",
@@ -716,6 +719,8 @@ namespace ZedZone.UltimateAssistant.UI
         }
     }
 }
+
+
 
 
 

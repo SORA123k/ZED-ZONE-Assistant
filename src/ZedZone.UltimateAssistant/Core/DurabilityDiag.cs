@@ -302,7 +302,6 @@ namespace ZedZone.UltimateAssistant.Core
             Slots(eq, "exoskeleton", () => eq.exoskeletonItemData);
         }
 
-        private static ItemData _slotCache;
 
         private static void Slots(CharacterEquipmentData eq, string slot, Func<ItemData> get)
         {
@@ -447,4 +446,5 @@ namespace ZedZone.UltimateAssistant.Core
             => _enabled ? ("诊断=开 " + (_path ?? "")) : "诊断=关";
     }
 }
+
 
