@@ -121,6 +121,79 @@ namespace ZedZone.UltimateAssistant.Core
             return filled;
         }
 
+        /// <summary>把缺少的材料直接生成到玩家脚下（地面物品）。</summary>
+        internal static bool TrySpawnGround(int itemId, int number)
+        {
+            if (!Features.AutoSupplyOn) return false;
+            if (itemId <= 0 || number <= 0) return false;
+            try
+            {
+                HumanCharacterController pl = PlayerAccessor.Resolve(out _, out _);
+                if (pl == null) return false;
+                if (GameController.instance == null) return false;
+
+                ItemData data = MakeItem(itemId, number);
+                if (data == null) { Log.WarnOnce("supply.gnd." + itemId, $"[supply] 无模板，无法生成 itemId={itemId}"); return false; }
+
+                var pos = pl.transform.position;
+                float ang = UnityEngine.Random.Range(0f, 360f);
+                var go = GameController.instance.CreateItem(data, new Vector2(pos.x + 0.6f, pos.y + 0.2f), ang, -128);
+                if (go != null)
+                {
+                    if (_log < 8) { _log++; Log.Info($"[supply] 已在地面生成 itemId={itemId} x{number}"); }
+                    return true;
+                }
+                return false;
+            }
+            catch (Exception e) { Log.WarnOnce("supply.gnd", "[supply] 地面生成失败: " + e.GetType().Name); return false; }
+        }
+
+        /// <summary>优先克隆背包同 id 物品；否则用 ItemManager 物品表按 id 生成。</summary>
+        private static ItemData MakeItem(int itemId, int number)
+        {
+            try
+            {
+                HumanCharacterController pl = PlayerAccessor.Resolve(out _, out _);
+                var inv = pl?.characterData?.inventoryData;
+                if (inv != null)
+                {
+                    var list = inv.GetItemListById(itemId);
+                    if (list != null && list.Count > 0)
+                    {
+                        for (int i = 0; i < list.Count; i++)
+                        {
+                            var it = list[i];
+                            if (it == null) continue;
+                            var clone = it.CopyItemData(null);
+                            if (clone != null) { clone.itemNumberFloat = number; return clone; }
+                        }
+                    }
+                }
+            }
+            catch { }
+
+            try
+            {
+                var mgr = ItemManager.instance;
+                if (mgr != null)
+                {
+                    var all = mgr.itemList;
+                    if (all != null)
+                    {
+                        for (int i = 0; i < all.Count; i++)
+                        {
+                            var attr = all[i];
+                            if (attr == null || attr.itemId != itemId) continue;
+                            var data = mgr.GetRandomDataByAttr(attr, false, true);
+                            if (data != null) { data.itemNumberFloat = number; return data; }
+                        }
+                    }
+                }
+            }
+            catch { }
+            return null;
+        }
+
         private static float SumById(InventoryData inv, int id)
         {
             try
@@ -139,5 +212,6 @@ namespace ZedZone.UltimateAssistant.Core
         }
     }
 }
+
 
 

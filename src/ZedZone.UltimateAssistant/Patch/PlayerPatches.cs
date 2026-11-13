@@ -226,14 +226,20 @@ namespace ZedZone.UltimateAssistant.Patch
         }
 
         /// <summary>自动补充材料：HasItem 恒定返回 true（制造/修复的材料检查通过）。</summary>
-        internal static void HasItemPostfix(ref bool __result)
+        internal static void HasItemPostfix(InventoryData __instance, int m_itemId, float m_itemNumber, ref bool __result)
         {
             try
             {
                 if (!Features.AutoSupplyOn) return;
                 if (__result) return;
+
+                Log.Info($"[supply] HasItem 缺料 itemId={m_itemId} need={m_itemNumber:0.##} inv=0x{__instance.Pointer.ToInt64():X}");
+                int need = Mathf.CeilToInt(m_itemNumber);
+                AutoSupply.TrySpawnGround(m_itemId, Mathf.Max(1, need));
+                AutoSupply.EnsureMaterials(new System.Collections.Generic.List<int> { m_itemId },
+                                           new System.Collections.Generic.List<int> { Mathf.Max(1, need) });
+
                 __result = true;
-                if (_supplyLog < 3) { _supplyLog++; Log.Info("[supply] HasItem 已拦截 → 视为材料充足"); }
             }
             catch { }
         }
@@ -352,6 +358,7 @@ namespace ZedZone.UltimateAssistant.Patch
         }
     }
 }
+
 
 
 
