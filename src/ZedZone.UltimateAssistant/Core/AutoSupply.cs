@@ -197,6 +197,8 @@ namespace ZedZone.UltimateAssistant.Core
         private static float _nextBoatTick;
         private static float _nextBoatDiag;
         private static float _nextBoatDiag2;
+        private static readonly System.Collections.Generic.Dictionary<IntPtr, float> _lastRepair = new System.Collections.Generic.Dictionary<IntPtr, float>();
+        private static int _repairLog;
         private static readonly System.Collections.Generic.Dictionary<int, float> _lastSpawn = new System.Collections.Generic.Dictionary<int, float>();
 
         /// <summary>
@@ -261,7 +263,30 @@ namespace ZedZone.UltimateAssistant.Core
                                 }
                             }
                         }
-                        if (costs == null || costs.Count == 0) continue;
+                        if (costs == null || costs.Count == 0)
+                        {
+                            // 该对象没有 TOD 成本清单（实测 costs=null）：
+                            // 若它是可修复对象，直接调用游戏自己的 RepairToFull() 修满
+                            try
+                            {
+                                if (tod.isRepairable)
+                                {
+                                    IntPtr tp2 = tod.Pointer;
+                                    if (!_lastRepair.TryGetValue(tp2, out float lastT) || Time.unscaledTime - lastT > 3f)
+                                    {
+                                        _lastRepair[tp2] = Time.unscaledTime;
+                                        bool ok = tod.RepairToFull();
+                                        if (_repairLog < 5)
+                                        {
+                                            _repairLog++;
+                                            Log.Info($"[supply] 直接修复 TOD 0x{tp2.ToInt64():X} → RepairToFull={ok}");
+                                        }
+                                    }
+                                }
+                            }
+                            catch (Exception e) { Log.WarnOnce("supply.repairfull", "[supply] RepairToFull 失败: " + e.GetType().Name); }
+                            continue;
+                        }
 
                         var inv = pl.characterData?.inventoryData;
                         if (inv == null) continue;
@@ -303,6 +328,7 @@ namespace ZedZone.UltimateAssistant.Core
         }
     }
 }
+
 
 
 
