@@ -79,12 +79,16 @@ namespace ZedZone.UltimateAssistant.Core
             Log.Info("[features] NoReload = " + on);
         }
 
+        /// <summary>
+        /// 耐久锁定：**已暂停**（v1.1.0）。
+        /// 多次实机测试仍无法确定真实耐久字段与扣减调用链，
+        /// 按用户要求先做只读诊断，此方法不再启用任何写操作。
+        /// </summary>
         internal static void SetWeaponDurability(bool on)
         {
-            if (WeaponDurabilityOn == on) return;
-            WeaponDurabilityOn = on;
-            Log.Info("[features] WeaponDurability = " + on);
-            if (on) { try { WeaponUtil.RestoreAllDurability(); } catch { } }
+            WeaponDurabilityOn = false;
+            if (on)
+                Log.Warn("[features] 耐久锁定功能已暂停（诊断阶段），本次不会修改任何耐久数据。");
         }
 
         internal static void SetNoOverheat(bool on)
@@ -114,7 +118,7 @@ namespace ZedZone.UltimateAssistant.Core
         /// <summary>按当前开关状态安装/卸载补丁。任何异常只记录，不影响游戏。</summary>
         private static void Apply()
         {
-            bool needPatches = InfiniteAmmoOn || NoReloadOn || NoOverheatOn || JamBypassOn || WeaponDurabilityOn;
+            bool needPatches = InfiniteAmmoOn || NoReloadOn || NoOverheatOn || JamBypassOn;
             try
             {
                 if (needPatches && !_patchesInstalled)
@@ -150,6 +154,7 @@ namespace ZedZone.UltimateAssistant.Core
             => $"弹药={(InfiniteAmmoOn ? "开" : "关")} 免换弹={(NoReloadOn ? "开" : "关")} ESP={(ZombieEspOn ? "开" : "关")}";
     }
 }
+
 
 
 

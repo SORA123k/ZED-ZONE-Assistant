@@ -27,7 +27,7 @@ namespace ZedZone.UltimateAssistant
     {
         public const string PluginGuid = "zedzone.ultimateassistant";
         public const string PluginName = "ZED ZONE Ultimate Assistant";
-        public const string PluginVersion = "1.0.11";
+        public const string PluginVersion = "1.1.0";
 
         internal static Plugin Instance;
         internal static ModuleRegistry Registry;
@@ -70,6 +70,9 @@ namespace ZedZone.UltimateAssistant
             CoreLog.Info("已注册模块: " + string.Join(", ", Map(Registry)));
 
             Reader = new PlayerStateReader(Registry);
+
+            // ---- 只读耐久诊断 ----
+            try { DurabilityDiag.Init(); } catch (Exception e) { CoreLog.Warn("耐久诊断初始化失败: " + e.GetType().Name); }
 
             // ---- 补丁（Phase 2 必须为 0） ----
             int patches = PatchManager.InstallAll(PluginGuid);
@@ -129,6 +132,8 @@ namespace ZedZone.UltimateAssistant
         }
     }
 }
+
+
 
 
 

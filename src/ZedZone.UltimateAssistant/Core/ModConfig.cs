@@ -25,6 +25,7 @@ namespace ZedZone.UltimateAssistant.Core
         internal static ConfigEntry<bool> WeaponDurability;
         internal static ConfigEntry<bool> NoOverheat;
         internal static ConfigEntry<bool> JamBypass;
+        internal static ConfigEntry<bool> DurabilityDiag;
 
         // ---- Zombie ESP 选项 ----
         internal static ConfigEntry<bool> EspShowName;
@@ -225,6 +226,9 @@ namespace ZedZone.UltimateAssistant.Core
             JamBypass = cfg.Bind("Features", "JamBypass", false,
                 "卡壳不阻止开火：游戏未公开清除卡壳的接口，此开关让卡壳状态不再阻止射击。默认关闭。");
 
+            DurabilityDiag = cfg.Bind("Diagnostics", "DurabilityDiag", true,
+                "耐久只读诊断：记录运行时、装备槽物品、武器耐久字段与变化前后及调用栈，写入 Diagnostics 目录。只读，不修改任何对象。");
+
             EspShowName = cfg.Bind("Esp", "ShowName", true, "ESP 显示僵尸名称/类型。");
             EspShowDistance = cfg.Bind("Esp", "ShowDistance", true, "ESP 显示与玩家的距离。");
             EspMaxDistance = cfg.Bind("Esp", "MaxDistance", 200f,
@@ -245,6 +249,7 @@ namespace ZedZone.UltimateAssistant.Core
         }
     }
 }
+
 
 
 

@@ -69,6 +69,7 @@ namespace ZedZone.UltimateAssistant.UI
                     try { FatigueProbe.Tick(); } catch (Exception e) { Log.ErrorOnce("fatigue", e); }
                     try { LimbProbe.Tick(); } catch (Exception e) { Log.ErrorOnce("limb", e); }
                     try { LimbApiProbe.Tick(); } catch (Exception e) { Log.ErrorOnce("limbapi", e); }
+                    try { DurabilityDiag.Tick(); } catch (Exception e) { Log.ErrorOnce("duragdiag", e); }
                 }
             }
             catch (Exception e)
@@ -116,12 +117,14 @@ namespace ZedZone.UltimateAssistant.UI
         private void OnDestroy()
         {
             try { InputGuard.Release(); } catch { }
+            try { DurabilityDiag.Shutdown(); } catch { }
             try { Features.Shutdown(); } catch { }
         }
 
         private void OnApplicationQuit()
         {
             try { InputGuard.Release(); } catch { }
+            try { DurabilityDiag.Shutdown(); } catch { }
             try { Features.Shutdown(); } catch { }
         }
 
@@ -165,6 +168,7 @@ namespace ZedZone.UltimateAssistant.UI
         }
     }
 }
+
 
 
 
