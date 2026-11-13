@@ -248,8 +248,16 @@ namespace ZedZone.UltimateAssistant.Core
                         var tp = tod.transform.position;
                         if (Vector3.Distance(tp, ppos) > 8f) continue;
 
-                        var plan = MeleeWeapon_RepairHammer.ComputeTodRepairPlan(tod);
-                        var costs = plan.costs;
+                        Il2CppSystem.Collections.Generic.List<BuildingWallDamageSystem.RepairCostEntry> costs = null;
+                        try
+                        {
+                            var plan = MeleeWeapon_RepairHammer.ComputeTodRepairPlan(tod);
+                            costs = plan.costs;
+                        }
+                        catch (Exception ex)
+                        {
+                            if (_repairLog < 5) { _repairLog++; Log.Info($"[supply] ComputeTodRepairPlan 异常: {ex.GetType().Name}（改为直接 RepairToFull）"); }
+                        }
                         if (Time.unscaledTime >= _nextBoatDiag2 && i == nearestIdx)
                         {
                             _nextBoatDiag2 = Time.unscaledTime + 3f;
@@ -343,6 +351,7 @@ namespace ZedZone.UltimateAssistant.Core
         }
     }
 }
+
 
 
 
