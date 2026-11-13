@@ -149,35 +149,94 @@ namespace ZedZone.UltimateAssistant.Core
         /// 耐久字段探针：每 3 秒打印一次前 12 件物品的候选耐久字段，
         /// 用于定位"游戏真正使用的耐久存储位置"（ItemData.durability 恒为 100，已证伪）。
         /// </summary>
+        private sealed class ItemSig
+        {
+            internal int Id;
+            internal float Dur;
+            internal float Num;
+            internal string Props = "";
+            internal string Text => $"#{Id}(dur={Dur:0.###},num={Num:0.###},props={Props})";
+        }
+
+        private static readonly Dictionary<IntPtr, ItemSig> _prevSigs = new Dictionary<IntPtr, ItemSig>();
+        private static bool _propsDumped;
+
         internal static void ProbeDurabilityFields()
         {
             try
             {
                 if (!Features.WeaponDurabilityOn) return;
                 if (Time.unscaledTime < _nextProbe) return;
-                _nextProbe = Time.unscaledTime + 3f;
+                _nextProbe = Time.unscaledTime + 2f;
 
                 var items = CollectPlayerItems();
+                int changed = 0;
                 var sb = new System.Text.StringBuilder();
-                sb.Append("[durprobe] n=").Append(items.Count).Append(" | ");
-                int shown = 0;
-                for (int i = 0; i < items.Count && shown < 12; i++)
+
+                for (int i = 0; i < items.Count; i++)
                 {
                     var it = items[i];
                     if (it == null) continue;
                     try
                     {
-                        int id = it.itemId;
-                        float dur = it.durability;
-                        float num = it.itemNumberFloat;
-                        sb.Append($"#{id}(dur={dur:0.##},num={num:0.##}) ");
-                        shown++;
+                        var sig = new ItemSig
+                        {
+                            Id = it.itemId,
+                            Dur = it.durability,
+                            Num = it.itemNumberFloat,
+                            Props = PropsOf(it)
+                        };
+                        IntPtr ptr = it.Pointer;
+
+                        // 首次：导出前 5 件的属性键，便于发现耐久存在 key/value 里
+                        if (!_propsDumped && i < 5)
+                            Log.Info($"[durprobe] props item#{sig.Id}: {sig.Props}");
+
+                        if (_prevSigs.TryGetValue(ptr, out var oldSig))
+                        {
+                            if (oldSig.Id != sig.Id || Math.Abs(oldSig.Dur - sig.Dur) > 0.0001f ||
+                                Math.Abs(oldSig.Num - sig.Num) > 0.0001f || oldSig.Props != sig.Props)
+                            {
+                                changed++;
+                                if (changed <= 8)
+                                    sb.Append("CHANGE ").Append(oldSig.Text).Append(" -> ").Append(sig.Text).Append(" | ");
+                            }
+                        }
+                        _prevSigs[ptr] = sig;
                     }
                     catch { }
                 }
-                Log.Info(sb.ToString());
+
+                if (!_propsDumped && items.Count > 0) _propsDumped = true;
+
+                if (changed > 0)
+                    Log.Info($"[durprobe] 变化 {changed} 件 | " + sb.ToString());
             }
             catch (Exception e) { Log.ErrorOnce("weaponutil.probe", e); }
+        }
+
+        private static string PropsOf(ItemData it)
+        {
+            try
+            {
+                var pairs = it.itemPropertyPairs;
+                if (pairs == null || pairs.Count == 0) return "-";
+                var sb = new System.Text.StringBuilder();
+                int n = 0;
+                for (int i = 0; i < pairs.Count && n < 6; i++)
+                {
+                    var kv = pairs[i];
+                    if (kv == null) continue;
+                    string k = "?", v = "?";
+                    try { k = kv.key; } catch { }
+                    try { v = kv.value; } catch { }
+                    if (n > 0) sb.Append(',');
+                    sb.Append(k).Append('=').Append(v);
+                    n++;
+                }
+                return sb.ToString();
+            }
+            catch { return "?"; }
         }
 
         internal static int RestoreAllDurability()
@@ -317,6 +376,7 @@ namespace ZedZone.UltimateAssistant.Core
             => $"武器={_playerWeapons.Count} 耐久修复={(Features.WeaponDurabilityOn ? "开" : "关")} 过热={(Features.NoOverheatOn ? "已取消" : "正常")}";
     }
 }
+
 
 
 
