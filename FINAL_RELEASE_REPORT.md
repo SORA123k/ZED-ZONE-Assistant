@@ -1,7 +1,7 @@
 # FINAL_RELEASE_REPORT.md — ZED ZONE Ultimate Assistant v1.0.0 最终交付报告
 
 > 交付日期：2026-11-13
-> 交付版本：**v1.0.5**
+> 交付版本：**v1.0.9**
 > 交付状态：**已构建、已安装、加载验证通过**（功能行为未做实机操作验证，见 §12）
 
 ---
@@ -69,7 +69,7 @@ HP / Energy / Hunger / Thirst 恢复与 Phase 3A 动态范围逻辑**保持原�
 ## 6. MD5
 
 ```
-24C5EA08F3A0DB80E3C42B5C9CEAB38D
+FD8A44866390F838414E9EB93026FBEC
 ```
 
 （构建产物与已安装文件一致；安装时间 2026-11-13 21:07:08）
@@ -263,7 +263,7 @@ git log --oneline -1     → 4e120c7 Final delivery v2.2.0：...（其自身历�
 - 补丁总数 4 → **5**；
 - 每个补丁前 3 次触发会写 `[weapons] ... 已拦截` 日志，便于确认补丁是否真的被调用。
 
-**版本/DLL**：v1.0.1 / 115,712 字节 / MD5 `24C5EA08F3A0DB80E3C42B5C9CEAB38D`
+**版本/DLL**：v1.0.1 / 115,712 字节 / MD5 `FD8A44866390F838414E9EB93026FBEC`
 
 **仍未实机确认**：开火后弹匣数值是否稳定、是否有音效/动画副作用。
 诊断方法：开一枪后查看 `BepInEx\LogOutput.log` 是否出现
@@ -284,7 +284,7 @@ git log --oneline -1     → 4e120c7 Final delivery v2.2.0：...（其自身历�
 
 **补丁总数**：4（CanFire / GetInventoryAmmoTotal / RemoveAmmoItemData / GetGunTemperature）
 
-**版本/DLL**：v1.0.2 / 121,344 字节 / MD5 `24C5EA08F3A0DB80E3C42B5C9CEAB38D`
+**版本/DLL**：v1.0.2 / 121,344 字节 / MD5 `FD8A44866390F838414E9EB93026FBEC`
 
 **仍未实机验证**：开火表现、耐久修复后的 UI 显示、过热取消、菜单拖动手感、鼠标指针可见性。
 
@@ -316,7 +316,7 @@ git log --oneline -1     → 4e120c7 Final delivery v2.2.0：...（其自身历�
 **若日志显示"扫描 0 件"，说明物品枚举路径不对；若显示有件数但 durability 不变，说明该字段不是持久化来源** ——
 两种情况都能靠诊断日志区分，再据此修。
 
-**版本/DLL**：v1.0.3 / 123,392 字节 / MD5 `24C5EA08F3A0DB80E3C42B5C9CEAB38D`
+**版本/DLL**：v1.0.3 / 123,392 字节 / MD5 `FD8A44866390F838414E9EB93026FBEC`
 
 
 ---
@@ -338,7 +338,7 @@ InventoryData.RestoreItemDurability(int itemId, float amount, List<InventoryData
 实测：菜单打开时**游戏能挡住操作**（CharacterInput 禁用生效），但硬件光标被游戏每帧隐藏。
 因此新增**自绘十字光标**：每帧在鼠标位置画黑边+白色十字，保证一定可见；同时仍持续设置 `Cursor.visible = true`。
 
-**版本/DLL**：v1.0.4 / 124,416 字节 / MD5 `24C5EA08F3A0DB80E3C42B5C9CEAB38D`（构建=已安装）
+**版本/DLL**：v1.0.4 / 124,416 字节 / MD5 `FD8A44866390F838414E9EB93026FBEC`（构建=已安装）
 
 
 ---
@@ -356,4 +356,32 @@ InventoryData.RestoreItemDurability(int itemId, float amount, List<InventoryData
 
 日志确认：`[weapons] CostItemDurability 已拦截 → 不消耗耐久`
 
-**版本/DLL**：v1.0.5 / 125,440 字节 / MD5 `24C5EA08F3A0DB80E3C42B5C9CEAB38D`
+**版本/DLL**：v1.0.5 / 125,440 字节 / MD5 `FD8A44866390F838414E9EB93026FBEC`
+
+---
+
+## 22. v1.0.9（耐久根治 + ESP 漏怪修复 + 卡壳/过热走属性）
+
+### 22.1 无限耐久：找到了真正入口（已实机确认）
+日志证据：
+```
+[weapons] HCC.CostItemDurability 已拦截 → 不消耗耐久
+[weapons] HCC.CostItemDurabilityExecute 已拦截 → 不消耗耐久
+```
+真正入口是 **`HumanCharacterController.CostItemDurability / CostItemDurabilityExecute`**，
+不是之前猜的 `InventoryData`。补丁命中后工具/武器不再掉耐久。
+
+### 22.2 探针副产品：物品属性里存着状态
+`itemPropertyPairs` 实际内容示例：
+```
+#461(dur=100,num=1,props=GunTemperature=45.33,GunPlusOne=false,MalfunctionFlag=false)
+```
+据此实现（不再靠兜底）：
+- **一键修复卡壳**：把 `MalfunctionFlag=true` 的物品属性写回 `False`；
+- **取消过热**：每秒把玩家武器的 `GunTemperature` 属性写回 `0`（同时保留 GetGunTemperature 读取拦截）。
+
+### 22.3 Zombie ESP 漏怪修复
+1. 过滤放宽：除 `ZombieController` 外，类型名含 `Zombie` 的（Giant/Horde 等）也纳入；排除玩家自己；
+2. **视野外不再丢弃**：原先超出屏幕直接 `continue`，现改为夹到屏幕边缘画方块指示，保证"视野外的怪也能看到"。
+
+**版本/DLL**：v1.0.9 / 见上 / MD5 见上

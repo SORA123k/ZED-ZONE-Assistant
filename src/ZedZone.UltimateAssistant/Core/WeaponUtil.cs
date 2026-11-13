@@ -25,6 +25,7 @@ namespace ZedZone.UltimateAssistant.Core
         private static float _nextRefresh;
         private static float _nextRestore;
         private static float _nextProbe;
+        private static float _nextTemp;
 
         internal static int PlayerWeaponCount => _playerWeapons.Count;
         internal static int LastRepairCount { get; private set; }
@@ -59,6 +60,7 @@ namespace ZedZone.UltimateAssistant.Core
             // 耐久开关：持续把携带物耐久补回（每次刷新最多执行一次）
             try { if (Features.WeaponDurabilityOn && Time.unscaledTime >= _nextRestore) { _nextRestore = Time.unscaledTime + 2f; RestoreAllDurability(); } } catch { }
             try { ProbeDurabilityFields(); } catch { }
+            try { ResetGunTemperature(); } catch { }
         }
 
         /// <summary>该 ItemData 是否属于玩家携带物（用于耐久扣除拦截）。</summary>
@@ -259,6 +261,33 @@ namespace ZedZone.UltimateAssistant.Core
             catch { return "?"; }
         }
 
+                /// <summary>取消过热：把玩家武器的 GunTemperature 属性写回 0。</summary>
+        internal static void ResetGunTemperature()
+        {
+            try
+            {
+                if (!Features.NoOverheatOn) return;
+                if (Time.unscaledTime < _nextTemp) return;
+                _nextTemp = Time.unscaledTime + 1f;
+
+                var items = CollectPlayerItems();
+                for (int i = 0; i < items.Count; i++)
+                {
+                    var it = items[i];
+                    if (it == null) continue;
+                    try
+                    {
+                        string t = it.GetProperty("GunTemperature");
+                        if (string.IsNullOrEmpty(t)) continue;
+                        if (float.TryParse(t, out float v) && v > 0.01f)
+                            it.SetProperty("GunTemperature", "0");
+                    }
+                    catch { }
+                }
+            }
+            catch { }
+        }
+
         internal static int RestoreAllDurability()
         {
             int touched = 0;
@@ -384,6 +413,32 @@ namespace ZedZone.UltimateAssistant.Core
             }
             catch (Exception e) { Log.ErrorOnce("weaponutil.jam.scan", e); }
 
+                        // 真正清除卡壳：卡壳状态存在 ItemData 属性 MalfunctionFlag 中
+            int cleared = 0;
+            try
+            {
+                var items = CollectPlayerItems();
+                for (int i = 0; i < items.Count; i++)
+                {
+                    var it = items[i];
+                    if (it == null) continue;
+                    try
+                    {
+                        string flag = null;
+                        try { flag = it.GetProperty("MalfunctionFlag"); } catch { }
+                        if (string.IsNullOrEmpty(flag)) continue;
+                        if (flag.Equals("true", StringComparison.OrdinalIgnoreCase))
+                        {
+                            it.SetProperty("MalfunctionFlag", "False");
+                            cleared++;
+                        }
+                    }
+                    catch { }
+                }
+            }
+            catch (Exception e) { Log.WarnOnce("weaponutil.jam.prop", "[weapons] 属性清卡壳失败: " + e.GetType().Name); }
+            if (cleared > 0) Log.Info($"[weapons] 已通过属性清除卡壳：{cleared} 件");
+
             try { Features.SetJamBypass(true); } catch { }
 
             LastJamFixCount = jammed;
@@ -396,6 +451,7 @@ namespace ZedZone.UltimateAssistant.Core
             => $"武器={_playerWeapons.Count} 耐久修复={(Features.WeaponDurabilityOn ? "开" : "关")} 过热={(Features.NoOverheatOn ? "已取消" : "正常")}";
     }
 }
+
 
 
 

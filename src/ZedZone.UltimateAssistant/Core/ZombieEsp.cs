@@ -20,7 +20,7 @@ namespace ZedZone.UltimateAssistant.Core
     {
         private sealed class Entry
         {
-            internal ZombieController Z;
+            internal BasicCharacterController Z;
             internal string Name = "Zombie";
             internal Vector3 World;
             internal float Distance;
@@ -77,26 +77,39 @@ namespace ZedZone.UltimateAssistant.Core
                     try { c = list[i]; } catch { continue; }
                     if (c == null) continue;
 
-                    // 类型过滤：只保留僵尸
-                    ZombieController z = null;
-                    try { z = c.TryCast<ZombieController>(); } catch { z = null; }
-                    if (z == null) continue;
+                    // 类型过滤：ZombieController 及其它僵尸类型（Giant/Horde 等可能不派生自它）
+                    bool isPlayer = false;
+                    try { isPlayer = c.isPlayer; } catch { }
+                    if (isPlayer) continue;
+
+                    bool isZombie = false;
+                    try { if (c.TryCast<ZombieController>() != null) isZombie = true; } catch { }
+                    if (!isZombie)
+                    {
+                        try
+                        {
+                            var tn = c.GetType().Name;
+                            if (tn != null && tn.IndexOf("Zombie", StringComparison.OrdinalIgnoreCase) >= 0) isZombie = true;
+                        }
+                        catch { }
+                    }
+                    if (!isZombie) continue;
 
                     bool dead = false;
-                    try { dead = z.deadFlag; } catch { }
+                    try { dead = c.deadFlag; } catch { }
                     if (dead) continue;
 
                     Vector3 wp = Vector3.zero;
-                    try { wp = z.transform.position; } catch { continue; }
+                    try { wp = c.transform.position; } catch { continue; }
 
                     float dist = 0f;
                     try { dist = Vector3.Distance(ppos, wp); } catch { }
                     if (dist > maxDist) continue;
 
                     string nm = "Zombie";
-                    try { nm = CleanName(z.gameObject.name); } catch { }
+                    try { nm = CleanName(c.gameObject.name); } catch { }
 
-                    result.Add(new Entry { Z = z, Name = nm, World = wp, Distance = dist, Alive = true });
+                    result.Add(new Entry { Z = c, Name = nm, World = wp, Distance = dist, Alive = true });
                 }
             }
             catch (Exception e)
@@ -151,7 +164,11 @@ namespace ZedZone.UltimateAssistant.Core
 
                 if (sp.z <= 0f) continue;          // 在相机背后
                 float sx = sp.x, sy = h - sp.y;    // GUI 坐标 y 轴向下
-                if (sx < -50 || sx > w + 50 || sy < -50 || sy > h + 50) continue;
+
+                // 视野外不丢弃：夹到屏幕边缘，仍然给出方向提示
+                bool offscreen = sx < 8f || sx > w - 8f || sy < 8f || sy > h - 8f;
+                sx = Mathf.Clamp(sx, 10f, w - 10f);
+                sy = Mathf.Clamp(sy, 10f, h - 10f);
 
                 float t = Mathf.Clamp01(e.Distance / maxDist);
                 Color col = Color.Lerp(ColBox, ColBoxFar, t);
@@ -162,7 +179,12 @@ namespace ZedZone.UltimateAssistant.Core
 
                 var old = GUI.color;
                 GUI.color = col;
-                if (drawBox)
+                if (offscreen)
+                {
+                    // 边缘指示：小方块 + 中心点
+                    GUI.DrawTexture(new Rect(sx - 5f, sy - 5f, 10f, 10f), Texture2D.whiteTexture);
+                }
+                else if (drawBox)
                 {
                     // 四条边（比整块填充更轻量）
                     float th = 2f;
@@ -218,3 +240,4 @@ namespace ZedZone.UltimateAssistant.Core
             => $"ZombieEsp={(Features.ZombieEspOn ? "开" : "关")} 目标={_lastCount}";
     }
 }
+
