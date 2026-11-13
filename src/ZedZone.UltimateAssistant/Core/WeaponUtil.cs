@@ -37,7 +37,7 @@ namespace ZedZone.UltimateAssistant.Core
         {
             float now = Time.unscaledTime * 1000f;
             if (now < _nextRefresh) return;
-            _nextRefresh = now + 500f;
+            _nextRefresh = now + 1000f;
 
             try
             {
@@ -255,7 +255,13 @@ namespace ZedZone.UltimateAssistant.Core
                 if (pl == null) return 0;
                 var pp = pl.Pointer;
 
-                var arr = Resources.FindObjectsOfTypeAll<BasicRangedWeapon>();
+                var arr = _jamWeaponCache;
+                if (arr == null || Time.unscaledTime >= _nextJamCache)
+                {
+                    _nextJamCache = Time.unscaledTime + 1f;
+                    arr = Resources.FindObjectsOfTypeAll<BasicRangedWeapon>();
+                    _jamWeaponCache = arr;
+                }
                 if (arr == null) return 0;
 
                 for (int i = 0; i < arr.Length; i++)
@@ -281,6 +287,8 @@ namespace ZedZone.UltimateAssistant.Core
         }
 
         private static float _nextJamClear;
+        private static BasicRangedWeapon[] _jamWeaponCache;
+        private static float _nextJamCache;
         private static int _jamClearLog;
 
         /// <summary>
@@ -306,7 +314,13 @@ namespace ZedZone.UltimateAssistant.Core
                 if (pl == null) return 0;
                 IntPtr pp = pl.Pointer;
 
-                var arr = Resources.FindObjectsOfTypeAll<BasicRangedWeapon>();
+                var arr = _jamWeaponCache;
+                if (arr == null || Time.unscaledTime >= _nextJamCache)
+                {
+                    _nextJamCache = Time.unscaledTime + 1f;
+                    arr = Resources.FindObjectsOfTypeAll<BasicRangedWeapon>();
+                    _jamWeaponCache = arr;
+                }
                 if (arr == null) return 0;
 
                 for (int i = 0; i < arr.Length; i++)
@@ -631,6 +645,8 @@ namespace ZedZone.UltimateAssistant.Core
             => $"武器={_playerWeapons.Count} 耐久修复={(Features.WeaponDurabilityOn ? "开" : "关")} 过热={(Features.NoOverheatOn ? "已取消" : "正常")}";
     }
 }
+
+
 
 
 

@@ -36,10 +36,14 @@ namespace ZedZone.UltimateAssistant.UI
             return i >= 0 ? _names[i] : _names[0];
         }
 
+        private static string _lastCfgKey;
+
         internal static void Init()
         {
             string k = "Dark";
             try { k = ModConfig.MenuTheme?.Value ?? "Dark"; } catch { }
+            if (k == _lastCfgKey && _current == k) return;   // 每帧调用只做一次字符串比较
+            _lastCfgKey = k;
             Set(k);
         }
 
@@ -152,3 +156,4 @@ namespace ZedZone.UltimateAssistant.UI
         }
     }
 }
+

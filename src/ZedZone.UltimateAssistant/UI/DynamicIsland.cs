@@ -86,6 +86,8 @@ namespace ZedZone.UltimateAssistant.UI
         {
             try
             {
+                if (_items.Count == 0 && _expand <= 0.001f) return;   // 空闲零开销
+
                 EnsureAssets();
                 ThemeManager.Init();
 
@@ -194,3 +196,4 @@ namespace ZedZone.UltimateAssistant.UI
         }
     }
 }
+

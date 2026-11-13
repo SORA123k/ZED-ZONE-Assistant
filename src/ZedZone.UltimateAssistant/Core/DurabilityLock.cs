@@ -33,6 +33,8 @@ namespace ZedZone.UltimateAssistant.Core
         private static float _nextTick;
         private static string _lastScene = "";
         private static int _logBudget = 20;
+        private static BasicRangedWeapon[] _weaponCache;
+        private static float _nextWeaponCache;
 
         internal static int RestoredCount { get; private set; }
         internal static int TrackedCount => _maxSeen.Count;
@@ -53,7 +55,7 @@ namespace ZedZone.UltimateAssistant.Core
 
                 float now = Time.unscaledTime;
                 if (now < _nextTick) return;
-                _nextTick = now + 0.25f;
+                _nextTick = now + 0.40f;
 
                 // 场景切换：基线作废
                 try
@@ -154,7 +156,14 @@ namespace ZedZone.UltimateAssistant.Core
                 if (pl == null) return;
                 IntPtr pp = pl.Pointer;
 
-                var arr = Resources.FindObjectsOfTypeAll<BasicRangedWeapon>();
+                // 每帧 FindObjectsOfTypeAll 开销大：改为 1 秒刷新一次缓存
+                BasicRangedWeapon[] arr = _weaponCache;
+                if (arr == null || Time.unscaledTime >= _nextWeaponCache)
+                {
+                    _nextWeaponCache = Time.unscaledTime + 1f;
+                    arr = Resources.FindObjectsOfTypeAll<BasicRangedWeapon>();
+                    _weaponCache = arr;
+                }
                 if (arr == null) return;
 
                 for (int i = 0; i < arr.Length; i++)
@@ -261,6 +270,10 @@ namespace ZedZone.UltimateAssistant.Core
             => $"普通耐久锁定={(Features.ItemDurabilityLockOn ? "开" : "关")} 跟踪={_maxSeen.Count}";
     }
 }
+
+
+
+
 
 
 

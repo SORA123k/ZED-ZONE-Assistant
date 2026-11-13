@@ -167,9 +167,12 @@ namespace ZedZone.UltimateAssistant.UI
             if (!_held) return;
             try
             {
-                Cursor.visible = true;
-                if (Cursor.lockState != CursorLockMode.None) Cursor.lockState = CursorLockMode.None;
-                Cursor.SetCursor(null, Vector2.zero, CursorMode.Auto);
+                if (!Cursor.visible) Cursor.visible = true;
+                if (Cursor.lockState != CursorLockMode.None)
+                {
+                    Cursor.lockState = CursorLockMode.None;
+                    Cursor.SetCursor(null, Vector2.zero, CursorMode.Auto);
+                }
             }
             catch { }
         }
@@ -182,3 +185,4 @@ namespace ZedZone.UltimateAssistant.UI
         }
     }
 }
+

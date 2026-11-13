@@ -37,7 +37,7 @@ namespace ZedZone.UltimateAssistant.Core
             if (!Enabled) return;
 
             float now = Time.unscaledTime;
-            int interval = Mathf.Clamp(ModConfig.GrowthLogIntervalSec?.Value ?? 10, 2, 600);
+            int interval = Mathf.Clamp(Mathf.Max(20, ModConfig.GrowthLogIntervalSec?.Value ?? 10), 5, 600);
             if (now < _nextHeartbeatAt) return;
             _nextHeartbeatAt = now + interval;
 
@@ -138,3 +138,4 @@ namespace ZedZone.UltimateAssistant.Core
             => $"GrowthLog={(Enabled ? "on" : "off")} samples={_samples} changes={_changes}";
     }
 }
+

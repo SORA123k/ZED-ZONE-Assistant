@@ -107,19 +107,21 @@ namespace ZedZone.UltimateAssistant.UI
 
         internal static Lang Current => _lang;
 
+        private static string _lastCfgLang;
+
         internal static void Init()
         {
-            try
+            string v;
+            try { v = ModConfig.MenuLanguage?.Value ?? "zhCN"; }
+            catch { v = "zhCN"; }
+            if (v == _lastCfgLang) return;                  // 每帧调用只做字符串比较
+            _lastCfgLang = v;
+            switch (v)
             {
-                string v = ModConfig.MenuLanguage?.Value ?? "zhCN";
-                switch (v)
-                {
-                    case "en": _lang = Lang.En; break;
-                    case "zhTW": _lang = Lang.ZhTW; break;
-                    default: _lang = Lang.ZhCN; break;
-                }
+                case "en": _lang = Lang.En; break;
+                case "zhTW": _lang = Lang.ZhTW; break;
+                default: _lang = Lang.ZhCN; break;
             }
-            catch { _lang = Lang.ZhCN; }
         }
 
         internal static void SetLang(string code)
@@ -155,5 +157,6 @@ namespace ZedZone.UltimateAssistant.UI
             => code == "en" ? "English" : (code == "zhTW" ? "繁體中文" : "简体中文");
     }
 }
+
 
 

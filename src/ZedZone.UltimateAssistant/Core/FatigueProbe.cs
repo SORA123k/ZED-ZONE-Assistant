@@ -54,7 +54,7 @@ namespace ZedZone.UltimateAssistant.Core
                 return;
             }
 
-            int intervalMs = Mathf.Clamp(ModConfig.FatigueProbeIntervalMs?.Value ?? 500, 100, 5000);
+            int intervalMs = Mathf.Clamp(Mathf.Max(2000, ModConfig.FatigueProbeIntervalMs?.Value ?? 500), 1000, 10000);
             if (now * 1000f < _nextAt) return;
             _nextAt = now * 1000f + intervalMs;
 
@@ -170,3 +170,4 @@ namespace ZedZone.UltimateAssistant.Core
         internal static void ForceSummary() => LogSummary("手动触发");
     }
 }
+

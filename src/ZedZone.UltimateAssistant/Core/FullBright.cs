@@ -24,7 +24,6 @@ namespace ZedZone.UltimateAssistant.Core
         private static Light _sun;
         private static float _sunIntensity;
         private static bool _sunTouched;
-        private static float _next;
 
         private static readonly List<Light2D> _globals = new List<Light2D>();
         private static readonly List<float> _gIntensity = new List<float>();
@@ -35,8 +34,7 @@ namespace ZedZone.UltimateAssistant.Core
             try
             {
                 if (!Features.FullBrightOn) { Restore(); return; }
-
-                Save();
+                if (!_saved) Save();
 
                 // ---- 1) URP 2D 全局光 ----
                 if (_globals.Count > 0)
@@ -159,4 +157,6 @@ namespace ZedZone.UltimateAssistant.Core
         }
     }
 }
+
+
 
