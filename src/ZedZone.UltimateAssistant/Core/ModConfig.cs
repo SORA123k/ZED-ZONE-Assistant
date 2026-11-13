@@ -28,6 +28,8 @@ namespace ZedZone.UltimateAssistant.Core
         internal static ConfigEntry<bool> DurabilityDiag;
         internal static ConfigEntry<bool> MetaDiag;
         internal static ConfigEntry<bool> ItemDurabilityLock;
+        internal static ConfigEntry<bool> NoHpLoss;
+        internal static ConfigEntry<bool> NoStaminaLoss;
 
         // ---- Zombie ESP 选项 ----
         internal static ConfigEntry<bool> EspShowName;
@@ -228,6 +230,10 @@ namespace ZedZone.UltimateAssistant.Core
             JamBypass = cfg.Bind("Features", "JamBypass", false,
                 "卡壳不阻止开火：游戏未公开清除卡壳的接口，此开关让卡壳状态不再阻止射击。默认关闭。");
 
+            NoHpLoss = cfg.Bind("Features", "NoHpLoss", false,
+                "不会扣血：开启后本地玩家受到伤害时生命值不减少（独立开关，与一键恢复无关）。默认关闭。");
+            NoStaminaLoss = cfg.Bind("Features", "NoStaminaLoss", false,
+                "不会扣体力：开启后本地玩家奔跑/跳跃等不再消耗体力（独立开关，与一键恢复无关）。默认关闭。");
             ItemDurabilityLock = cfg.Bind("Features", "ItemDurabilityLock", true,
                 "工具/近战/装备耐久锁定：以实测有效的 ItemData.durability 为依据，只增不减（不会超过你已有的最高耐久）。默认开启。");
             MetaDiag = cfg.Bind("Diagnostics", "MetaDiag", true,
@@ -255,6 +261,7 @@ namespace ZedZone.UltimateAssistant.Core
         }
     }
 }
+
 
 
 

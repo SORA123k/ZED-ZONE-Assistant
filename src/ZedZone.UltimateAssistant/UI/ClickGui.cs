@@ -375,7 +375,15 @@ namespace ZedZone.UltimateAssistant.UI
         // ---------------- Player ----------------
         private static void DrawPlayer(Rect c, float s, ref float y, float pad, float cw, PlayerSnapshot snap)
         {
-            y = Section("玩家状态恢复", c, s, y, pad);
+            y = Section("防护开关（持续生效）", c, s, y, pad);
+
+            y = ModuleCard(c, s, y, pad, cw, "No HP Loss", "受到伤害时生命值不减少（仅本地玩家）",
+                Features.NoHpLossOn, v => { ModConfig.NoHpLoss.Value = v; Features.SetNoHpLoss(v); });
+
+            y = ModuleCard(c, s, y, pad, cw, "No Stamina Loss", "奔跑/跳跃等不消耗体力（仅本地玩家）",
+                Features.NoStaminaLossOn, v => { ModConfig.NoStaminaLoss.Value = v; Features.SetNoStaminaLoss(v); });
+
+            y = Section("一键恢复（点击执行一次）", c, s, y, pad);
 
             if (snap == null || !snap.HasPlayer)
             {
@@ -719,6 +727,7 @@ namespace ZedZone.UltimateAssistant.UI
         }
     }
 }
+
 
 
 

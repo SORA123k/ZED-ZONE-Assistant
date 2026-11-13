@@ -245,7 +245,7 @@ namespace ZedZone.UltimateAssistant.Patch
 
         private static readonly System.Collections.Generic.Dictionary<IntPtr, float> _fireBefore =
             new System.Collections.Generic.Dictionary<IntPtr, float>();
-        private static int _fireProbeBudget = 20;
+        private static int _fireProbeBudget = 40;
 
         internal static void FireProbePrefix(BasicRangedWeapon __instance)
         {
@@ -279,11 +279,24 @@ namespace ZedZone.UltimateAssistant.Patch
                     return;
                 }
                 float after = pr[0];
-                if (Math.Abs(after - before) > 0.0001f)
+
+                int loaded = -1;
+                try { loaded = BasicRangedWeapon.GetLoadedAmmo(wd); } catch { }
+                bool malf = false;
+                try { malf = __instance.isMalfunction; } catch { }
+                string mflag = "?", temp = "?", plusOne = "?";
+                try { mflag = wd.GetProperty("MalfunctionFlag") ?? "-"; } catch { }
+                try { temp = wd.GetProperty("GunTemperature") ?? "-"; } catch { }
+                try { plusOne = wd.GetProperty("GunPlusOne") ?? "-"; } catch { }
+                float fireFlag = -1f;
+                try { fireFlag = __instance.fireTimeFlag; } catch { }
+
+                if (_fireProbeBudget > 0)
                 {
                     _fireProbeBudget--;
-                    Log.Info($"[dur-probe] Fire 内部扣减：itemId={wd.itemId} props[0] {before:0.####} -> {after:0.####} " +
-                             $"delta={after - before:0.####} weapon=0x{__instance.Pointer.ToInt64():X} time={Time.unscaledTime:0.###}");
+                    Log.Info($"[jam-probe] itemId={wd.itemId} t={Time.unscaledTime:0.###} frame={Time.frameCount} | " +
+                             $"dur {before:0.##}->{after:0.##} | loaded={loaded} | malf={malf} MalfunctionFlag={mflag} | " +
+                             $"GunPlusOne={plusOne} temp={temp} | fireTimeFlag={fireFlag:0.###} | weapon=0x{__instance.Pointer.ToInt64():X}");
                 }
             }
             catch { }
@@ -333,6 +346,7 @@ namespace ZedZone.UltimateAssistant.Patch
         }
     }
 }
+
 
 
 

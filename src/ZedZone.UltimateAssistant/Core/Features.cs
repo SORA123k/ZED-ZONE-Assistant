@@ -17,12 +17,15 @@ namespace ZedZone.UltimateAssistant.Core
     {
         private static Harmony _harmony;
         private static bool _patchesInstalled;
+        private static bool _playerPatchesInstalled;
 
         internal static bool InfiniteAmmoOn { get; private set; }
         internal static bool NoReloadOn { get; private set; }
         internal static bool ZombieEspOn { get; private set; }
         internal static bool WeaponDurabilityOn { get; private set; }
         internal static bool ItemDurabilityLockOn { get; private set; }
+        internal static bool NoHpLossOn { get; private set; }
+        internal static bool NoStaminaLossOn { get; private set; }
         internal static bool NoOverheatOn { get; private set; }
         internal static bool JamBypassOn { get; private set; }
 
@@ -36,6 +39,8 @@ namespace ZedZone.UltimateAssistant.Core
             bool wantHeat = ModConfig.NoOverheat?.Value ?? false;
             bool wantJam = ModConfig.JamBypass?.Value ?? false;
             bool wantItemDur = ModConfig.ItemDurabilityLock?.Value ?? false;
+            bool wantNoHpLoss = ModConfig.NoHpLoss?.Value ?? false;
+            bool wantNoSta = ModConfig.NoStaminaLoss?.Value ?? false;
             bool wantAmmo = ModConfig.InfiniteAmmo?.Value ?? false;
             bool wantReload = ModConfig.NoReload?.Value ?? false;
             bool wantEsp = ModConfig.ZombieEsp?.Value ?? false;
@@ -63,6 +68,8 @@ namespace ZedZone.UltimateAssistant.Core
             SetNoOverheat(wantHeat);
             SetJamBypass(wantJam);
             SetItemDurabilityLock(wantItemDur);
+            SetNoHpLoss(wantNoHpLoss);
+            SetNoStaminaLoss(wantNoSta);
             ZombieEspOn = wantEsp;
         }
 
@@ -106,6 +113,22 @@ namespace ZedZone.UltimateAssistant.Core
             NoOverheatOn = on;
             Apply();
             Log.Info("[features] NoOverheat = " + on);
+        }
+
+        internal static void SetNoHpLoss(bool on)
+        {
+            if (NoHpLossOn == on) return;
+            NoHpLossOn = on;
+            Apply();
+            Log.Info("[features] NoHpLoss = " + on);
+        }
+
+        internal static void SetNoStaminaLoss(bool on)
+        {
+            if (NoStaminaLossOn == on) return;
+            NoStaminaLossOn = on;
+            Apply();
+            Log.Info("[features] NoStaminaLoss = " + on);
         }
 
         internal static void SetItemDurabilityLock(bool on)
@@ -157,20 +180,41 @@ namespace ZedZone.UltimateAssistant.Core
                 LastError = e.GetType().Name + ": " + e.Message;
                 Log.ErrorOnce("features.apply", e);
             }
+
+            // 玩家防扣除补丁（独立生命周期）
+            try
+            {
+                bool needPlayer = NoHpLossOn || NoStaminaLossOn;
+                if (needPlayer && !_playerPatchesInstalled)
+                {
+                    if (_harmony == null) _harmony = new Harmony(Plugin.PluginGuid);
+                    Patch.PlayerPatches.Install(_harmony);
+                    _playerPatchesInstalled = true;
+                }
+                else if (!needPlayer && _playerPatchesInstalled)
+                {
+                    Patch.PlayerPatches.Uninstall(_harmony);
+                    _playerPatchesInstalled = false;
+                }
+            }
+            catch (Exception e) { Log.ErrorOnce("features.apply.player", e); }
         }
 
         internal static void Shutdown()
         {
             try { if (_patchesInstalled) Patch.WeaponPatches.Uninstall(_harmony); } catch { }
+            try { if (_playerPatchesInstalled) Patch.PlayerPatches.Uninstall(_harmony); } catch { }
             _patchesInstalled = false;
             InfiniteAmmoOn = NoReloadOn = ZombieEspOn = false;
             WeaponDurabilityOn = NoOverheatOn = JamBypassOn = ItemDurabilityLockOn = false;
+            NoHpLossOn = NoStaminaLossOn = false;
         }
 
         internal static string StatusText()
             => $"弹药={(InfiniteAmmoOn ? "开" : "关")} 免换弹={(NoReloadOn ? "开" : "关")} ESP={(ZombieEspOn ? "开" : "关")}";
     }
 }
+
 
 
 
