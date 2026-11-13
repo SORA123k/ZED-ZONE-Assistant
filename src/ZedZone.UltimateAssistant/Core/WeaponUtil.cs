@@ -55,7 +55,7 @@ namespace ZedZone.UltimateAssistant.Core
             catch (Exception e) { Log.ErrorOnce("weaponutil.refresh", e); }
 
             // 耐久开关：持续把携带物耐久补回（每次刷新最多执行一次）
-            try { if (Features.WeaponDurabilityOn) RepairDurability(); } catch { }
+            try { if (Features.WeaponDurabilityOn) RestoreAllDurability(); } catch { }
         }
 
         internal static bool IsPlayerWeapon(IntPtr ptr)
@@ -128,6 +128,52 @@ namespace ZedZone.UltimateAssistant.Core
         /// <summary>修复玩家携带物品的耐久（单调增加，绝不降低）。</summary>
         
         private static float _nextDiag;
+
+        /// <summary>
+        /// 用游戏**原生接口**恢复耐久：
+        /// `InventoryData.RestoreItemDurability(itemId, amount, inventories)`。
+        /// （实测 ItemData.durability 字段对 271 件物品恒为 100，不是真实耐久来源，
+        ///   因此改为调用游戏自己的修复函数。）
+        /// </summary>
+        internal static int RestoreAllDurability()
+        {
+            int touched = 0;
+            float totalRestored = 0f;
+            try
+            {
+                HumanCharacterController p = PlayerAccessor.Resolve(out _, out _);
+                if (p == null) return 0;
+                var cd = p.characterData;
+                if (cd == null) return 0;
+
+                var invs = cd.GetCarriedInventoryList();
+                if (invs == null) return 0;
+
+                var items = CollectPlayerItems();
+                var seen = new HashSet<int>();
+
+                for (int i = 0; i < items.Count; i++)
+                {
+                    var it = items[i];
+                    if (it == null) continue;
+                    int id;
+                    try { id = it.itemId; } catch { continue; }
+                    if (!seen.Add(id)) continue;
+
+                    try
+                    {
+                        float got = InventoryData.RestoreItemDurability(id, 999f, invs);
+                        if (got > 0.001f) { touched++; totalRestored += got; }
+                    }
+                    catch (Exception e) { Log.WarnOnce("weaponutil.restore." + id, "[weapons] 修复失败 id=" + id + ": " + e.GetType().Name); }
+                }
+            }
+            catch (Exception e) { Log.ErrorOnce("weaponutil.restore", e); }
+
+            LastRepairCount = touched;
+            Log.Info($"[weapons] 原生耐久修复：涉及 {touched} 种物品，共恢复 {totalRestored:0.###}");
+            return touched;
+        }
 
         internal static int RepairDurability()
         {
@@ -226,6 +272,7 @@ namespace ZedZone.UltimateAssistant.Core
             => $"武器={_playerWeapons.Count} 耐久修复={(Features.WeaponDurabilityOn ? "开" : "关")} 过热={(Features.NoOverheatOn ? "已取消" : "正常")}";
     }
 }
+
 
 
 

@@ -84,7 +84,7 @@ namespace ZedZone.UltimateAssistant.Core
             if (WeaponDurabilityOn == on) return;
             WeaponDurabilityOn = on;
             Log.Info("[features] WeaponDurability = " + on);
-            if (on) { try { WeaponUtil.RepairDurability(); } catch { } }
+            if (on) { try { WeaponUtil.RestoreAllDurability(); } catch { } }
         }
 
         internal static void SetNoOverheat(bool on)
@@ -150,6 +150,7 @@ namespace ZedZone.UltimateAssistant.Core
             => $"弹药={(InfiniteAmmoOn ? "开" : "关")} 免换弹={(NoReloadOn ? "开" : "关")} ESP={(ZombieEspOn ? "开" : "关")}";
     }
 }
+
 
 
 

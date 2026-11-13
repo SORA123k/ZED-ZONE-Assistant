@@ -253,7 +253,31 @@ namespace ZedZone.UltimateAssistant.UI
             var content = new Rect(side.xMax, header.yMax, area.xMax - side.xMax, area.height - header.height);
             DrawContent(content, s, snap);
 
+            // 软件光标：游戏可能每帧隐藏硬件光标，这里自绘一个，保证一定看得到
+            DrawCursor();
+
             GUI.color = oldColor;
+        }
+
+        private static void DrawCursor()
+        {
+            try
+            {
+                Vector2 m = Event.current != null ? Event.current.mousePosition
+                                                  : (Vector2)UnityEngine.Input.mousePosition;
+
+                var old = GUI.color;
+                // 黑色描边
+                GUI.color = new Color(0f, 0f, 0f, 0.95f);
+                GUI.DrawTexture(new Rect(m.x - 1f, m.y - 11f, 2f, 23f), Texture2D.whiteTexture);
+                GUI.DrawTexture(new Rect(m.x - 11f, m.y - 1f, 23f, 2f), Texture2D.whiteTexture);
+                // 白色内芯
+                GUI.color = new Color(1f, 1f, 1f, 1f);
+                GUI.DrawTexture(new Rect(m.x - 0.5f, m.y - 10f, 1f, 21f), Texture2D.whiteTexture);
+                GUI.DrawTexture(new Rect(m.x - 10f, m.y - 0.5f, 21f, 1f), Texture2D.whiteTexture);
+                GUI.color = old;
+            }
+            catch { }
         }
 
         private static Rect _openRect;
@@ -692,6 +716,7 @@ namespace ZedZone.UltimateAssistant.UI
         }
     }
 }
+
 
 
 

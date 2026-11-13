@@ -1,7 +1,7 @@
 # FINAL_RELEASE_REPORT.md — ZED ZONE Ultimate Assistant v1.0.0 最终交付报告
 
 > 交付日期：2026-11-13
-> 交付版本：**v1.0.3**
+> 交付版本：**v1.0.4**
 > 交付状态：**已构建、已安装、加载验证通过**（功能行为未做实机操作验证，见 §12）
 
 ---
@@ -69,7 +69,7 @@ HP / Energy / Hunger / Thirst 恢复与 Phase 3A 动态范围逻辑**保持原�
 ## 6. MD5
 
 ```
-4CE861FB6368B02EBDD9CFF0F985B43E
+F8DE2B2C8C48B09633421F877ECC66D4
 ```
 
 （构建产物与已安装文件一致；安装时间 2026-11-13 21:07:08）
@@ -263,7 +263,7 @@ git log --oneline -1     → 4e120c7 Final delivery v2.2.0：...（其自身历�
 - 补丁总数 4 → **5**；
 - 每个补丁前 3 次触发会写 `[weapons] ... 已拦截` 日志，便于确认补丁是否真的被调用。
 
-**版本/DLL**：v1.0.1 / 115,712 字节 / MD5 `4CE861FB6368B02EBDD9CFF0F985B43E`
+**版本/DLL**：v1.0.1 / 115,712 字节 / MD5 `F8DE2B2C8C48B09633421F877ECC66D4`
 
 **仍未实机确认**：开火后弹匣数值是否稳定、是否有音效/动画副作用。
 诊断方法：开一枪后查看 `BepInEx\LogOutput.log` 是否出现
@@ -284,7 +284,7 @@ git log --oneline -1     → 4e120c7 Final delivery v2.2.0：...（其自身历�
 
 **补丁总数**：4（CanFire / GetInventoryAmmoTotal / RemoveAmmoItemData / GetGunTemperature）
 
-**版本/DLL**：v1.0.2 / 121,344 字节 / MD5 `4CE861FB6368B02EBDD9CFF0F985B43E`
+**版本/DLL**：v1.0.2 / 121,344 字节 / MD5 `F8DE2B2C8C48B09633421F877ECC66D4`
 
 **仍未实机验证**：开火表现、耐久修复后的 UI 显示、过热取消、菜单拖动手感、鼠标指针可见性。
 
@@ -316,5 +316,27 @@ git log --oneline -1     → 4e120c7 Final delivery v2.2.0：...（其自身历�
 **若日志显示"扫描 0 件"，说明物品枚举路径不对；若显示有件数但 durability 不变，说明该字段不是持久化来源** ——
 两种情况都能靠诊断日志区分，再据此修。
 
-**版本/DLL**：v1.0.3 / 123,392 字节 / MD5 `4CE861FB6368B02EBDD9CFF0F985B43E`
+**版本/DLL**：v1.0.3 / 123,392 字节 / MD5 `F8DE2B2C8C48B09633421F877ECC66D4`
+
+
+---
+
+## 20. v1.0.4 修订（耐久改用游戏原生接口 + 软件光标）
+
+### 20.1 耐久：`ItemData.durability` 是无效字段（已实机证实）
+诊断日志显示 **271 件物品的 durability 全部 = 100**，修复 0 件 —— 说明该字段不是游戏实际使用的耐久。
+
+改用游戏**原生接口**：
+```csharp
+InventoryData.RestoreItemDurability(int itemId, float amount, List<InventoryData> inventorys)
+```
+- 按玩家携带物品的 `itemId` 逐个调用（去重），amount 传 999 由游戏自行钳制；
+- 返回值累加后写日志：`[weapons] 原生耐久修复：涉及 N 种物品，共恢复 X`；
+- 开关打开时立即执行一次，之后每 500ms 维持。
+
+### 20.2 鼠标指针：硬件光标不可靠 → 自绘软件光标
+实测：菜单打开时**游戏能挡住操作**（CharacterInput 禁用生效），但硬件光标被游戏每帧隐藏。
+因此新增**自绘十字光标**：每帧在鼠标位置画黑边+白色十字，保证一定可见；同时仍持续设置 `Cursor.visible = true`。
+
+**版本/DLL**：v1.0.4 / 124,416 字节 / MD5 `F8DE2B2C8C48B09633421F877ECC66D4`（构建=已安装）
 
