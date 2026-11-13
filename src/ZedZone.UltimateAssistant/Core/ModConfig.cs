@@ -219,7 +219,7 @@ namespace ZedZone.UltimateAssistant.Core
                 "僵尸透视：在屏幕上标记当前已加载的僵尸，可显示名称与距离。默认关闭。");
 
             WeaponDurability = cfg.Bind("Features", "WeaponDurability", false,
-                "武器耐久修复：开启后把携带物品的耐久提升到 100（只增不减）。默认关闭。");
+                "无限耐久：开启后工具/武器使用时不消耗耐久（拦截 CostItemDurability），并每 2 秒兜底修复一次。默认关闭。");
             NoOverheat = cfg.Bind("Features", "NoOverheat", false,
                 "取消枪械过热：开启后玩家自己的枪械温度恒为 0（不影响 NPC）。默认关闭。");
             JamBypass = cfg.Bind("Features", "JamBypass", false,
@@ -245,6 +245,7 @@ namespace ZedZone.UltimateAssistant.Core
         }
     }
 }
+
 
 
 

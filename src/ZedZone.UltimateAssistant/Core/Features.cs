@@ -114,7 +114,7 @@ namespace ZedZone.UltimateAssistant.Core
         /// <summary>按当前开关状态安装/卸载补丁。任何异常只记录，不影响游戏。</summary>
         private static void Apply()
         {
-            bool needPatches = InfiniteAmmoOn || NoReloadOn || NoOverheatOn || JamBypassOn;
+            bool needPatches = InfiniteAmmoOn || NoReloadOn || NoOverheatOn || JamBypassOn || WeaponDurabilityOn;
             try
             {
                 if (needPatches && !_patchesInstalled)
@@ -150,6 +150,7 @@ namespace ZedZone.UltimateAssistant.Core
             => $"弹药={(InfiniteAmmoOn ? "开" : "关")} 免换弹={(NoReloadOn ? "开" : "关")} ESP={(ZombieEspOn ? "开" : "关")}";
     }
 }
+
 
 
 

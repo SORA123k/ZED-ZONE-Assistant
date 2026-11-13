@@ -30,7 +30,7 @@ namespace ZedZone.UltimateAssistant.Patch
 
         private const int FakeAmmo = 9999;
 
-        private static int _logCanFire, _logAmmoTotal, _logRemove, _logTemp;
+        private static int _logCanFire, _logAmmoTotal, _logRemove, _logTemp, _logDur;
 
         // ==================================================================
         internal static void Install(Harmony harmony)
@@ -63,6 +63,14 @@ namespace ZedZone.UltimateAssistant.Patch
                 Installed++;
             });
 
+            Try(harmony, "CostItemDurability", () =>
+            {
+                var m = AccessTools.Method(typeof(InventoryData), "CostItemDurability", new[] { typeof(ItemData), typeof(float) });
+                if (m == null) { Log.Warn("[weapons] 未找到 CostItemDurability"); return; }
+                harmony.Patch(m, prefix: new HarmonyMethod(typeof(WeaponPatches), nameof(CostDurabilityPrefix)));
+                Installed++;
+            });
+
             Try(harmony, "GetGunTemperature", () =>
             {
                 var m = AccessTools.Method(typeof(BasicRangedWeapon), "GetGunTemperature", new[] { typeof(ItemData) });
@@ -83,6 +91,7 @@ namespace ZedZone.UltimateAssistant.Patch
                 Unpatch(harmony, typeof(BasicRangedWeapon), "GetInventoryAmmoTotal",
                     new[] { typeof(BasicCharacterController), typeof(ItemData), typeof(int) });
                 Unpatch(harmony, typeof(HumanCharacterController), "RemoveAmmoItemData", null);
+                Unpatch(harmony, typeof(InventoryData), "CostItemDurability", new[] { typeof(ItemData), typeof(float) });
                 Unpatch(harmony, typeof(BasicRangedWeapon), "GetGunTemperature", new[] { typeof(ItemData) });
             }
             _hooked = false;
@@ -173,6 +182,26 @@ namespace ZedZone.UltimateAssistant.Patch
             catch { return true; }
         }
 
+        /// <summary>
+        /// 无限耐久：拦截玩家物品的耐久扣除，使工具/武器使用时不掉耐久。
+        /// `InventoryData.CostItemDurability(ItemData, float)` 是扣耐久入口，
+        /// 跳过原逻辑并返回 true（表示"已扣"，让上层流程继续）。
+        /// </summary>
+        internal static bool CostDurabilityPrefix(InventoryData __instance, ItemData itemData, ref bool __result)
+        {
+            try
+            {
+                if (!Features.WeaponDurabilityOn) return true;
+                if (itemData == null) return true;
+                if (!WeaponUtil.IsPlayerItem(itemData.Pointer)) return true;
+
+                Once(ref _logDur, "CostItemDurability 已拦截 → 不消耗耐久");
+                __result = true;
+                return false;
+            }
+            catch { return true; }
+        }
+
         /// <summary>取消过热：只把玩家自己的武器温度读作 0。</summary>
         internal static void GunTempPostfix(ItemData m_weaponData, ref float __result)
         {
@@ -188,4 +217,5 @@ namespace ZedZone.UltimateAssistant.Patch
         }
     }
 }
+
 
