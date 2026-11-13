@@ -80,6 +80,7 @@ namespace ZedZone.UltimateAssistant.UI
                     try { DurabilityLock.Tick(); } catch (Exception e) { Log.ErrorOnce("durlock", e); }
                     try { DurabilityLock.TickGuns(); } catch (Exception e) { Log.ErrorOnce("durgun", e); }
                     try { WeaponUtil.ClearMalfunction(); } catch (Exception e) { Log.ErrorOnce("jamclear", e); }
+                    try { AutoSupply.TickBoat(); } catch (Exception e) { Log.ErrorOnce("supplyboat", e); }
                     try { Il2CppMetaDiag.Tick(); } catch (Exception e) { Log.ErrorOnce("metadiag", e); }
                 }
             }
@@ -211,6 +212,7 @@ namespace ZedZone.UltimateAssistant.UI
         }
     }
 }
+
 
 
 

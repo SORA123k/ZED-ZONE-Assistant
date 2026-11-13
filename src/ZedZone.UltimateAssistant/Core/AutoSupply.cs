@@ -194,6 +194,65 @@ namespace ZedZone.UltimateAssistant.Core
             return null;
         }
 
+        private static float _nextBoatTick;
+        private static readonly System.Collections.Generic.Dictionary<int, float> _lastSpawn = new System.Collections.Generic.Dictionary<int, float>();
+
+        /// <summary>
+        /// 岛屿船（TOD）修复补货：
+        /// 用 MeleeWeapon_RepairHammer.ComputeTodRepairPlan 计算该 TerrainObject 的修复成本，
+        /// 再把玩家缺少的材料直接生成到船边地上。
+        /// 仅处理玩家 8 米内的 TerrainObject，1 秒节流。
+        /// </summary>
+        internal static void TickBoat()
+        {
+            try
+            {
+                if (!Features.AutoSupplyOn) return;
+                if (Time.unscaledTime < _nextBoatTick) return;
+                _nextBoatTick = Time.unscaledTime + 1f;
+
+                HumanCharacterController pl = PlayerAccessor.Resolve(out _, out _);
+                if (pl == null) return;
+                Vector3 ppos = pl.transform.position;
+
+                var tods = Resources.FindObjectsOfTypeAll<TerrainObject>();
+                if (tods == null) return;
+
+                for (int i = 0; i < tods.Length; i++)
+                {
+                    var tod = tods[i];
+                    if (tod == null) continue;
+                    try
+                    {
+                        var tp = tod.transform.position;
+                        if (Vector3.Distance(tp, ppos) > 8f) continue;
+
+                        var plan = MeleeWeapon_RepairHammer.ComputeTodRepairPlan(tod);
+                        var costs = plan.costs;
+                        if (costs == null || costs.Count == 0) continue;
+
+                        var inv = pl.characterData?.inventoryData;
+                        if (inv == null) continue;
+
+                        for (int k = 0; k < costs.Count; k++)
+                        {
+                            var e = costs[k];
+                            if (e.itemId <= 0 || e.count <= 0) continue;
+                            float have = SumById(inv, e.itemId);
+                            if (have >= e.count) continue;
+                            int need = Mathf.CeilToInt(e.count - have);
+                            if (_lastSpawn.TryGetValue(e.itemId, out float last) && Time.unscaledTime - last < 3f) continue;
+                            _lastSpawn[e.itemId] = Time.unscaledTime;
+                            Log.Info($"[supply] 岛屿船需求 itemId={e.itemId} need={e.count} have={have:0.#} → 生成 +{need}");
+                            TrySpawnGround(e.itemId, need);
+                        }
+                    }
+                    catch { }
+                }
+            }
+            catch (Exception e) { Log.WarnOnce("supply.boat", "[supply] 岛屿船补货异常: " + e.GetType().Name); }
+        }
+
         private static float SumById(InventoryData inv, int id)
         {
             try
@@ -212,6 +271,8 @@ namespace ZedZone.UltimateAssistant.Core
         }
     }
 }
+
+
 
 
 
