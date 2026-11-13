@@ -27,6 +27,7 @@ namespace ZedZone.UltimateAssistant.Core
         private static float _nextProbe;
         private static float _nextTemp;
         private static float _nextGunProbe;
+        private static float _nextZeroCost;
 
         internal static int PlayerWeaponCount => _playerWeapons.Count;
         internal static int LastRepairCount { get; private set; }
@@ -63,6 +64,7 @@ namespace ZedZone.UltimateAssistant.Core
             try { ProbeDurabilityFields(); } catch { }
             try { ResetGunTemperature(); } catch { }
             try { ProbeHeldWeapon(); } catch { }
+            try { ZeroDurabilityCost(); } catch { }
         }
 
         /// <summary>该 ItemData 是否属于玩家携带物（用于耐久扣除拦截）。</summary>
@@ -237,6 +239,48 @@ namespace ZedZone.UltimateAssistant.Core
                     Log.Info($"[durprobe] 变化 {changed} 件 | " + sb.ToString());
             }
             catch (Exception e) { Log.ErrorOnce("weaponutil.probe", e); }
+        }
+
+        /// <summary>
+        /// 无限耐久（组件层）：把玩家武器的「每枪耐久消耗」字段 m_gunpartDurabilityCostFloat 置 0。
+        /// 这是 BasicRangedWeapon 上唯一可写的耐久相关字段（durabilityFloat 只有 getter）。
+        /// </summary>
+        internal static int ZeroDurabilityCost()
+        {
+            int n = 0;
+            try
+            {
+                if (!Features.WeaponDurabilityOn) return 0;
+                if (Time.unscaledTime < _nextZeroCost) return 0;
+                _nextZeroCost = Time.unscaledTime + 0.2f;
+
+                HumanCharacterController pl = PlayerAccessor.Resolve(out _, out _);
+                if (pl == null) return 0;
+                var pp = pl.Pointer;
+
+                var arr = Resources.FindObjectsOfTypeAll<BasicRangedWeapon>();
+                if (arr == null) return 0;
+
+                for (int i = 0; i < arr.Length; i++)
+                {
+                    var w = arr[i];
+                    if (w == null) continue;
+                    try
+                    {
+                        var ch = w.character;
+                        if (ch == null || ch.Pointer != pp) continue;
+                        if (Math.Abs(w.m_gunpartDurabilityCostFloat) > 0.0001f)
+                        {
+                            w.m_gunpartDurabilityCostFloat = 0f;
+                            n++;
+                        }
+                    }
+                    catch { }
+                }
+            }
+            catch (Exception e) { Log.ErrorOnce("weaponutil.zerocost", e); }
+            if (n > 0) Log.Info($"[weapons] 已把 {n} 把武器的耐久消耗置 0");
+            return n;
         }
 
         /// <summary>专盯手持武器的探针：全部属性 + 组件 durabilityFloat。</summary>
@@ -528,6 +572,9 @@ namespace ZedZone.UltimateAssistant.Core
             => $"武器={_playerWeapons.Count} 耐久修复={(Features.WeaponDurabilityOn ? "开" : "关")} 过热={(Features.NoOverheatOn ? "已取消" : "正常")}";
     }
 }
+
+
+
 
 
 
