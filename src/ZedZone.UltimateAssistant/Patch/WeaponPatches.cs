@@ -77,13 +77,6 @@ namespace ZedZone.UltimateAssistant.Patch
                 Installed++;
             });
 
-            Try(harmony, "get_durabilityFloat", () =>
-            {
-                var m = AccessTools.Method(typeof(BasicRangedWeapon), "get_durabilityFloat");
-                if (m == null) { Log.Warn("[weapons] 未找到 get_durabilityFloat"); return; }
-                harmony.Patch(m, postfix: new HarmonyMethod(typeof(WeaponPatches), nameof(DurabilityPostfix)));
-                Installed++;
-            });
 
             Try(harmony, "GetGunTemperature", () =>
             {
@@ -108,7 +101,7 @@ namespace ZedZone.UltimateAssistant.Patch
                 Unpatch(harmony, typeof(InventoryData), "CostItemDurability", new[] { typeof(ItemData), typeof(float) });
                 Unpatch(harmony, typeof(HumanCharacterController), "CostItemDurability", new[] { typeof(ItemData), typeof(float) });
                 Unpatch(harmony, typeof(HumanCharacterController), "CostItemDurabilityExecute", new[] { typeof(ItemData), typeof(float) });
-                Unpatch(harmony, typeof(BasicRangedWeapon), "get_durabilityFloat", null);
+
                 Unpatch(harmony, typeof(BasicRangedWeapon), "GetGunTemperature", new[] { typeof(ItemData) });
             }
             _hooked = false;
@@ -340,6 +333,7 @@ namespace ZedZone.UltimateAssistant.Patch
         }
     }
 }
+
 
 
 

@@ -192,15 +192,37 @@ namespace ZedZone.UltimateAssistant.Core
                         float cur = props[0];
                         if (cur <= 0f) continue;
 
+                        IntPtr wdp = wd.Pointer;
+                        if (wdp == IntPtr.Zero) continue;
+
+                        // maxSeen：该 ItemData 实例观察到过的最高耐久
+                        // （不再用 durabilityFloat 反推 —— 它可能被其它补丁覆盖，已被实证骗死过一次）
+                        float max;
+                        if (!_gunMaxSeen.TryGetValue(wdp, out max))
+                        {
+                            // 首次见到：用反编译实证的公式反推真实上限
+                            //   durabilityFloat = props[0] / durabilityMax  =>  max = props[0] / durabilityFloat
+                            // （v1.3.1 的 getter 覆盖已移除，此处 df 为游戏真实值）
+                            float df0 = -1f;
+                            try { df0 = w.durabilityFloat; } catch { }
+                            max = (df0 > 0.001f && df0 <= 1.0001f) ? (cur / df0) : cur;
+                            _gunMaxSeen[wdp] = max;
+                            if (max > cur + 0.01f)
+                                Log.Info($"[dur] gun-seed itemId={wd.itemId} props[0]={cur:0.###} df={df0:0.####} -> max={max:0.###}");
+                            else
+                                continue;
+                        }
+
+                        if (cur > max + 0.0001f)          // 修理/换新枪 → 抬高峰值
+                        {
+                            _gunMaxSeen[wdp] = cur;
+                            continue;
+                        }
+
+                        if (cur >= max - 0.0001f) continue;   // 没有下降
+
                         float df = -1f;
                         try { df = w.durabilityFloat; } catch { }
-
-                        // 由公式反推最大耐久：max = cur / durabilityFloat（df 已被游戏钳制在 (0,1]）
-                        float max = cur;
-                        if (df > 0.001f && df <= 1.0001f) max = cur / df;
-
-                        if (df >= 0.999f && max <= cur + 0.01f) continue;   // 已满，无需写入
-                        if (max <= cur + 0.01f) continue;
 
                         props[0] = max;
 
@@ -239,6 +261,8 @@ namespace ZedZone.UltimateAssistant.Core
             => $"普通耐久锁定={(Features.ItemDurabilityLockOn ? "开" : "关")} 跟踪={_maxSeen.Count}";
     }
 }
+
+
 
 
 
