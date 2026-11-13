@@ -54,7 +54,6 @@ namespace ZedZone.UltimateAssistant.UI
 
                 // 热键
                 if (MenuKeyDown()) ToggleMenu();
-                if (ClickGui.Open && KeyDown(KeyCode.Escape)) ToggleMenu();
                 if (ClickGui.Open) { try { InputGuard.Tick(); InputGuard.Maintain(); } catch { } }
                 try { FullBright.Tick(); } catch (Exception e) { Log.ErrorOnce("bright", e); }
                 try { RollSpeed.Tick(); } catch (Exception e) { Log.ErrorOnce("roll", e); }
@@ -107,6 +106,11 @@ namespace ZedZone.UltimateAssistant.UI
             else { InputGuard.Release(); }
 
             Log.Info("[ui] 菜单 " + (open ? "打开（输入已阻断）" : "关闭（输入已恢复）"));
+        }
+
+        private void LateUpdate()
+        {
+            try { FullBright.Tick(); } catch (Exception e) { Log.ErrorOnce("bright.late", e); }
         }
 
         private void OnGUI()
@@ -207,6 +211,8 @@ namespace ZedZone.UltimateAssistant.UI
         }
     }
 }
+
+
 
 
 

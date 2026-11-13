@@ -201,7 +201,7 @@ namespace ZedZone.UltimateAssistant.UI
             return y;
         }
 
-        private static float Card(string titleKey, string descKey, bool on, Action<bool> set,
+        private static float Card(string titleKey, string descKey, string hotkeyId, bool on, Action<bool> set,
             float cx, float cw, float s, ref float y)
         {
             float ch = (Fs + 30f) * s;
@@ -211,14 +211,19 @@ namespace ZedZone.UltimateAssistant.UI
             Fill(new Rect(r.x, r.y + 6f * s, 3f * s, ch - 12f * s), on ? P.Accent : new Color(1f, 1f, 1f, 0.06f));
 
             GUI.color = P.Text;
-            GUI.Label(new Rect(r.x + 12f * s, r.y + 4f * s, cw - 90f * s, (Fs + 4) * s), L.T(titleKey), _cardTitle);
+            GUI.Label(new Rect(r.x + 12f * s, r.y + 4f * s, cw - 160f * s, (Fs + 4) * s), L.T(titleKey), _cardTitle);
             GUI.color = P.SubText;
-            GUI.Label(new Rect(r.x + 12f * s, r.y + (Fs + 8) * s, cw - 90f * s, (Fs + 2) * s), L.T(descKey), _cardDesc);
+            GUI.Label(new Rect(r.x + 12f * s, r.y + (Fs + 8) * s, cw - 160f * s, (Fs + 2) * s), L.T(descKey), _cardDesc);
+
+            // 该功能的快捷键按钮（点击后按任意键绑定，ESC 清空）
+            bool cap = HotkeyManager.IsCapturing(hotkeyId);
+            var kb = new Rect(r.xMax - 128f * s, r.y + (ch - 22f * s) * 0.5f, 66f * s, 22f * s);
+            Button(kb, cap ? L.T("press_key") : KeyText(hotkeyId), s, () => HotkeyManager.BeginCapture(hotkeyId));
 
             var sw = new Rect(r.xMax - 52f * s, r.y + (ch - 20f * s) * 0.5f, 40f * s, 20f * s);
             DrawSwitch(sw, s, on, titleKey);
 
-            if (Hit(new Rect(r.x, r.y, r.width - 64f * s, r.height)) || Hit(sw)) set(!on);
+            if (Hit(new Rect(r.x, r.y, r.width - 140f * s, r.height))) set(!on);
             y += ch + 6f * s;
             return y;
         }
@@ -337,17 +342,17 @@ namespace ZedZone.UltimateAssistant.UI
         private static void DrawCombat(float cx, float cw, float s, ref float y)
         {
             Section("sec_combat", cx, cw, s, ref y);
-            Card("infinite_ammo", "infinite_ammo_d", Features.InfiniteAmmoOn,
+            Card("infinite_ammo", "infinite_ammo_d", "infinite_ammo", Features.InfiniteAmmoOn,
                 v => { ModConfig.InfiniteAmmo.Value = v; Features.SetInfiniteAmmo(v); }, cx, cw, s, ref y);
-            Card("no_reload", "no_reload_d", Features.NoReloadOn,
+            Card("no_reload", "no_reload_d", "no_reload", Features.NoReloadOn,
                 v => { ModConfig.NoReload.Value = v; Features.SetNoReload(v); }, cx, cw, s, ref y);
-            Card("no_jam", "no_jam_d", Features.NoJamOn,
+            Card("no_jam", "no_jam_d", "no_jam", Features.NoJamOn,
                 v => { ModConfig.NoJam.Value = v; Features.SetNoJam(v); }, cx, cw, s, ref y);
-            Card("item_dur", "item_dur_d", Features.ItemDurabilityLockOn,
+            Card("item_dur", "item_dur_d", "item_dur", Features.ItemDurabilityLockOn,
                 v => { ModConfig.ItemDurabilityLock.Value = v; Features.SetItemDurabilityLock(v); }, cx, cw, s, ref y);
-            Card("gun_dur", "gun_dur_d", Features.WeaponDurabilityOn,
+            Card("gun_dur", "gun_dur_d", "gun_dur", Features.WeaponDurabilityOn,
                 v => { ModConfig.WeaponDurability.Value = v; Features.SetWeaponDurability(v); }, cx, cw, s, ref y);
-            Card("no_overheat", "no_overheat_d", Features.NoOverheatOn,
+            Card("no_overheat", "no_overheat_d", "no_overheat", Features.NoOverheatOn,
                 v => { ModConfig.NoOverheat.Value = v; Features.SetNoOverheat(v); }, cx, cw, s, ref y);
             ActionCard("fix_jam", "fix_jam_d", () => WeaponUtil.ClearMalfunction(), cx, cw, s, ref y);
         }
@@ -355,19 +360,19 @@ namespace ZedZone.UltimateAssistant.UI
         private static void DrawPlayer(float cx, float cw, float s, ref float y, PlayerSnapshot snap)
         {
             Section("sec_guard", cx, cw, s, ref y);
-            Card("no_hp", "no_hp_d", Features.NoHpLossOn,
+            Card("no_hp", "no_hp_d", "no_hp", Features.NoHpLossOn,
                 v => { ModConfig.NoHpLoss.Value = v; Features.SetNoHpLoss(v); }, cx, cw, s, ref y);
-            Card("no_sta", "no_sta_d", Features.NoStaminaLossOn,
+            Card("no_sta", "no_sta_d", "no_sta", Features.NoStaminaLossOn,
                 v => { ModConfig.NoStaminaLoss.Value = v; Features.SetNoStaminaLoss(v); }, cx, cw, s, ref y);
-            Card("no_hunger", "no_hunger_d", Features.NoHungerLossOn,
+            Card("no_hunger", "no_hunger_d", "no_hunger", Features.NoHungerLossOn,
                 v => { ModConfig.NoHungerLoss.Value = v; Features.SetNoHungerLoss(v); }, cx, cw, s, ref y);
-            Card("no_thirst", "no_thirst_d", Features.NoThirstLossOn,
+            Card("no_thirst", "no_thirst_d", "no_thirst", Features.NoThirstLossOn,
                 v => { ModConfig.NoThirstLoss.Value = v; Features.SetNoThirstLoss(v); }, cx, cw, s, ref y);
 
             Section("sec_move", cx, cw, s, ref y);
-            Card("always_sprint", "always_sprint_d", Features.AlwaysSprintOn,
+            Card("always_sprint", "always_sprint_d", "always_sprint", Features.AlwaysSprintOn,
                 v => { ModConfig.AlwaysSprint.Value = v; Features.SetAlwaysSprint(v); }, cx, cw, s, ref y);
-            Card("move_speed", "move_speed_d", Features.MoveSpeedOn,
+            Card("move_speed", "move_speed_d", "move_speed", Features.MoveSpeedOn,
                 v => { ModConfig.MoveSpeed.Value = v; Features.SetMoveSpeed(v); }, cx, cw, s, ref y);
             SliderRow("multiplier", "move_speed", ModConfig.MoveSpeedMultiplier.Value, 1.0f, 3.0f, 0.1f,
                 v => ModConfig.MoveSpeedMultiplier.Value = v, "0.0'x'", cx, cw, s, ref y);
@@ -461,9 +466,9 @@ namespace ZedZone.UltimateAssistant.UI
         private static void DrawVisuals(float cx, float cw, float s, ref float y)
         {
             Section("sec_visuals", cx, cw, s, ref y);
-            Card("fullbright", "fullbright_d", Features.FullBrightOn,
+            Card("fullbright", "fullbright_d", "fullbright", Features.FullBrightOn,
                 v => { ModConfig.FullBright.Value = v; Features.SetFullBright(v); }, cx, cw, s, ref y);
-            Card("esp", "esp_d", Features.ZombieEspOn,
+            Card("esp", "esp_d", "esp", Features.ZombieEspOn,
                 v => { ModConfig.ZombieEsp.Value = v; Features.SetZombieEsp(v); }, cx, cw, s, ref y);
             ToggleRow("esp_name", ModConfig.EspShowName.Value, v => ModConfig.EspShowName.Value = v, cx, cw, s, ref y);
             ToggleRow("esp_dist", ModConfig.EspShowDistance.Value, v => ModConfig.EspShowDistance.Value = v, cx, cw, s, ref y);
@@ -504,13 +509,7 @@ namespace ZedZone.UltimateAssistant.UI
             GUI.Label(new Rect(cx, y, cw, 18f * s), L.T("hotkey_hint"), _small);
             y += 24f * s;
 
-            // 每个功能的自定义快捷键
-            Section("sec_hotkeys", cx, cw, s, ref y);
-            for (int i = 0; i < HotkeyManager.Entries.Count; i++)
-            {
-                var e = HotkeyManager.Entries[i];
-                FeatureKeyRow(e, cx, cw, s, ref y);
-            }
+
             GUI.color = P.SubText;
             GUI.Label(new Rect(cx, y, cw, 16f * s), L.T("footer_hint"), _small);
             y += 20f * s;
@@ -732,5 +731,6 @@ namespace ZedZone.UltimateAssistant.UI
         }
     }
 }
+
 
 

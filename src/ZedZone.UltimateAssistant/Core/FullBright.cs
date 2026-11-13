@@ -35,8 +35,6 @@ namespace ZedZone.UltimateAssistant.Core
             try
             {
                 if (!Features.FullBrightOn) { Restore(); return; }
-                if (Time.unscaledTime < _next) return;
-                _next = Time.unscaledTime + 0.4f;
 
                 Save();
 
@@ -161,3 +159,4 @@ namespace ZedZone.UltimateAssistant.Core
         }
     }
 }
+
