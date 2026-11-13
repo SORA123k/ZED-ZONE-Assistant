@@ -71,6 +71,24 @@ namespace ZedZone.UltimateAssistant.Patch
                 Installed++;
             });
 
+            Try(harmony, "HCC.CostItemDurability", () =>
+            {
+                var m = AccessTools.Method(typeof(HumanCharacterController), "CostItemDurability",
+                    new[] { typeof(ItemData), typeof(float) });
+                if (m == null) { Log.Warn("[weapons] 未找到 HCC.CostItemDurability"); return; }
+                harmony.Patch(m, prefix: new HarmonyMethod(typeof(WeaponPatches), nameof(HccCostDurPrefix)));
+                Installed++;
+            });
+
+            Try(harmony, "HCC.CostItemDurabilityExecute", () =>
+            {
+                var m = AccessTools.Method(typeof(HumanCharacterController), "CostItemDurabilityExecute",
+                    new[] { typeof(ItemData), typeof(float) });
+                if (m == null) { Log.Warn("[weapons] 未找到 HCC.CostItemDurabilityExecute"); return; }
+                harmony.Patch(m, prefix: new HarmonyMethod(typeof(WeaponPatches), nameof(HccCostDurExecPrefix)));
+                Installed++;
+            });
+
             Try(harmony, "GetGunTemperature", () =>
             {
                 var m = AccessTools.Method(typeof(BasicRangedWeapon), "GetGunTemperature", new[] { typeof(ItemData) });
@@ -92,6 +110,8 @@ namespace ZedZone.UltimateAssistant.Patch
                     new[] { typeof(BasicCharacterController), typeof(ItemData), typeof(int) });
                 Unpatch(harmony, typeof(HumanCharacterController), "RemoveAmmoItemData", null);
                 Unpatch(harmony, typeof(InventoryData), "CostItemDurability", new[] { typeof(ItemData), typeof(float) });
+                Unpatch(harmony, typeof(HumanCharacterController), "CostItemDurability", new[] { typeof(ItemData), typeof(float) });
+                Unpatch(harmony, typeof(HumanCharacterController), "CostItemDurabilityExecute", new[] { typeof(ItemData), typeof(float) });
                 Unpatch(harmony, typeof(BasicRangedWeapon), "GetGunTemperature", new[] { typeof(ItemData) });
             }
             _hooked = false;
@@ -202,6 +222,37 @@ namespace ZedZone.UltimateAssistant.Patch
             catch { return true; }
         }
 
+        /// <summary>
+        /// 无限耐久（真正入口）：`HumanCharacterController.CostItemDurability`。
+        /// 跳过原逻辑并返回 true（视为已扣），使工具/武器使用不掉耐久。
+        /// </summary>
+        internal static bool HccCostDurPrefix(HumanCharacterController __instance, ItemData itemData, ref bool __result)
+        {
+            try
+            {
+                if (!Features.WeaponDurabilityOn) return true;
+                if (!IsLocalPlayer(__instance)) return true;
+                Once(ref _logDur, "HCC.CostItemDurability 已拦截 → 不消耗耐久");
+                __result = true;
+                return false;
+            }
+            catch { return true; }
+        }
+
+        /// <summary>无限耐久：Execute 变体同样拦截。</summary>
+        internal static bool HccCostDurExecPrefix(HumanCharacterController __instance, ItemData itemData, ref bool __result)
+        {
+            try
+            {
+                if (!Features.WeaponDurabilityOn) return true;
+                if (!IsLocalPlayer(__instance)) return true;
+                Once(ref _logDur, "HCC.CostItemDurabilityExecute 已拦截 → 不消耗耐久");
+                __result = true;
+                return false;
+            }
+            catch { return true; }
+        }
+
         /// <summary>取消过热：只把玩家自己的武器温度读作 0。</summary>
         internal static void GunTempPostfix(ItemData m_weaponData, ref float __result)
         {
@@ -217,5 +268,6 @@ namespace ZedZone.UltimateAssistant.Patch
         }
     }
 }
+
 
 

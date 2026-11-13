@@ -109,6 +109,26 @@ namespace ZedZone.UltimateAssistant.Core
                 }
                 catch (Exception e) { Log.WarnOnce("weaponutil.all", "[weapons] GetAllItemsIncludeBackpack 失败: " + e.GetType().Name); }
 
+                // 1.5) 装备槽（手持武器/照明/特殊装备等不一定在背包列表里）
+                try
+                {
+                    var eq = cd.characterEquipmentData;
+                    if (eq != null)
+                    {
+                        void AddEq(ItemData x) { if (x != null) result.Add(x); }
+                        AddEq(eq.currentWeaponItemData);
+                        AddEq(eq.lightingToolItemData);
+                        AddEq(eq.specialEquipmentItemData);
+                        AddEq(eq.throwableItemData);
+                        AddEq(eq.hatItemData);
+                        AddEq(eq.torseItemData);
+                        AddEq(eq.legItemData);
+                        AddEq(eq.feetItemData);
+                        AddEq(eq.shieldItemData);
+                    }
+                }
+                catch { }
+
                 // 2) 所有携带容器（含装备容器）
                 try
                 {
@@ -376,6 +396,7 @@ namespace ZedZone.UltimateAssistant.Core
             => $"武器={_playerWeapons.Count} 耐久修复={(Features.WeaponDurabilityOn ? "开" : "关")} 过热={(Features.NoOverheatOn ? "已取消" : "正常")}";
     }
 }
+
 
 
 
