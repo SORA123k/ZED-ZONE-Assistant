@@ -44,11 +44,20 @@ namespace ZedZone.UltimateAssistant.Patch
                 Installed++;
             });
 
-            Try(harmony, "OnTimeUpdate", () =>
+            // 奔跑时允许鼠标动作（射击）
+            Try(harmony, "CanControlMouseActions", () =>
             {
-                var m = AccessTools.Method(typeof(HumanCharacterController), "OnTimeUpdate", new[] { typeof(float) });
-                if (m == null) { Log.Warn("[move] 未找到 OnTimeUpdate"); return; }
-                harmony.Patch(m, prefix: new HarmonyMethod(typeof(PlayerMovePatches), nameof(TimeUpdatePrefix)));
+                var m = AccessTools.Method(typeof(CharacterInput), "get_CanControlMouseActions");
+                if (m == null) { Log.Warn("[move] 未找到 get_CanControlMouseActions"); return; }
+                harmony.Patch(m, postfix: new HarmonyMethod(typeof(PlayerMovePatches), nameof(MouseActionPostfix)));
+                Installed++;
+            });
+
+            Try(harmony, "CanPressMouse", () =>
+            {
+                var m = AccessTools.Method(typeof(CharacterInput), "get_CanPressMouse");
+                if (m == null) { Log.Warn("[move] 未找到 get_CanPressMouse"); return; }
+                harmony.Patch(m, postfix: new HarmonyMethod(typeof(PlayerMovePatches), nameof(MouseActionPostfix)));
                 Installed++;
             });
 
@@ -62,7 +71,8 @@ namespace ZedZone.UltimateAssistant.Patch
             {
                 Unpatch(harmony, typeof(CharacterInput), "IsSprintCanceledByCombatInput", null);
                 Unpatch(harmony, typeof(HumanCharacterController), "get_realMoveSpeed", null);
-                Unpatch(harmony, typeof(HumanCharacterController), "OnTimeUpdate", new[] { typeof(float) });
+                Unpatch(harmony, typeof(CharacterInput), "get_CanControlMouseActions", null);
+                Unpatch(harmony, typeof(CharacterInput), "get_CanPressMouse", null);
             }
             _hooked = false;
             Installed = 0;
@@ -108,7 +118,7 @@ namespace ZedZone.UltimateAssistant.Patch
             catch { return false; }
         }
 
-        private static int _sprintLog, _speedLog, _timeLog;
+        private static int _sprintLog, _speedLog, _mouseLog;
 
         // ---------------- 补丁实现 ----------------
 
@@ -141,19 +151,21 @@ namespace ZedZone.UltimateAssistant.Patch
             catch { }
         }
 
-        /// <summary>Timer：只放大玩家自身的时间推进（不影响世界时间）。</summary>
-        internal static void TimeUpdatePrefix(HumanCharacterController __instance, ref float m_addTimeFloat)
+        /// <summary>
+        /// 强制奔跑：奔跑时允许鼠标动作（射击）。
+        /// CanControlMouseActions / CanPressMouse 是 CharacterInput 中门控鼠标动作的属性。
+        /// </summary>
+        internal static void MouseActionPostfix(ref bool __result)
         {
             try
             {
-                if (!Features.TimerOn) return;
-                if (!IsLocalPlayer(__instance)) return;
-                float mult = Mathf.Clamp(ModConfig.TimerMultiplier?.Value ?? 1f, 1f, 5f);
-                if (mult <= 1.0001f) return;
-                m_addTimeFloat *= mult;
-                if (_timeLog < 3) { _timeLog++; Log.Info($"[time] OnTimeUpdate dt x{mult:0.0}"); }
+                if (!Features.AlwaysSprintOn) return;
+                if (__result) return;
+                if (_mouseLog < 3) { _mouseLog++; Log.Info("[move] 鼠标动作门控已放开 → 奔跑时可射击"); }
+                __result = true;
             }
             catch { }
         }
     }
 }
+

@@ -60,8 +60,8 @@ namespace ZedZone.UltimateAssistant.UI
             ["always_sprint_d"]=new[]{ "开枪/攻击时保持奔跑，不被强制切换为走路", "Keeps sprinting while shooting or attacking", "開槍/攻擊時保持奔跑，不被強制切換為走路" },
             ["move_speed"]   = new[]{ "移动加速", "Movement Speed", "移動加速" },
             ["move_speed_d"] = new[]{ "按倍率提高本地玩家移动速度", "Multiplies your movement speed", "按倍率提高本地玩家移動速度" },
-            ["timer"]        = new[]{ "Timer（身体速度）", "Timer (Body Speed)", "Timer（身體速度）" },
-            ["timer_d"]      = new[]{ "只加快玩家自身动作与状态（绷带/换弹/恢复），不影响世界", "Speeds up your own body actions and states only (bandage/reload/regen), never the world", "只加快玩家自身動作與狀態（繃帶/換彈/恢復），不影響世界" },
+            ["fullbright"]   = new[]{ "地图全亮", "Full Bright", "地圖全亮" },
+            ["fullbright_d"] = new[]{ "夜间提升场景亮度（不改变时间/天气/AI）", "Brightens the scene at night (no time/weather/AI change)", "夜間提升場景亮度（不改變時間/天氣/AI）" },
             ["multiplier"]   = new[]{ "倍率", "Multiplier", "倍率" },
             ["reset"]        = new[]{ "恢复默认", "Reset", "恢復預設" },
             ["limbs"]        = new[]{ "肢体状态（只读）", "LIMB STATUS (read-only)", "肢體狀態（唯讀）" },
@@ -155,3 +155,4 @@ namespace ZedZone.UltimateAssistant.UI
             => code == "en" ? "English" : (code == "zhTW" ? "繁體中文" : "简体中文");
     }
 }
+

@@ -373,11 +373,6 @@ namespace ZedZone.UltimateAssistant.UI
                 v => ModConfig.MoveSpeedMultiplier.Value = v, "0.0'x'", cx, cw, s, ref y);
             ActionCard("reset", "move_speed_d", () => ModConfig.MoveSpeedMultiplier.Value = 1.0f, cx, cw, s, ref y);
 
-            Card("timer", "timer_d", Features.TimerOn,
-                v => { ModConfig.Timer.Value = v; Features.SetTimer(v); }, cx, cw, s, ref y);
-            SliderRow("multiplier", "timer", ModConfig.TimerMultiplier.Value, 1.0f, 5.0f, 0.1f,
-                v => ModConfig.TimerMultiplier.Value = v, "0.0'x'", cx, cw, s, ref y);
-            ActionCard("reset", "timer_d", () => ModConfig.TimerMultiplier.Value = 1.0f, cx, cw, s, ref y);
 
             Section("sec_restore", cx, cw, s, ref y);
             if (snap == null || !snap.HasPlayer)
@@ -466,6 +461,8 @@ namespace ZedZone.UltimateAssistant.UI
         private static void DrawVisuals(float cx, float cw, float s, ref float y)
         {
             Section("sec_visuals", cx, cw, s, ref y);
+            Card("fullbright", "fullbright_d", Features.FullBrightOn,
+                v => { ModConfig.FullBright.Value = v; Features.SetFullBright(v); }, cx, cw, s, ref y);
             Card("esp", "esp_d", Features.ZombieEspOn,
                 v => { ModConfig.ZombieEsp.Value = v; Features.SetZombieEsp(v); }, cx, cw, s, ref y);
             ToggleRow("esp_name", ModConfig.EspShowName.Value, v => ModConfig.EspShowName.Value = v, cx, cw, s, ref y);
@@ -643,3 +640,4 @@ namespace ZedZone.UltimateAssistant.UI
         }
     }
 }
+

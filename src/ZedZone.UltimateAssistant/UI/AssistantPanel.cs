@@ -50,7 +50,9 @@ namespace ZedZone.UltimateAssistant.UI
                 // 热键
                 if (KeyDown(_key)) ToggleMenu();
                 if (ClickGui.Open && KeyDown(KeyCode.Escape)) ToggleMenu();
-                if (ClickGui.Open) { try { InputGuard.Tick(); } catch { } }
+                if (ClickGui.Open) { try { InputGuard.Tick(); InputGuard.Maintain(); } catch { } }
+                try { FullBright.Tick(); } catch (Exception e) { Log.ErrorOnce("bright", e); }
+                try { RollSpeed.Tick(); } catch (Exception e) { Log.ErrorOnce("roll", e); }
 
                 // 节流读取
                 if (Time.unscaledTime * 1000f >= _nextReadAt)
@@ -106,6 +108,7 @@ namespace ZedZone.UltimateAssistant.UI
             try
             {
                 // 世界叠层：无论菜单是否打开都绘制（只要功能开启）
+                FullBright.DrawOverlay();
                 ZombieEsp.Draw();
 
                 if (ClickGui.Open) ClickGui.Draw(_snap);
@@ -174,6 +177,8 @@ namespace ZedZone.UltimateAssistant.UI
         }
     }
 }
+
+
 
 
 

@@ -32,7 +32,7 @@ namespace ZedZone.UltimateAssistant.Core
         internal static bool NoJamOn { get; private set; }
         internal static bool AlwaysSprintOn { get; private set; }
         internal static bool MoveSpeedOn { get; private set; }
-        internal static bool TimerOn { get; private set; }
+        internal static bool FullBrightOn { get; private set; }
         internal static bool NoOverheatOn { get; private set; }
         internal static bool JamBypassOn { get; private set; }
 
@@ -53,7 +53,7 @@ namespace ZedZone.UltimateAssistant.Core
             bool wantNoJam = ModConfig.NoJam?.Value ?? false;
             bool wantSprint = ModConfig.AlwaysSprint?.Value ?? false;
             bool wantSpeed = ModConfig.MoveSpeed?.Value ?? false;
-            bool wantTimer = ModConfig.Timer?.Value ?? false;
+            bool wantFullBright = ModConfig.FullBright?.Value ?? false;
             bool wantAmmo = ModConfig.InfiniteAmmo?.Value ?? false;
             bool wantReload = ModConfig.NoReload?.Value ?? false;
             bool wantEsp = ModConfig.ZombieEsp?.Value ?? false;
@@ -88,7 +88,7 @@ namespace ZedZone.UltimateAssistant.Core
             SetNoJam(wantNoJam);
             SetAlwaysSprint(wantSprint);
             SetMoveSpeed(wantSpeed);
-            SetTimer(wantTimer);
+            SetFullBright(wantFullBright);
             ZombieEspOn = wantEsp;
         }
 
@@ -150,12 +150,12 @@ namespace ZedZone.UltimateAssistant.Core
             Log.Info("[features] MoveSpeed = " + on);
         }
 
-        internal static void SetTimer(bool on)
+        internal static void SetFullBright(bool on)
         {
-            if (TimerOn == on) return;
-            TimerOn = on;
-            Apply();
-            Log.Info("[features] Timer = " + on);
+            if (FullBrightOn == on) return;
+            FullBrightOn = on;
+            if (!on) FullBright.Restore();
+            Log.Info("[features] FullBright = " + on);
         }
 
         internal static void SetNoHungerLoss(bool on)
@@ -269,7 +269,7 @@ namespace ZedZone.UltimateAssistant.Core
             // 移动类补丁（强制奔跑 / 移动加速 / Timer）
             try
             {
-                bool needMove = AlwaysSprintOn || MoveSpeedOn || TimerOn;
+                bool needMove = AlwaysSprintOn || MoveSpeedOn;
                 if (needMove && !_movePatchesInstalled)
                 {
                     if (_harmony == null) _harmony = new Harmony(Plugin.PluginGuid);
@@ -294,13 +294,14 @@ namespace ZedZone.UltimateAssistant.Core
             InfiniteAmmoOn = NoReloadOn = ZombieEspOn = false;
             WeaponDurabilityOn = NoOverheatOn = JamBypassOn = ItemDurabilityLockOn = false;
             NoHpLossOn = NoStaminaLossOn = NoHungerLossOn = NoThirstLossOn = NoJamOn = false;
-            AlwaysSprintOn = MoveSpeedOn = TimerOn = false;
+            AlwaysSprintOn = MoveSpeedOn = FullBrightOn = false;
         }
 
         internal static string StatusText()
             => $"弹药={(InfiniteAmmoOn ? "开" : "关")} 免换弹={(NoReloadOn ? "开" : "关")} ESP={(ZombieEspOn ? "开" : "关")}";
     }
 }
+
 
 
 

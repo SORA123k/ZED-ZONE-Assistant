@@ -71,7 +71,9 @@ namespace ZedZone.UltimateAssistant.Patch
             {
                 var m = AccessTools.Method(typeof(BasicRangedWeapon), "get_isMalfunction");
                 if (m == null) { Log.Warn("[weapons] 未找到 get_isMalfunction"); return; }
-                harmony.Patch(m, postfix: new HarmonyMethod(typeof(WeaponPatches), nameof(IsMalfunctionPostfix)));
+                harmony.Patch(m,
+                    prefix: new HarmonyMethod(typeof(WeaponPatches), nameof(IsMalfunctionPrefix)),
+                    postfix: new HarmonyMethod(typeof(WeaponPatches), nameof(IsMalfunctionPostfix)));
                 Installed++;
             });
 
@@ -259,6 +261,22 @@ namespace ZedZone.UltimateAssistant.Patch
         /// 不会卡壳：卡壳判定入口。get_isMalfunction 是 BasicRangedWeapon 的公开 getter，
         /// 游戏用它判断"当前是否卡壳"。开启后对本地玩家武器恒返回 false。
         /// </summary>
+        /// <summary>
+        /// 前缀守卫：游戏原 get_isMalfunction 在 weaponData 未初始化时会抛 NRE。
+        /// 这里提前判空直接返回 false，避免异常穿透 il2cpp trampoline 刷日志。
+        /// </summary>
+        internal static bool IsMalfunctionPrefix(BasicRangedWeapon __instance, ref bool __result)
+        {
+            try
+            {
+                if (__instance == null) { __result = false; return false; }
+                var wd = __instance.weaponData;
+                if (wd == null) { __result = false; return false; }
+                return true;
+            }
+            catch { __result = false; return false; }
+        }
+
         internal static void IsMalfunctionPostfix(BasicRangedWeapon __instance, ref bool __result)
         {
             try
@@ -377,6 +395,7 @@ namespace ZedZone.UltimateAssistant.Patch
         }
     }
 }
+
 
 
 

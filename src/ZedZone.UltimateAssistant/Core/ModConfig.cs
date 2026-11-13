@@ -36,8 +36,7 @@ namespace ZedZone.UltimateAssistant.Core
         internal static ConfigEntry<bool> AlwaysSprint;
         internal static ConfigEntry<bool> MoveSpeed;
         internal static ConfigEntry<float> MoveSpeedMultiplier;
-        internal static ConfigEntry<bool> Timer;
-        internal static ConfigEntry<float> TimerMultiplier;
+        internal static ConfigEntry<bool> FullBright;
 
         // ---- Zombie ESP 选项 ----
         internal static ConfigEntry<bool> EspShowName;
@@ -252,10 +251,8 @@ namespace ZedZone.UltimateAssistant.Core
                 "移动加速开关。默认关闭。");
             MoveSpeedMultiplier = cfg.Bind("Features", "MoveSpeedMultiplier", 1.0f,
                 new ConfigDescription("移动速度倍率（1.0 - 3.0）。", new AcceptableValueRange<float>(1f, 3f)));
-            Timer = cfg.Bind("Features", "Timer", false,
-                "Timer（玩家身体速度）：只加快玩家自身动作与状态更新，不影响世界时间。默认关闭。");
-            TimerMultiplier = cfg.Bind("Features", "TimerMultiplier", 1.0f,
-                new ConfigDescription("Timer 倍率（1.0 - 5.0）。", new AcceptableValueRange<float>(1f, 5f)));
+            FullBright = cfg.Bind("Features", "FullBright", false,
+                "地图全亮：夜间提升场景环境亮度（仅影响画面，不改变时间/天气/AI）。默认关闭。");
             NoJam = cfg.Bind("Features", "NoJam", false,
                 "不会卡壳：开启后阻止本地玩家枪械进入卡壳状态，并清除已存在的卡壳标记。默认关闭。");
             NoStaminaLoss = cfg.Bind("Features", "NoStaminaLoss", false,
@@ -292,6 +289,7 @@ namespace ZedZone.UltimateAssistant.Core
         }
     }
 }
+
 
 
 
