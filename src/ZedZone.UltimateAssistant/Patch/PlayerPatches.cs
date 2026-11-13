@@ -64,6 +64,14 @@ namespace ZedZone.UltimateAssistant.Patch
                 Installed++;
             });
 
+            Try(harmony, "GetItemListById", () =>
+            {
+                var m = AccessTools.Method(typeof(InventoryData), "GetItemListById", new[] { typeof(int) });
+                if (m == null) { Log.Warn("[supply] 未找到 GetItemListById"); return; }
+                harmony.Patch(m, postfix: new HarmonyMethod(typeof(PlayerPatches), nameof(ItemListPostfix)));
+                Installed++;
+            });
+
             Try(harmony, "HasItem", () =>
             {
                 var m = AccessTools.Method(typeof(InventoryData), "HasItem", new[] { typeof(int), typeof(float) });
@@ -128,6 +136,7 @@ namespace ZedZone.UltimateAssistant.Patch
                     new[] { typeof(BuildingWallDamageSystem.WallRepairPlan) });
                 Unpatch(harmony, typeof(MeleeWeapon_RepairHammer), "CanAfford",
                     new[] { typeof(Il2CppSystem.Collections.Generic.List<BuildingWallDamageSystem.RepairCostEntry>) });
+                Unpatch(harmony, typeof(InventoryData), "GetItemListById", new[] { typeof(int) });
                 Unpatch(harmony, typeof(InventoryData), "HasItem", new[] { typeof(int), typeof(float) });
                 Unpatch(harmony, typeof(InventoryData), "GetTotalItemNumberByID", new[] { typeof(int) });
                 Unpatch(harmony, typeof(InventoryData), "RemoveItems", new[] { typeof(int), typeof(float) });
@@ -246,6 +255,22 @@ namespace ZedZone.UltimateAssistant.Patch
             catch { }
         }
 
+        private static int _queryLog;
+
+        /// <summary>诊断：记录建造/修复期间按 id 查询库存的调用（定位所需物品）。</summary>
+        internal static void ItemListPostfix(int itemId, Il2CppSystem.Collections.Generic.List<ItemData> __result)
+        {
+            try
+            {
+                if (!Features.AutoSupplyOn) return;
+                if (_queryLog >= 40) return;
+                _queryLog++;
+                int cnt = __result == null ? -1 : __result.Count;
+                Log.Info($"[supply] 查询库存 itemId={itemId} → 列表数={cnt}");
+            }
+            catch { }
+        }
+
         /// <summary>自动补充材料：数量查询返回充足值。</summary>
         internal static void CountPostfix(ref float __result)
         {
@@ -360,6 +385,9 @@ namespace ZedZone.UltimateAssistant.Patch
         }
     }
 }
+
+
+
 
 
 

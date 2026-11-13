@@ -253,7 +253,7 @@ namespace ZedZone.UltimateAssistant.Core
                         if (Time.unscaledTime >= _nextBoatDiag2 && i == nearestIdx)
                         {
                             _nextBoatDiag2 = Time.unscaledTime + 3f;
-                            Log.Info($"[supply] 最近TOD(0x{tod.Pointer.ToInt64():X}) costs={(costs == null ? -1 : costs.Count)} 距离={Vector3.Distance(tp, ppos):0.##}");
+                            Log.Info($"[supply] 最近TOD(0x{tod.Pointer.ToInt64():X}) costs={(costs == null ? -1 : costs.Count)} 距离={Vector3.Distance(tp, ppos):0.##} repairable={SafeRepairable(tod)} hp={SafeHp(tod)}");
                             if (costs != null)
                             {
                                 for (int q = 0; q < costs.Count && q < 10; q++)
@@ -310,6 +310,21 @@ namespace ZedZone.UltimateAssistant.Core
             catch (Exception e) { Log.WarnOnce("supply.boat", "[supply] 岛屿船补货异常: " + e.GetType().Name); }
         }
 
+        private static string SafeRepairable(TerrainObject t)
+        {
+            try { return t.isRepairable.ToString(); } catch { return "?"; }
+        }
+
+        private static string SafeHp(TerrainObject t)
+        {
+            try
+            {
+                var d = t.objectData;
+                return d == null ? "null" : d.hp.ToString("0.##");
+            }
+            catch { return "?"; }
+        }
+
         private static float SumById(InventoryData inv, int id)
         {
             try
@@ -328,6 +343,7 @@ namespace ZedZone.UltimateAssistant.Core
         }
     }
 }
+
 
 
 
