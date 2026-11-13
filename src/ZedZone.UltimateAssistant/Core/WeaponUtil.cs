@@ -24,6 +24,7 @@ namespace ZedZone.UltimateAssistant.Core
         private static readonly HashSet<IntPtr> _playerWeapons = new HashSet<IntPtr>();
         private static float _nextRefresh;
         private static float _nextRestore;
+        private static float _nextProbe;
 
         internal static int PlayerWeaponCount => _playerWeapons.Count;
         internal static int LastRepairCount { get; private set; }
@@ -57,6 +58,7 @@ namespace ZedZone.UltimateAssistant.Core
 
             // 耐久开关：持续把携带物耐久补回（每次刷新最多执行一次）
             try { if (Features.WeaponDurabilityOn && Time.unscaledTime >= _nextRestore) { _nextRestore = Time.unscaledTime + 2f; RestoreAllDurability(); } } catch { }
+            try { ProbeDurabilityFields(); } catch { }
         }
 
         /// <summary>该 ItemData 是否属于玩家携带物（用于耐久扣除拦截）。</summary>
@@ -143,6 +145,41 @@ namespace ZedZone.UltimateAssistant.Core
         /// （实测 ItemData.durability 字段对 271 件物品恒为 100，不是真实耐久来源，
         ///   因此改为调用游戏自己的修复函数。）
         /// </summary>
+        /// <summary>
+        /// 耐久字段探针：每 3 秒打印一次前 12 件物品的候选耐久字段，
+        /// 用于定位"游戏真正使用的耐久存储位置"（ItemData.durability 恒为 100，已证伪）。
+        /// </summary>
+        internal static void ProbeDurabilityFields()
+        {
+            try
+            {
+                if (!Features.WeaponDurabilityOn) return;
+                if (Time.unscaledTime < _nextProbe) return;
+                _nextProbe = Time.unscaledTime + 3f;
+
+                var items = CollectPlayerItems();
+                var sb = new System.Text.StringBuilder();
+                sb.Append("[durprobe] n=").Append(items.Count).Append(" | ");
+                int shown = 0;
+                for (int i = 0; i < items.Count && shown < 12; i++)
+                {
+                    var it = items[i];
+                    if (it == null) continue;
+                    try
+                    {
+                        int id = it.itemId;
+                        float dur = it.durability;
+                        float num = it.itemNumberFloat;
+                        sb.Append($"#{id}(dur={dur:0.##},num={num:0.##}) ");
+                        shown++;
+                    }
+                    catch { }
+                }
+                Log.Info(sb.ToString());
+            }
+            catch (Exception e) { Log.ErrorOnce("weaponutil.probe", e); }
+        }
+
         internal static int RestoreAllDurability()
         {
             int touched = 0;
@@ -280,6 +317,8 @@ namespace ZedZone.UltimateAssistant.Core
             => $"武器={_playerWeapons.Count} 耐久修复={(Features.WeaponDurabilityOn ? "开" : "关")} 过热={(Features.NoOverheatOn ? "已取消" : "正常")}";
     }
 }
+
+
 
 
 
