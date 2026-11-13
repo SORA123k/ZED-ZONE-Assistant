@@ -26,6 +26,7 @@ namespace ZedZone.UltimateAssistant.Core
         private static float _nextRestore;
         private static float _nextProbe;
         private static float _nextTemp;
+        private static float _nextGunProbe;
 
         internal static int PlayerWeaponCount => _playerWeapons.Count;
         internal static int LastRepairCount { get; private set; }
@@ -61,6 +62,7 @@ namespace ZedZone.UltimateAssistant.Core
             try { if (Features.WeaponDurabilityOn && Time.unscaledTime >= _nextRestore) { _nextRestore = Time.unscaledTime + 2f; RestoreAllDurability(); } } catch { }
             try { ProbeDurabilityFields(); } catch { }
             try { ResetGunTemperature(); } catch { }
+            try { ProbeHeldWeapon(); } catch { }
         }
 
         /// <summary>该 ItemData 是否属于玩家携带物（用于耐久扣除拦截）。</summary>
@@ -235,6 +237,81 @@ namespace ZedZone.UltimateAssistant.Core
                     Log.Info($"[durprobe] 变化 {changed} 件 | " + sb.ToString());
             }
             catch (Exception e) { Log.ErrorOnce("weaponutil.probe", e); }
+        }
+
+        /// <summary>专盯手持武器的探针：全部属性 + 组件 durabilityFloat。</summary>
+        internal static void ProbeHeldWeapon()
+        {
+            try
+            {
+                if (!Features.WeaponDurabilityOn) return;
+                if (Time.unscaledTime < _nextGunProbe) return;
+                _nextGunProbe = Time.unscaledTime + 2f;
+
+                HumanCharacterController pl = PlayerAccessor.Resolve(out _, out _);
+                if (pl == null) return;
+                var cd = pl.characterData;
+                var eq = cd?.characterEquipmentData;
+                var w = eq?.currentWeaponItemData;
+
+                string itemInfo = "none";
+                if (w != null)
+                {
+                    string props = AllProps(w);
+                    itemInfo = $"id={w.itemId} dur={w.durability:0.###} num={w.itemNumberFloat:0.###} props[{props}]";
+                }
+
+                string comp = "none";
+                try
+                {
+                    var arr = Resources.FindObjectsOfTypeAll<BasicRangedWeapon>();
+                    if (arr != null)
+                    {
+                        for (int i = 0; i < arr.Length; i++)
+                        {
+                            var wr = arr[i];
+                            if (wr == null) continue;
+                            var ch = wr.character;
+                            if (ch == null || ch.Pointer != pl.Pointer) continue;
+                            float df = -1f;
+                            try { df = wr.durabilityFloat; } catch { }
+                            comp = $"durabilityFloat={df:0.####} malf={SafeBool(wr)} name={wr.gameObject.name}";
+                            break;
+                        }
+                    }
+                }
+                catch { }
+
+                Log.Info($"[gun] {itemInfo} | {comp}");
+            }
+            catch (Exception e) { Log.ErrorOnce("weaponutil.gun", e); }
+        }
+
+        private static string SafeBool(BasicRangedWeapon w)
+        {
+            try { return w.isMalfunction.ToString(); } catch { return "?"; }
+        }
+
+        private static string AllProps(ItemData it)
+        {
+            try
+            {
+                var pairs = it.itemPropertyPairs;
+                if (pairs == null || pairs.Count == 0) return "-";
+                var sb = new System.Text.StringBuilder();
+                for (int i = 0; i < pairs.Count && i < 12; i++)
+                {
+                    var kv = pairs[i];
+                    if (kv == null) continue;
+                    string k = "?", v = "?";
+                    try { k = kv.key; } catch { }
+                    try { v = kv.value; } catch { }
+                    if (sb.Length > 0) sb.Append(',');
+                    sb.Append(k).Append('=').Append(v);
+                }
+                return sb.ToString();
+            }
+            catch { return "?"; }
         }
 
         private static string PropsOf(ItemData it)
@@ -451,6 +528,7 @@ namespace ZedZone.UltimateAssistant.Core
             => $"武器={_playerWeapons.Count} 耐久修复={(Features.WeaponDurabilityOn ? "开" : "关")} 过热={(Features.NoOverheatOn ? "已取消" : "正常")}";
     }
 }
+
 
 
 
