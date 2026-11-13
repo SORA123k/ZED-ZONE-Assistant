@@ -276,42 +276,38 @@ namespace ZedZone.UltimateAssistant.Core
                         }
                         if (costs == null || costs.Count == 0)
                         {
-                            // 实测（v2.2.3 日志）：该船按 id 查询库存，玩家全为 0。
-                            // 因此把这套材料直接铺到船边地面，玩家捡起后即可建造。
+                            // 强制完成建造：该船是"待建造"对象，RepairToFull() 实测返回 False，
+                            // 因此改为调用 TerrainObject.OnBuildFinish()（游戏自己的建造完成入口）
+                            // 并兜底把 objectData.craftFinishFlag 置 true。
                             try
                             {
-                                if (Time.unscaledTime >= _nextKit)
+                                IntPtr tp2 = tod.Pointer;
+                                if (!_lastRepair.TryGetValue(tp2, out float lastT) || Time.unscaledTime - lastT > 5f)
                                 {
-                                    _nextKit = Time.unscaledTime + 15f;
-                                    for (int q = 0; q < BoatKitIds.Length; q++)
-                                    {
-                                        int id = BoatKitIds[q];
-                                        TrySpawnGround(id, id < 1000 ? 100 : 5);
-                                    }
-                                    Log.Info("[supply] 已在船边放置整套建造材料（9 种）");
-                                }
-                            }
-                            catch { }
+                                    _lastRepair[tp2] = Time.unscaledTime;
 
-                            // 若它是可修复对象，再尝试直接修满
-                            try
-                            {
-                                if (tod.isRepairable)
-                                {
-                                    IntPtr tp2 = tod.Pointer;
-                                    if (!_lastRepair.TryGetValue(tp2, out float lastT) || Time.unscaledTime - lastT > 3f)
+                                    bool okRepair = false;
+                                    try { okRepair = tod.RepairToFull(); } catch { }
+
+                                    bool okBuild = false;
+                                    try { tod.OnBuildFinish(); okBuild = true; } catch (Exception ex1) { Log.WarnOnce("supply.buildfin", "[supply] OnBuildFinish 失败: " + ex1.GetType().Name); }
+
+                                    bool flagSet = false;
+                                    try
                                     {
-                                        _lastRepair[tp2] = Time.unscaledTime;
-                                        bool ok = tod.RepairToFull();
-                                        if (_repairLog < 5)
-                                        {
-                                            _repairLog++;
-                                            Log.Info($"[supply] 直接修复 TOD 0x{tp2.ToInt64():X} → RepairToFull={ok}");
-                                        }
+                                        var od = tod.objectData;
+                                        if (od != null && !od.craftFinishFlag) { od.craftFinishFlag = true; flagSet = true; }
+                                    }
+                                    catch { }
+
+                                    if (_repairLog < 10)
+                                    {
+                                        _repairLog++;
+                                        Log.Info($"[supply] 强制完成建造 TOD 0x{tp2.ToInt64():X} RepairToFull={okRepair} OnBuildFinish={okBuild} craftFinishFlagSet={flagSet}");
                                     }
                                 }
                             }
-                            catch (Exception e) { Log.WarnOnce("supply.repairfull", "[supply] RepairToFull 失败: " + e.GetType().Name); }
+                            catch (Exception e) { Log.WarnOnce("supply.repairfull", "[supply] 强制完成建造失败: " + e.GetType().Name); }
                             continue;
                         }
 
@@ -370,6 +366,7 @@ namespace ZedZone.UltimateAssistant.Core
         }
     }
 }
+
 
 
 
