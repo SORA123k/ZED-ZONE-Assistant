@@ -359,6 +359,9 @@ namespace ZedZone.UltimateAssistant.UI
             y = ModuleCard(c, s, y, pad, cw, "No Overheat", "取消自己枪械的过热（不影响 NPC）",
                 Features.NoOverheatOn, v => { ModConfig.NoOverheat.Value = v; Features.SetNoOverheat(v); });
 
+            y = ModuleCard(c, s, y, pad, cw, "No Jam", "阻止本地玩家枪械进入卡壳，并清除已有卡壳标记",
+                Features.NoJamOn, v => { ModConfig.NoJam.Value = v; Features.SetNoJam(v); });
+
             y += 4f * s;
             y = ActionButton(c, s, y, pad, cw, "一键修复卡壳", "清除所有己方武器的卡壳状态", () =>
             {
@@ -382,6 +385,12 @@ namespace ZedZone.UltimateAssistant.UI
 
             y = ModuleCard(c, s, y, pad, cw, "No Stamina Loss", "奔跑/跳跃等不消耗体力（仅本地玩家）",
                 Features.NoStaminaLossOn, v => { ModConfig.NoStaminaLoss.Value = v; Features.SetNoStaminaLoss(v); });
+
+            y = ModuleCard(c, s, y, pad, cw, "No Hunger Loss", "饱食度不减少（进食仍可增加）",
+                Features.NoHungerLossOn, v => { ModConfig.NoHungerLoss.Value = v; Features.SetNoHungerLoss(v); });
+
+            y = ModuleCard(c, s, y, pad, cw, "No Thirst Loss", "水分不减少（饮水仍可增加）",
+                Features.NoThirstLossOn, v => { ModConfig.NoThirstLoss.Value = v; Features.SetNoThirstLoss(v); });
 
             y = Section("一键恢复（点击执行一次）", c, s, y, pad);
 
@@ -727,6 +736,7 @@ namespace ZedZone.UltimateAssistant.UI
         }
     }
 }
+
 
 
 

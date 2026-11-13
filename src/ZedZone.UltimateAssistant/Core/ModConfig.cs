@@ -30,6 +30,9 @@ namespace ZedZone.UltimateAssistant.Core
         internal static ConfigEntry<bool> ItemDurabilityLock;
         internal static ConfigEntry<bool> NoHpLoss;
         internal static ConfigEntry<bool> NoStaminaLoss;
+        internal static ConfigEntry<bool> NoHungerLoss;
+        internal static ConfigEntry<bool> NoThirstLoss;
+        internal static ConfigEntry<bool> NoJam;
 
         // ---- Zombie ESP 选项 ----
         internal static ConfigEntry<bool> EspShowName;
@@ -232,6 +235,12 @@ namespace ZedZone.UltimateAssistant.Core
 
             NoHpLoss = cfg.Bind("Features", "NoHpLoss", false,
                 "不会扣血：开启后本地玩家受到伤害时生命值不减少（独立开关，与一键恢复无关）。默认关闭。");
+            NoHungerLoss = cfg.Bind("Features", "NoHungerLoss", false,
+                "不会扣饱食度：开启后本地玩家饱食度不减少（进食仍可增加）。默认关闭。");
+            NoThirstLoss = cfg.Bind("Features", "NoThirstLoss", false,
+                "不会扣水分：开启后本地玩家水分不减少（饮水仍可增加）。默认关闭。");
+            NoJam = cfg.Bind("Features", "NoJam", false,
+                "不会卡壳：开启后阻止本地玩家枪械进入卡壳状态，并清除已存在的卡壳标记。默认关闭。");
             NoStaminaLoss = cfg.Bind("Features", "NoStaminaLoss", false,
                 "不会扣体力：开启后本地玩家奔跑/跳跃等不再消耗体力（独立开关，与一键恢复无关）。默认关闭。");
             ItemDurabilityLock = cfg.Bind("Features", "ItemDurabilityLock", true,
@@ -261,6 +270,7 @@ namespace ZedZone.UltimateAssistant.Core
         }
     }
 }
+
 
 
 

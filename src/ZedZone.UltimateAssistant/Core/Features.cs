@@ -26,6 +26,9 @@ namespace ZedZone.UltimateAssistant.Core
         internal static bool ItemDurabilityLockOn { get; private set; }
         internal static bool NoHpLossOn { get; private set; }
         internal static bool NoStaminaLossOn { get; private set; }
+        internal static bool NoHungerLossOn { get; private set; }
+        internal static bool NoThirstLossOn { get; private set; }
+        internal static bool NoJamOn { get; private set; }
         internal static bool NoOverheatOn { get; private set; }
         internal static bool JamBypassOn { get; private set; }
 
@@ -41,6 +44,9 @@ namespace ZedZone.UltimateAssistant.Core
             bool wantItemDur = ModConfig.ItemDurabilityLock?.Value ?? false;
             bool wantNoHpLoss = ModConfig.NoHpLoss?.Value ?? false;
             bool wantNoSta = ModConfig.NoStaminaLoss?.Value ?? false;
+            bool wantNoHunger = ModConfig.NoHungerLoss?.Value ?? false;
+            bool wantNoThirst = ModConfig.NoThirstLoss?.Value ?? false;
+            bool wantNoJam = ModConfig.NoJam?.Value ?? false;
             bool wantAmmo = ModConfig.InfiniteAmmo?.Value ?? false;
             bool wantReload = ModConfig.NoReload?.Value ?? false;
             bool wantEsp = ModConfig.ZombieEsp?.Value ?? false;
@@ -70,6 +76,9 @@ namespace ZedZone.UltimateAssistant.Core
             SetItemDurabilityLock(wantItemDur);
             SetNoHpLoss(wantNoHpLoss);
             SetNoStaminaLoss(wantNoSta);
+            SetNoHungerLoss(wantNoHunger);
+            SetNoThirstLoss(wantNoThirst);
+            SetNoJam(wantNoJam);
             ZombieEspOn = wantEsp;
         }
 
@@ -115,6 +124,30 @@ namespace ZedZone.UltimateAssistant.Core
             Log.Info("[features] NoOverheat = " + on);
         }
 
+        internal static void SetNoHungerLoss(bool on)
+        {
+            if (NoHungerLossOn == on) return;
+            NoHungerLossOn = on;
+            Apply();
+            Log.Info("[features] NoHungerLoss = " + on);
+        }
+
+        internal static void SetNoThirstLoss(bool on)
+        {
+            if (NoThirstLossOn == on) return;
+            NoThirstLossOn = on;
+            Apply();
+            Log.Info("[features] NoThirstLoss = " + on);
+        }
+
+        internal static void SetNoJam(bool on)
+        {
+            if (NoJamOn == on) return;
+            NoJamOn = on;
+            Apply();
+            Log.Info("[features] NoJam = " + on);
+        }
+
         internal static void SetNoHpLoss(bool on)
         {
             if (NoHpLossOn == on) return;
@@ -158,7 +191,7 @@ namespace ZedZone.UltimateAssistant.Core
         /// <summary>按当前开关状态安装/卸载补丁。任何异常只记录，不影响游戏。</summary>
         private static void Apply()
         {
-            bool needPatches = InfiniteAmmoOn || NoReloadOn || NoOverheatOn || JamBypassOn || WeaponDurabilityOn;
+            bool needPatches = InfiniteAmmoOn || NoReloadOn || NoOverheatOn || JamBypassOn || WeaponDurabilityOn || NoJamOn;
             try
             {
                 if (needPatches && !_patchesInstalled)
@@ -184,7 +217,7 @@ namespace ZedZone.UltimateAssistant.Core
             // 玩家防扣除补丁（独立生命周期）
             try
             {
-                bool needPlayer = NoHpLossOn || NoStaminaLossOn;
+                bool needPlayer = NoHpLossOn || NoStaminaLossOn || NoHungerLossOn || NoThirstLossOn;
                 if (needPlayer && !_playerPatchesInstalled)
                 {
                     if (_harmony == null) _harmony = new Harmony(Plugin.PluginGuid);
@@ -207,13 +240,14 @@ namespace ZedZone.UltimateAssistant.Core
             _patchesInstalled = false;
             InfiniteAmmoOn = NoReloadOn = ZombieEspOn = false;
             WeaponDurabilityOn = NoOverheatOn = JamBypassOn = ItemDurabilityLockOn = false;
-            NoHpLossOn = NoStaminaLossOn = false;
+            NoHpLossOn = NoStaminaLossOn = NoHungerLossOn = NoThirstLossOn = NoJamOn = false;
         }
 
         internal static string StatusText()
             => $"弹药={(InfiniteAmmoOn ? "开" : "关")} 免换弹={(NoReloadOn ? "开" : "关")} ESP={(ZombieEspOn ? "开" : "关")}";
     }
 }
+
 
 
 

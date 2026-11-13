@@ -66,6 +66,15 @@ namespace ZedZone.UltimateAssistant.Patch
 
 
             // 枪械耐久：读取层覆盖（原生层维护，无托管存储字段可写）
+            // 不会卡壳：卡壳判定入口 get_isMalfunction
+            Try(harmony, "get_isMalfunction", () =>
+            {
+                var m = AccessTools.Method(typeof(BasicRangedWeapon), "get_isMalfunction");
+                if (m == null) { Log.Warn("[weapons] 未找到 get_isMalfunction"); return; }
+                harmony.Patch(m, postfix: new HarmonyMethod(typeof(WeaponPatches), nameof(IsMalfunctionPostfix)));
+                Installed++;
+            });
+
             // 诊断：Fire 前后耐久变化（定位扣减是否发生在 Fire 内部）
             Try(harmony, "Fire.probe", () =>
             {
@@ -103,6 +112,7 @@ namespace ZedZone.UltimateAssistant.Patch
                 Unpatch(harmony, typeof(HumanCharacterController), "CostItemDurabilityExecute", new[] { typeof(ItemData), typeof(float) });
 
                 Unpatch(harmony, typeof(BasicRangedWeapon), "GetGunTemperature", new[] { typeof(ItemData) });
+                Unpatch(harmony, typeof(BasicRangedWeapon), "get_isMalfunction", null);
             }
             _hooked = false;
             Installed = 0;
@@ -243,6 +253,27 @@ namespace ZedZone.UltimateAssistant.Patch
             catch { return true; }
         }
 
+        private static int _jamLog;
+
+        /// <summary>
+        /// 不会卡壳：卡壳判定入口。get_isMalfunction 是 BasicRangedWeapon 的公开 getter，
+        /// 游戏用它判断"当前是否卡壳"。开启后对本地玩家武器恒返回 false。
+        /// </summary>
+        internal static void IsMalfunctionPostfix(BasicRangedWeapon __instance, ref bool __result)
+        {
+            try
+            {
+                if (!Features.NoJamOn) return;
+                if (__result == false) return;
+                if (__instance == null) return;
+                if (!IsLocalPlayer(__instance.character)) return;
+
+                if (_jamLog < 3) { _jamLog++; Log.Info("[weapons] get_isMalfunction 已覆盖 → 视为未卡壳"); }
+                __result = false;
+            }
+            catch { }
+        }
+
         private static readonly System.Collections.Generic.Dictionary<IntPtr, float> _fireBefore =
             new System.Collections.Generic.Dictionary<IntPtr, float>();
         private static int _fireProbeBudget = 40;
@@ -346,6 +377,7 @@ namespace ZedZone.UltimateAssistant.Patch
         }
     }
 }
+
 
 
 

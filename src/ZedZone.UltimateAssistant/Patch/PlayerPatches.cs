@@ -43,6 +43,22 @@ namespace ZedZone.UltimateAssistant.Patch
                 Installed++;
             });
 
+            Try(harmony, "set_hunger", () =>
+            {
+                var m = AccessTools.Method(typeof(BasicCharacterController), "set_hunger", new[] { typeof(float) });
+                if (m == null) { Log.Warn("[player] 未找到 set_hunger"); return; }
+                harmony.Patch(m, prefix: new HarmonyMethod(typeof(PlayerPatches), nameof(HungerPrefix)));
+                Installed++;
+            });
+
+            Try(harmony, "set_thirst", () =>
+            {
+                var m = AccessTools.Method(typeof(BasicCharacterController), "set_thirst", new[] { typeof(float) });
+                if (m == null) { Log.Warn("[player] 未找到 set_thirst"); return; }
+                harmony.Patch(m, prefix: new HarmonyMethod(typeof(PlayerPatches), nameof(ThirstPrefix)));
+                Installed++;
+            });
+
             Try(harmony, "RunInput", () =>
             {
                 var m = AccessTools.Method(typeof(HumanCharacterController), "RunInput", new[] { typeof(bool) });
@@ -62,6 +78,8 @@ namespace ZedZone.UltimateAssistant.Patch
                 Unpatch(harmony, typeof(HumanCharacterController), "OnHit", null);
                 Unpatch(harmony, typeof(HumanCharacterController), "CostEnergy", new[] { typeof(float) });
                 Unpatch(harmony, typeof(HumanCharacterController), "RunInput", new[] { typeof(bool) });
+                Unpatch(harmony, typeof(BasicCharacterController), "set_hunger", new[] { typeof(float) });
+                Unpatch(harmony, typeof(BasicCharacterController), "set_thirst", new[] { typeof(float) });
             }
             _hooked = false;
             Installed = 0;
@@ -94,9 +112,50 @@ namespace ZedZone.UltimateAssistant.Patch
             catch { return false; }
         }
 
-        private static int _hpLog, _staLog;
+        private static int _hpLog, _staLog, _hungerLog, _thirstLog;
 
         // ---------------- 补丁实现 ----------------
+
+        /// <summary>
+        /// 不会扣饱食度：拦截 set_hunger，**只阻止减少**（进食仍可增加）。
+        /// set_hunger 是 BasicCharacterController 的公开 setter（元数据已确认存在）。
+        /// </summary>
+        internal static bool HungerPrefix(BasicCharacterController __instance, ref float value)
+        {
+            try
+            {
+                if (!Features.NoHungerLossOn) return true;
+                if (!IsLocalPlayer(__instance)) return true;
+
+                float cur = __instance.hunger;
+                if (value < cur - 0.0001f)
+                {
+                    value = cur;
+                    if (_hungerLog < 3) { _hungerLog++; Log.Info($"[player] set_hunger 已拦截减少（{cur:0.##} <- 请求更低值）"); }
+                }
+                return true;
+            }
+            catch { return true; }
+        }
+
+        /// <summary>不会扣水分：拦截 set_thirst，只阻止减少。</summary>
+        internal static bool ThirstPrefix(BasicCharacterController __instance, ref float value)
+        {
+            try
+            {
+                if (!Features.NoThirstLossOn) return true;
+                if (!IsLocalPlayer(__instance)) return true;
+
+                float cur = __instance.thirst;
+                if (value < cur - 0.0001f)
+                {
+                    value = cur;
+                    if (_thirstLog < 3) { _thirstLog++; Log.Info($"[player] set_thirst 已拦截减少（{cur:0.##} <- 请求更低值）"); }
+                }
+                return true;
+            }
+            catch { return true; }
+        }
 
         /// <summary>不会扣血：跳过玩家受伤逻辑。</summary>
         internal static bool OnHitPrefix(HumanCharacterController __instance, ref bool __result)
@@ -147,3 +206,4 @@ namespace ZedZone.UltimateAssistant.Patch
         }
     }
 }
+

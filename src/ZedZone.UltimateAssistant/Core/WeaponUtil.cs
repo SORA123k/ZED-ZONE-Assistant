@@ -280,6 +280,68 @@ namespace ZedZone.UltimateAssistant.Core
             return n;
         }
 
+        private static float _nextJamClear;
+        private static int _jamClearLog;
+
+        /// <summary>
+        /// 不会卡壳：清除已存在的卡壳状态。
+        ///
+        /// 依据（实机诊断日志，非猜测）：
+        ///  * 卡壳状态存放在武器 ItemData 的属性 `MalfunctionFlag`（实测在卡壳时变成 "true"，
+        ///    恢复后回到 "false"）；
+        ///  * `BasicRangedWeapon.CoolDownOnMalfunctionCleared(ItemData)` 是公开静态方法，
+        ///    语义为"卡壳清除后的冷却处理"。
+        /// 因此：检测到 MalfunctionFlag=true → 置回 "False" 并调用冷却方法。
+        /// </summary>
+        internal static int ClearMalfunction()
+        {
+            if (!Features.NoJamOn) return 0;
+            if (Time.unscaledTime < _nextJamClear) return 0;
+            _nextJamClear = Time.unscaledTime + 0.2f;
+
+            int n = 0;
+            try
+            {
+                HumanCharacterController pl = PlayerAccessor.Resolve(out _, out _);
+                if (pl == null) return 0;
+                IntPtr pp = pl.Pointer;
+
+                var arr = Resources.FindObjectsOfTypeAll<BasicRangedWeapon>();
+                if (arr == null) return 0;
+
+                for (int i = 0; i < arr.Length; i++)
+                {
+                    var w = arr[i];
+                    if (w == null) continue;
+                    try
+                    {
+                        var ch = w.character;
+                        if (ch == null || ch.Pointer != pp) continue;
+
+                        var wd = w.weaponData;
+                        if (wd == null) continue;
+
+                        string flag = null;
+                        try { flag = wd.GetProperty("MalfunctionFlag"); } catch { }
+                        if (string.IsNullOrEmpty(flag)) continue;
+                        if (!flag.Equals("true", StringComparison.OrdinalIgnoreCase)) continue;
+
+                        wd.SetProperty("MalfunctionFlag", "False");
+                        try { BasicRangedWeapon.CoolDownOnMalfunctionCleared(wd); } catch { }
+                        n++;
+                        if (_jamClearLog < 5)
+                        {
+                            _jamClearLog++;
+                            Log.Info($"[jam] 已清除卡壳标记：itemId={wd.itemId}（MalfunctionFlag true -> False）");
+                        }
+                    }
+                    catch { }
+                }
+            }
+            catch (Exception e) { Log.ErrorOnce("jam.clear", e); }
+            return n;
+        }
+
         /// <summary>专盯手持武器的探针：全部属性 + 组件 durabilityFloat。</summary>
         internal static void ProbeHeldWeapon()
         {
@@ -569,6 +631,7 @@ namespace ZedZone.UltimateAssistant.Core
             => $"武器={_playerWeapons.Count} 耐久修复={(Features.WeaponDurabilityOn ? "开" : "关")} 过热={(Features.NoOverheatOn ? "已取消" : "正常")}";
     }
 }
+
 
 
 
