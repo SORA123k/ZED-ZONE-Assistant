@@ -23,7 +23,10 @@
 | | Thirst Restore | 动态上限 |
 | | 肢体状态（只读） | 六个部位 HP / 伤口 / 绷带，只读展示 |
 | **Combat** | Infinite Ammo | 射击不消耗备用弹药（仅本地玩家） |
-| | No Reload | 开火后自动补满弹匣，无需换弹流程 |
+| | No Reload | 弹匣为 0 也可射击；按 R 仍走原生换弹 |
+| | Weapon Durability | 携带武器/装备耐久持续补回（只增不减） |
+| | No Overheat | 取消自己枪械的过热（不影响 NPC） |
+| | 一键修复卡壳 | 卡壳不再阻止开火（游戏无公开清除接口，走兜底） |
 | **Visuals** | Zombie ESP | 标记已加载僵尸（名称 / 距离 / 方框），只读 |
 
 ## 使用
@@ -31,7 +34,8 @@
 1. 启动游戏（**离线单机**），进入存档；
 2. 按 **INSERT** 打开菜单，左侧切换 `Combat / Player / Visuals / Settings`；
 3. 点击功能卡片切换开关；`Player` 页点「恢复」按钮；
-4. 再按 **INSERT** 关闭菜单，恢复角色操作。
+4. 按住标题栏可**拖动**菜单位置（松手自动保存）；
+5. 再按 **INSERT** 关闭菜单，恢复角色操作。
 
 配置文件：`BepInEx\config\zedzone.ultimateassistant.cfg`（`[Features]` / `[Esp]` / `[Menu]` 等段）。
 
@@ -176,4 +180,5 @@ D 全局：GameConfigs.playerInvincible / hungerCostPerDay / ...
 | ILSpy 反编译器 | `<tools>` |
 | NuGet 包缓存 | `<nuget-cache>` |
 | dotnet CLI 缓存 | `<dotnet>-home` |
+
 

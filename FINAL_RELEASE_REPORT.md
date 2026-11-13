@@ -1,7 +1,7 @@
 # FINAL_RELEASE_REPORT.md — ZED ZONE Ultimate Assistant v1.0.0 最终交付报告
 
 > 交付日期：2026-11-13
-> 交付版本：**v1.0.1**
+> 交付版本：**v1.0.2**
 > 交付状态：**已构建、已安装、加载验证通过**（功能行为未做实机操作验证，见 §12）
 
 ---
@@ -62,14 +62,14 @@ HP / Energy / Hunger / Thirst 恢复与 Phase 3A 动态范围逻辑**保持原�
 
 ## 5. DLL 文件大小
 
-**115,712 字节**
+**121344 字节**
 
 ---
 
 ## 6. MD5
 
 ```
-98CF0B98FF6891F90A7F81D316B12382
+A90E75A3FE5CA0706C64EE2E6049BE73
 ```
 
 （构建产物与已安装文件一致；安装时间 2026-11-13 21:07:08）
@@ -156,7 +156,7 @@ dotnet build -c Release
 | 编译警告 | **0** |
 | 编译错误 | **0** |
 | 加载验证（启动游戏一次） | ✅ 成功，`[ui] ClickGUI 已就绪`、`[ui] ClickGUI 字体: PlayerStatusPanel.daysText.font` |
-| 补丁安装 | ✅ `[weapons] 补丁安装完成，成功 5 个` |
+| 补丁安装 | ✅ `[weapons] 补丁安装完成，成功 4 个` |
 | 联机门禁 | ✅ 弹药类功能在 `IsMultiplayer` 为真时强制关闭（fail-closed） |
 | 缓存检查 | ✅ 玩家对象每帧重新 `Resolve`，不缓存 |
 | 旧 FPS 项目 | ✅ 见 §14 |
@@ -170,7 +170,7 @@ dotnet build -c Release
 
 | 功能 | 已完成 | 未验证 |
 |---|---|---|
-| Infinite Ammo | 补丁 5/5 安装成功、加载无异常 | 实际射击时弹药是否不再减少 |
+| Infinite Ammo | 补丁 4/4 安装成功、加载无异常 | 实际射击时弹药是否不再减少 |
 | No Reload | 同上 | 射击后弹匣是否自动补满、换弹是否被跳过 |
 | Zombie ESP | 逻辑与绘制实现 | 游戏内是否正确定位/清理僵尸 |
 | 输入阻断 | `windowFocused=false` + 鼠标解锁 | 是否真的完全阻止移动/射击/使用物品 |
@@ -263,8 +263,28 @@ git log --oneline -1     → 4e120c7 Final delivery v2.2.0：...（其自身历�
 - 补丁总数 4 → **5**；
 - 每个补丁前 3 次触发会写 `[weapons] ... 已拦截` 日志，便于确认补丁是否真的被调用。
 
-**版本/DLL**：v1.0.1 / 115,712 字节 / MD5 `98CF0B98FF6891F90A7F81D316B12382`
+**版本/DLL**：v1.0.1 / 115,712 字节 / MD5 `A90E75A3FE5CA0706C64EE2E6049BE73`
 
 **仍未实机确认**：开火后弹匣数值是否稳定、是否有音效/动画副作用。
 诊断方法：开一枪后查看 `BepInEx\LogOutput.log` 是否出现
 `[weapons] CanFire 已拦截` / `Fire 后置` 等行。
+
+---
+
+## 18. v1.0.2 修订（按使用反馈新增/调整）
+
+| 项 | 说明 |
+|---|---|
+| **No Reload 语义修正** | **不再拦截 `Reload()`**：按 R 键换弹完全走游戏原生流程；只放开 `CanFire()`，因此弹匣为 0 也能射击，两者互不干扰 |
+| **Weapon Durability 开关（新）** | 每 500ms 把携带物品耐久补到 100，**只在低于 100 时写入 → 只增不减**，不会把高耐久物品降级 |
+| **No Overheat 开关（新）** | 补丁 `GetGunTemperature`：仅当该 ItemData 属于**玩家自己**（指针集合匹配）时温度读作 0；不影响 NPC |
+| **一键修复卡壳（新按钮）** | 诚实说明：游戏 1.0.17 中 `isMalfunction` 是**只读属性**、`WeaponMalfunction()` 是**私有方法**，**没有公开 API 能真正清除卡壳状态**。因此按钮改为「开火闸门兜底」：打开 JamBypass 后卡壳不再阻止开火，并统计当前卡壳武器数量写日志 |
+| **菜单可拖动（新）** | 按住标题栏拖动整窗，松手后把坐标写回 `[UI] PanelX/PanelY` |
+| **鼠标指针修复** | 打开菜单时**每帧**强制 `Cursor.visible = true` + `lockState = None`，避免被游戏每帧重置导致看不到指针 |
+
+**补丁总数**：4（CanFire / GetInventoryAmmoTotal / RemoveAmmoItemData / GetGunTemperature）
+
+**版本/DLL**：v1.0.2 / 121,344 字节 / MD5 `A90E75A3FE5CA0706C64EE2E6049BE73`
+
+**仍未实机验证**：开火表现、耐久修复后的 UI 显示、过热取消、菜单拖动手感、鼠标指针可见性。
+

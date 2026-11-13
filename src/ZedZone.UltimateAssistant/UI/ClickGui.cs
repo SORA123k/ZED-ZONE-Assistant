@@ -75,6 +75,10 @@ namespace ZedZone.UltimateAssistant.UI
         }
 
         // ---- 样式 ----
+        private static Vector2 _pos;
+        private static bool _posInit;
+        private static bool _dragging;
+        private static Vector2 _dragOffset;
         private static bool _stylesReady;
         private static GUIStyle _title, _catStyle, _sub, _cardTitle, _cardDesc, _small, _pill, _btn, _btnText, _value;
 
@@ -157,6 +161,7 @@ namespace ZedZone.UltimateAssistant.UI
         {
             EnsureStyles();
             BuildPalette();
+            try { Cursor.visible = true; Cursor.lockState = CursorLockMode.None; } catch { }
 
             bool anim = ModConfig.MenuAnimations?.Value ?? true;
             _time = Time.unscaledTime;
@@ -168,10 +173,10 @@ namespace ZedZone.UltimateAssistant.UI
 
             float s = Sc;
             float w = 760f * s, h = 480f * s;
-            float x = ModConfig.PanelX?.Value ?? 380;
-            float y = ModConfig.PanelY?.Value ?? 40;
-            x = Mathf.Clamp(x, 0f, Mathf.Max(0f, Screen.width - w));
-            y = Mathf.Clamp(y, 0f, Mathf.Max(0f, Screen.height - h));
+            if (!_posInit) { _pos = new Vector2(ModConfig.PanelX?.Value ?? 380, ModConfig.PanelY?.Value ?? 40); _posInit = true; }
+            float x = Mathf.Clamp(_pos.x, 0f, Mathf.Max(0f, Screen.width - w));
+            float y = Mathf.Clamp(_pos.y, 0f, Mathf.Max(0f, Screen.height - h));
+            _openRect = new Rect(x, y, w, h);
 
             // 缩放动画（以中心为锚）
             if (anim && _openT < 0.999f)
@@ -206,6 +211,8 @@ namespace ZedZone.UltimateAssistant.UI
             GUI.Label(new Rect(header.xMax - 210f * s, header.y, 194f * s, header.height),
                 "v" + Plugin.PluginVersion + "   INSERT 关闭", _small);
             GUI.color = new Color(1f, 1f, 1f, anim ? Mathf.Clamp01(_openT * 1.2f) : 1f);
+
+            HandleHeaderDrag(header, w, h);
 
             // 侧栏
             var side = new Rect(area.x, header.yMax, 168f * s, area.height - header.height);
@@ -249,6 +256,43 @@ namespace ZedZone.UltimateAssistant.UI
             GUI.color = oldColor;
         }
 
+        private static Rect _openRect;
+
+        /// <summary>标题栏拖动：按住标题栏移动菜单，松手后写回配置坐标。</summary>
+        private static void HandleHeaderDrag(Rect header, float w, float h)
+        {
+            var e = Event.current;
+            if (e == null) return;
+
+            if (!_dragging && e.type == EventType.MouseDown && e.button == 0 && header.Contains(e.mousePosition))
+            {
+                _dragging = true;
+                _dragOffset = e.mousePosition - _pos;
+                e.Use();
+                return;
+            }
+            if (_dragging && e.type == EventType.MouseDrag)
+            {
+                var p = e.mousePosition - _dragOffset;
+                _pos = new Vector2(
+                    Mathf.Clamp(p.x, 0f, Mathf.Max(0f, Screen.width - w)),
+                    Mathf.Clamp(p.y, 0f, Mathf.Max(0f, Screen.height - h)));
+                e.Use();
+                return;
+            }
+            if (_dragging && e.type == EventType.MouseUp)
+            {
+                _dragging = false;
+                try
+                {
+                    ModConfig.PanelX.Value = Mathf.RoundToInt(_pos.x);
+                    ModConfig.PanelY.Value = Mathf.RoundToInt(_pos.y);
+                }
+                catch { }
+                e.Use();
+            }
+        }
+
         private static void DrawContent(Rect content, float s, PlayerSnapshot snap)
         {
             float pad = 16f * s;
@@ -279,13 +323,25 @@ namespace ZedZone.UltimateAssistant.UI
             y = ModuleCard(c, s, y, pad, cw, "Infinite Ammo", "射击不消耗备用弹药（仅本地玩家）",
                 Features.InfiniteAmmoOn, v => { ModConfig.InfiniteAmmo.Value = v; Features.SetInfiniteAmmo(v); });
 
-            y = ModuleCard(c, s, y, pad, cw, "No Reload", "开火后自动补满弹匣，无需换弹流程",
+            y = ModuleCard(c, s, y, pad, cw, "No Reload", "弹匣为 0 也能射击；按 R 仍可正常换弹",
                 Features.NoReloadOn, v => { ModConfig.NoReload.Value = v; Features.SetNoReload(v); });
+
+            y = ModuleCard(c, s, y, pad, cw, "Weapon Durability", "把携带武器/装备耐久补到 100（只增不减）",
+                Features.WeaponDurabilityOn, v => { ModConfig.WeaponDurability.Value = v; Features.SetWeaponDurability(v); });
+
+            y = ModuleCard(c, s, y, pad, cw, "No Overheat", "取消自己枪械的过热（不影响 NPC）",
+                Features.NoOverheatOn, v => { ModConfig.NoOverheat.Value = v; Features.SetNoOverheat(v); });
+
+            y += 4f * s;
+            y = ActionButton(c, s, y, pad, cw, "一键修复卡壳", "清除所有己方武器的卡壳状态", () =>
+            {
+                WeaponUtil.FixJams();
+            });
 
             y += 6f * s;
             GUI.color = _p.Sub;
             GUI.Label(new Rect(c.x + pad, y, cw, 16f * s),
-                "两项功能相互独立；弹药类功能在联机状态下自动禁用。", _small);
+                "全部功能仅作用于本地玩家；联机状态下自动禁用。", _small);
             GUI.color = Color.white;
         }
 
@@ -472,6 +528,22 @@ namespace ZedZone.UltimateAssistant.UI
             return y + 20f * s;
         }
 
+        private static float ActionButton(Rect c, float s, float y, float pad, float cw, string label, string desc, Action onClick)
+        {
+            var r = new Rect(c.x + pad, y, cw, 40f * s);
+            bool hover = r.Contains(Event.current.mousePosition);
+            Fill(r, hover ? _p.Accent : _p.AccentDim);
+
+            GUI.color = hover ? new Color(0.08f, 0.08f, 0.10f) : _p.Text;
+            GUI.Label(new Rect(r.x + 14f * s, r.y, 200f * s, r.height), label, _btnText);
+            GUI.color = hover ? new Color(0.12f, 0.12f, 0.14f) : _p.Sub;
+            GUI.Label(new Rect(r.x + 170f * s, r.y, r.width - 180f * s, r.height), desc, _small);
+            GUI.color = Color.white;
+
+            if (Hit(r)) { try { onClick(); } catch (Exception e) { Log.ErrorOnce("gui.action", e); } }
+            return y + 46f * s;
+        }
+
         private static float ModuleCard(Rect c, float s, float y, float pad, float cw, string name, string desc,
             bool on, Action<bool> set, string key = null, Action settingsDrawer = null)
         {
@@ -620,6 +692,8 @@ namespace ZedZone.UltimateAssistant.UI
         }
     }
 }
+
+
 
 
 

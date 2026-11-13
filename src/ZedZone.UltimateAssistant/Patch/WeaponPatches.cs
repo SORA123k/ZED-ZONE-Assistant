@@ -9,20 +9,19 @@ namespace ZedZone.UltimateAssistant.Patch
     /// 武器相关 Harmony 补丁（仅在功能开启时安装，关闭即卸载）。
     ///
     /// 游戏 1.0.17 的弹药/开火模型（来自 interop 签名）：
-    ///   * `BasicRangedWeapon.CanFire()`        —— **开火闸门**（virtual bool），弹匣空/枪故障时返回 false；
-    ///   * `BasicRangedWeapon.GetLoadedAmmo(ItemData)` —— 弹匣内剩余弹药（static 查询）；
-    ///   * `BasicRangedWeapon.GetInventoryAmmoTotal(...)` —— 背包可用弹药总数（换弹时的来源判断）；
+    ///   * `BasicRangedWeapon.CanFire()`                —— **开火闸门**（virtual bool），弹匣空/故障时 false；
+    ///   * `BasicRangedWeapon.GetInventoryAmmoTotal(...)` —— 背包可用弹药总数（换弹来源判断）；
     ///   * `HumanCharacterController.RemoveAmmoItemData(...)` —— 实际扣除弹药物品；
-    ///   * `BasicRangedWeapon.OnFillComplate(int)` —— 装填完成回调（可用于补满弹匣）。
+    ///   * `BasicRangedWeapon.GetGunTemperature(ItemData)` —— 枪械温度（过热相关）。
     ///
-    /// 两个功能的分工：
-    ///   **Infinite Ammo**：不消耗备用弹药（改 GetInventoryAmmoTotal + RemoveAmmoItemData）。
-    ///   **No Reload**   ：不因弹匣为空而无法射击（改 CanFire）+ 开火后补满弹匣（OnFillComplate）。
+    /// 设计取舍（按用户要求）：
+    ///   * **No Reload**：只放开 `CanFire`，**不再拦截 `Reload`**，
+    ///     因此弹匣为 0 也能射击，但按 R 仍然走游戏原生换弹流程；
+    ///   * **Infinite Ammo**：不消耗备用弹药（总数虚报 + 扣除跳过）；
+    ///   * **No Overheat**：只把**玩家自己武器**的温度读取置 0（用 ItemData 指针集合精确匹配，
+    ///     不影响 NPC 武器）。
     ///
-    /// 安全：
-    ///   * 只对**本地玩家**生效（`__instance.character` 与玩家指针比对）；
-    ///   * 每个补丁首行 try/catch，异常一律放行原逻辑；
-    ///   * 前 3 次触发会写日志，便于确认补丁是否真的被调用。
+    /// 安全：只对本地玩家生效；每个补丁 try/catch 放行原逻辑；前 3 次触发写日志便于确认。
     /// </summary>
     internal static class WeaponPatches
     {
@@ -31,7 +30,7 @@ namespace ZedZone.UltimateAssistant.Patch
 
         private const int FakeAmmo = 9999;
 
-        private static int _logCanFire, _logAmmoTotal, _logRemove, _logFire, _logReload;
+        private static int _logCanFire, _logAmmoTotal, _logRemove, _logTemp;
 
         // ==================================================================
         internal static void Install(Harmony harmony)
@@ -39,7 +38,6 @@ namespace ZedZone.UltimateAssistant.Patch
             if (_hooked) return;
             Installed = 0;
 
-            // 1) 开火闸门（No Reload 的关键）
             Try(harmony, "CanFire", () =>
             {
                 var m = AccessTools.Method(typeof(BasicRangedWeapon), "CanFire");
@@ -48,7 +46,6 @@ namespace ZedZone.UltimateAssistant.Patch
                 Installed++;
             });
 
-            // 2) 背包弹药总数（Infinite Ammo）
             Try(harmony, "GetInventoryAmmoTotal", () =>
             {
                 var m = AccessTools.Method(typeof(BasicRangedWeapon), "GetInventoryAmmoTotal",
@@ -58,7 +55,6 @@ namespace ZedZone.UltimateAssistant.Patch
                 Installed++;
             });
 
-            // 3) 扣除弹药（Infinite Ammo）
             Try(harmony, "RemoveAmmoItemData", () =>
             {
                 var m = AccessTools.Method(typeof(HumanCharacterController), "RemoveAmmoItemData");
@@ -67,21 +63,11 @@ namespace ZedZone.UltimateAssistant.Patch
                 Installed++;
             });
 
-            // 4) 开火后补满弹匣（No Reload 的第二层保险）
-            Try(harmony, "Fire", () =>
+            Try(harmony, "GetGunTemperature", () =>
             {
-                var m = AccessTools.Method(typeof(BasicRangedWeapon), "Fire", new[] { typeof(float) });
-                if (m == null) { Log.Warn("[weapons] 未找到 Fire(float)"); return; }
-                harmony.Patch(m, postfix: new HarmonyMethod(typeof(WeaponPatches), nameof(FirePostfix)));
-                Installed++;
-            });
-
-            // 5) 跳过换弹流程（No Reload）
-            Try(harmony, "Reload", () =>
-            {
-                var m = AccessTools.Method(typeof(BasicRangedWeapon), "Reload");
-                if (m == null) { Log.Warn("[weapons] 未找到 Reload"); return; }
-                harmony.Patch(m, prefix: new HarmonyMethod(typeof(WeaponPatches), nameof(ReloadPrefix)));
+                var m = AccessTools.Method(typeof(BasicRangedWeapon), "GetGunTemperature", new[] { typeof(ItemData) });
+                if (m == null) { Log.Warn("[weapons] 未找到 GetGunTemperature"); return; }
+                harmony.Patch(m, postfix: new HarmonyMethod(typeof(WeaponPatches), nameof(GunTempPostfix)));
                 Installed++;
             });
 
@@ -97,8 +83,7 @@ namespace ZedZone.UltimateAssistant.Patch
                 Unpatch(harmony, typeof(BasicRangedWeapon), "GetInventoryAmmoTotal",
                     new[] { typeof(BasicCharacterController), typeof(ItemData), typeof(int) });
                 Unpatch(harmony, typeof(HumanCharacterController), "RemoveAmmoItemData", null);
-                Unpatch(harmony, typeof(BasicRangedWeapon), "Fire", new[] { typeof(float) });
-                Unpatch(harmony, typeof(BasicRangedWeapon), "Reload", null);
+                Unpatch(harmony, typeof(BasicRangedWeapon), "GetGunTemperature", new[] { typeof(ItemData) });
             }
             _hooked = false;
             Installed = 0;
@@ -144,23 +129,23 @@ namespace ZedZone.UltimateAssistant.Patch
 
         // ---------------- 补丁实现 ----------------
 
-        /// <summary>无需换弹：把开火闸门强制置为"可以开火"。</summary>
+        /// <summary>无需换弹：弹匣为 0 也允许开火（不拦截 Reload，R 键换弹保持原生）。</summary>
         internal static bool CanFirePrefix(BasicRangedWeapon __instance, ref bool __result)
         {
             try
             {
-                if (!Features.NoReloadOn) return true;
+                if (!Features.NoReloadOn && !Features.JamBypassOn) return true;
                 if (__instance == null) return true;
                 if (!IsLocalPlayer(__instance.character)) return true;
 
-                Once(ref _logCanFire, "CanFire 已拦截 → 强制可开火");
+                Once(ref _logCanFire, "CanFire 已拦截 → 空弹匣/卡壳也可开火（R 换弹仍生效）");
                 __result = true;
                 return false;
             }
             catch { return true; }
         }
 
-        /// <summary>无限弹药：告诉游戏"背包里弹药充足"。</summary>
+        /// <summary>无限弹药：背包弹药视为充足。</summary>
         internal static bool AmmoTotalPrefix(BasicCharacterController character, ref int __result)
         {
             try
@@ -174,7 +159,7 @@ namespace ZedZone.UltimateAssistant.Patch
             catch { return true; }
         }
 
-        /// <summary>无限弹药：扣除弹药时直接当作成功，不真正减少。</summary>
+        /// <summary>无限弹药：不真正扣除弹药物品。</summary>
         internal static bool RemoveAmmoPrefix(HumanCharacterController __instance, ref bool __result)
         {
             try
@@ -188,33 +173,18 @@ namespace ZedZone.UltimateAssistant.Patch
             catch { return true; }
         }
 
-        /// <summary>无需换弹：每次开火后把弹匣补满。</summary>
-        internal static void FirePostfix(BasicRangedWeapon __instance)
+        /// <summary>取消过热：只把玩家自己的武器温度读作 0。</summary>
+        internal static void GunTempPostfix(ItemData m_weaponData, ref float __result)
         {
             try
             {
-                if (!Features.NoReloadOn) return;
-                if (__instance == null) return;
-                if (!IsLocalPlayer(__instance.character)) return;
-                Once(ref _logFire, "Fire 后置 → 补满弹匣");
-                __instance.OnFillComplate(FakeAmmo);
+                if (!Features.NoOverheatOn) return;
+                if (m_weaponData == null) return;
+                if (!WeaponUtil.IsPlayerWeapon(m_weaponData.Pointer)) return;
+                Once(ref _logTemp, "GetGunTemperature 已拦截 → 温度视为 0");
+                __result = 0f;
             }
             catch { }
-        }
-
-        /// <summary>无需换弹：换弹流程直接跳过（弹匣已由 FirePostfix 维持）。</summary>
-        internal static bool ReloadPrefix(BasicRangedWeapon __instance, ref bool __result)
-        {
-            try
-            {
-                if (!Features.NoReloadOn) return true;
-                if (__instance == null) return true;
-                if (!IsLocalPlayer(__instance.character)) return true;
-                Once(ref _logReload, "Reload 已拦截 → 跳过换弹");
-                __result = true;
-                return false;
-            }
-            catch { return true; }
         }
     }
 }

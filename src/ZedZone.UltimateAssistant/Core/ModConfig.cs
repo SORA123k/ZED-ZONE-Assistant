@@ -22,6 +22,9 @@ namespace ZedZone.UltimateAssistant.Core
         internal static ConfigEntry<bool> InfiniteAmmo;
         internal static ConfigEntry<bool> NoReload;
         internal static ConfigEntry<bool> ZombieEsp;
+        internal static ConfigEntry<bool> WeaponDurability;
+        internal static ConfigEntry<bool> NoOverheat;
+        internal static ConfigEntry<bool> JamBypass;
 
         // ---- Zombie ESP 选项 ----
         internal static ConfigEntry<bool> EspShowName;
@@ -215,6 +218,13 @@ namespace ZedZone.UltimateAssistant.Core
             ZombieEsp = cfg.Bind("Features", "ZombieEsp", false,
                 "僵尸透视：在屏幕上标记当前已加载的僵尸，可显示名称与距离。默认关闭。");
 
+            WeaponDurability = cfg.Bind("Features", "WeaponDurability", false,
+                "武器耐久修复：开启后把携带物品的耐久提升到 100（只增不减）。默认关闭。");
+            NoOverheat = cfg.Bind("Features", "NoOverheat", false,
+                "取消枪械过热：开启后玩家自己的枪械温度恒为 0（不影响 NPC）。默认关闭。");
+            JamBypass = cfg.Bind("Features", "JamBypass", false,
+                "卡壳不阻止开火：游戏未公开清除卡壳的接口，此开关让卡壳状态不再阻止射击。默认关闭。");
+
             EspShowName = cfg.Bind("Esp", "ShowName", true, "ESP 显示僵尸名称/类型。");
             EspShowDistance = cfg.Bind("Esp", "ShowDistance", true, "ESP 显示与玩家的距离。");
             EspMaxDistance = cfg.Bind("Esp", "MaxDistance", 200f,
@@ -235,4 +245,6 @@ namespace ZedZone.UltimateAssistant.Core
         }
     }
 }
+
+
 

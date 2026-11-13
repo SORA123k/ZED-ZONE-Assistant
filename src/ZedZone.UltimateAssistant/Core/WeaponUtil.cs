@@ -1,0 +1,191 @@
+using System;
+using System.Collections.Generic;
+using UnityEngine;
+using Il2CppInterop.Runtime.InteropTypes.Arrays;
+
+namespace ZedZone.UltimateAssistant.Core
+{
+    /// <summary>
+    /// 武器相关的只读/低风险工具（玩家自己的武器数据）。
+    ///
+    /// 提供：
+    ///  * 枚举玩家背包内的所有物品（用于耐久修复）；
+    ///  * 耐久修复（**单调增加**：只在当前值低于阈值时提升，绝不降低）；
+    ///  * 一键清除卡壳（遍历玩家武器组件，把 isMalfunction 置 false）；
+    ///  * 维护"玩家武器 ItemData 指针集合"，供温度拦截精确判断归属。
+    ///
+    /// 安全：只处理本地玩家；不触碰 NPC/僵尸武器；所有操作 try/catch。
+    /// </summary>
+    internal static class WeaponUtil
+    {
+        /// <summary>耐久修复目标。只在当前值低于它时写入，因此只会变大。</summary>
+        private const float DurabilityTarget = 100f;
+
+        private static readonly HashSet<IntPtr> _playerWeapons = new HashSet<IntPtr>();
+        private static float _nextRefresh;
+
+        internal static int PlayerWeaponCount => _playerWeapons.Count;
+        internal static int LastRepairCount { get; private set; }
+        internal static int LastJamFixCount { get; private set; }
+
+        /// <summary>节流刷新玩家武器指针集合（用于温度补丁精确匹配）。</summary>
+        internal static void Refresh()
+        {
+            float now = Time.unscaledTime * 1000f;
+            if (now < _nextRefresh) return;
+            _nextRefresh = now + 500f;
+
+            try
+            {
+                _playerWeapons.Clear();
+                var items = CollectPlayerItems();
+                if (items == null) return;
+                for (int i = 0; i < items.Count; i++)
+                {
+                    var it = items[i];
+                    if (it == null) continue;
+                    try
+                    {
+                        if (it.durability > 0f || LooksLikeWeapon(it))
+                            _playerWeapons.Add(it.Pointer);
+                    }
+                    catch { }
+                }
+            }
+            catch (Exception e) { Log.ErrorOnce("weaponutil.refresh", e); }
+
+            // 耐久开关：持续把携带物耐久补回（每次刷新最多执行一次）
+            try { if (Features.WeaponDurabilityOn) RepairDurability(); } catch { }
+        }
+
+        internal static bool IsPlayerWeapon(IntPtr ptr)
+        {
+            try { return ptr != IntPtr.Zero && _playerWeapons.Contains(ptr); }
+            catch { return false; }
+        }
+
+        private static bool LooksLikeWeapon(ItemData it)
+        {
+            try
+            {
+                // 有耐久且非 0 的物品大多是可损坏装备/武器；这里只做"是否纳入集合"的宽松判断
+                return it.durability > 0f;
+            }
+            catch { return false; }
+        }
+
+        /// <summary>收集玩家携带物品（含背包递归）。</summary>
+        internal static List<ItemData> CollectPlayerItems()
+        {
+            var result = new List<ItemData>();
+            try
+            {
+                HumanCharacterController p = PlayerAccessor.Resolve(out _, out _);
+                if (p == null) return result;
+
+                var cd = p.characterData;
+                if (cd == null) return result;
+
+                var invs = cd.GetCarriedInventoryList();
+                if (invs == null) return result;
+
+                for (int i = 0; i < invs.Count; i++)
+                {
+                    var inv = invs[i];
+                    if (inv == null) continue;
+                    try
+                    {
+                        var list = inv.itemList;
+                        if (list == null) continue;
+                        for (int j = 0; j < list.Count; j++)
+                        {
+                            var it = list[j];
+                            if (it != null) result.Add(it);
+                        }
+                    }
+                    catch { }
+                }
+            }
+            catch (Exception e) { Log.ErrorOnce("weaponutil.items", e); }
+            return result;
+        }
+
+        /// <summary>修复玩家携带物品的耐久（单调增加，绝不降低）。</summary>
+        internal static int RepairDurability()
+        {
+            int n = 0;
+            try
+            {
+                var items = CollectPlayerItems();
+                for (int i = 0; i < items.Count; i++)
+                {
+                    var it = items[i];
+                    if (it == null) continue;
+                    try
+                    {
+                        float d = it.durability;
+                        if (d > 0f && d < DurabilityTarget)
+                        {
+                            it.durability = DurabilityTarget;
+                            n++;
+                        }
+                    }
+                    catch { }
+                }
+            }
+            catch (Exception e) { Log.ErrorOnce("weaponutil.repair", e); }
+            LastRepairCount = n;
+            if (n > 0) Log.Info($"[weapons] 耐久修复：{n} 件物品 → {DurabilityTarget}");
+            return n;
+        }
+
+        /// <summary>
+        /// 一键修复卡壳（兜底方案）。
+        ///
+        /// 说明：游戏 1.0.17 中 `isMalfunction` 是**只读属性**，`WeaponMalfunction()` 是**私有方法**，
+        /// 没有公开 API 可以直接清除卡壳标志。因此这里采用「开火闸门兜底」：
+        /// 打开 JamBypass 后，卡壳状态不再阻止开火（按 R 换弹、其它逻辑不受影响）。
+        /// </summary>
+        internal static int FixJams()
+        {
+            int jammed = 0;
+            try
+            {
+                HumanCharacterController p = PlayerAccessor.Resolve(out _, out _);
+                if (p != null)
+                {
+                    var pp = p.Pointer;
+                    var weapons = Resources.FindObjectsOfTypeAll<BasicRangedWeapon>();
+                    if (weapons != null)
+                    {
+                        for (int i = 0; i < weapons.Length; i++)
+                        {
+                            var w = weapons[i];
+                            if (w == null) continue;
+                            try
+                            {
+                                var c = w.character;
+                                if (c == null || c.Pointer != pp) continue;
+                                if (w.isMalfunction) jammed++;
+                            }
+                            catch { }
+                        }
+                    }
+                }
+            }
+            catch (Exception e) { Log.ErrorOnce("weaponutil.jam.scan", e); }
+
+            try { Features.SetJamBypass(true); } catch { }
+
+            LastJamFixCount = jammed;
+            Log.Info($"[weapons] 修复卡壳（兜底）：检测到 {jammed} 把卡壳武器；已开启「卡壳不阻止开火」。" +
+                     "游戏未提供清除卡壳状态的公开接口，故以开火闸门兜底。");
+            return jammed;
+        }
+
+        internal static string StatusText()
+            => $"武器={_playerWeapons.Count} 耐久修复={(Features.WeaponDurabilityOn ? "开" : "关")} 过热={(Features.NoOverheatOn ? "已取消" : "正常")}";
+    }
+}
+
+

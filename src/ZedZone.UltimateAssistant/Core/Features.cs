@@ -21,13 +21,19 @@ namespace ZedZone.UltimateAssistant.Core
         internal static bool InfiniteAmmoOn { get; private set; }
         internal static bool NoReloadOn { get; private set; }
         internal static bool ZombieEspOn { get; private set; }
+        internal static bool WeaponDurabilityOn { get; private set; }
+        internal static bool NoOverheatOn { get; private set; }
+        internal static bool JamBypassOn { get; private set; }
 
         internal static string LastError { get; private set; }
-        internal static int PatchCount => _patchesInstalled ? 2 : 0;
+        internal static int PatchCount => _patchesInstalled ? Patch.WeaponPatches.Installed : 0;
 
         /// <summary>从配置同步一次（可在菜单里调用）。</summary>
         internal static void SyncFromConfig()
         {
+            bool wantDur = ModConfig.WeaponDurability?.Value ?? false;
+            bool wantHeat = ModConfig.NoOverheat?.Value ?? false;
+            bool wantJam = ModConfig.JamBypass?.Value ?? false;
             bool wantAmmo = ModConfig.InfiniteAmmo?.Value ?? false;
             bool wantReload = ModConfig.NoReload?.Value ?? false;
             bool wantEsp = ModConfig.ZombieEsp?.Value ?? false;
@@ -51,6 +57,9 @@ namespace ZedZone.UltimateAssistant.Core
 
             SetInfiniteAmmo(wantAmmo);
             SetNoReload(wantReload);
+            SetWeaponDurability(wantDur);
+            SetNoOverheat(wantHeat);
+            SetJamBypass(wantJam);
             ZombieEspOn = wantEsp;
         }
 
@@ -70,6 +79,30 @@ namespace ZedZone.UltimateAssistant.Core
             Log.Info("[features] NoReload = " + on);
         }
 
+        internal static void SetWeaponDurability(bool on)
+        {
+            if (WeaponDurabilityOn == on) return;
+            WeaponDurabilityOn = on;
+            Log.Info("[features] WeaponDurability = " + on);
+            if (on) { try { WeaponUtil.RepairDurability(); } catch { } }
+        }
+
+        internal static void SetNoOverheat(bool on)
+        {
+            if (NoOverheatOn == on) return;
+            NoOverheatOn = on;
+            Apply();
+            Log.Info("[features] NoOverheat = " + on);
+        }
+
+        internal static void SetJamBypass(bool on)
+        {
+            if (JamBypassOn == on) return;
+            JamBypassOn = on;
+            Apply();
+            Log.Info("[features] JamBypass = " + on);
+        }
+
         internal static void SetZombieEsp(bool on)
         {
             if (ZombieEspOn == on) return;
@@ -81,7 +114,7 @@ namespace ZedZone.UltimateAssistant.Core
         /// <summary>按当前开关状态安装/卸载补丁。任何异常只记录，不影响游戏。</summary>
         private static void Apply()
         {
-            bool needPatches = InfiniteAmmoOn || NoReloadOn;
+            bool needPatches = InfiniteAmmoOn || NoReloadOn || NoOverheatOn || JamBypassOn;
             try
             {
                 if (needPatches && !_patchesInstalled)
@@ -110,9 +143,13 @@ namespace ZedZone.UltimateAssistant.Core
             try { if (_patchesInstalled) Patch.WeaponPatches.Uninstall(_harmony); } catch { }
             _patchesInstalled = false;
             InfiniteAmmoOn = NoReloadOn = ZombieEspOn = false;
+            WeaponDurabilityOn = NoOverheatOn = JamBypassOn = false;
         }
 
         internal static string StatusText()
             => $"弹药={(InfiniteAmmoOn ? "开" : "关")} 免换弹={(NoReloadOn ? "开" : "关")} ESP={(ZombieEspOn ? "开" : "关")}";
     }
 }
+
+
+

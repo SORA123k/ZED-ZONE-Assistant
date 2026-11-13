@@ -62,6 +62,7 @@ namespace ZedZone.UltimateAssistant.UI
                     }
                     try { LimbData.Refresh(); } catch (Exception e) { Log.ErrorOnce("limbdata", e); }
                     try { ZombieEsp.Refresh(); } catch (Exception e) { Log.ErrorOnce("esp", e); }
+                    try { WeaponUtil.Refresh(); } catch (Exception e) { Log.ErrorOnce("weaponutil", e); }
                     try { Diagnostics.Tick(); } catch (Exception e) { Log.ErrorOnce("diagnostics", e); }
                     try { GrowthProbe.Tick(); } catch (Exception e) { Log.ErrorOnce("growth", e); }
                     try { FatigueProbe.Tick(); } catch (Exception e) { Log.ErrorOnce("fatigue", e); }
@@ -163,4 +164,5 @@ namespace ZedZone.UltimateAssistant.UI
         }
     }
 }
+
 
