@@ -55,7 +55,7 @@ namespace ZedZone.UltimateAssistant.Core
 
                 float now = Time.unscaledTime;
                 if (now < _nextTick) return;
-                _nextTick = now + 0.40f;
+                _nextTick = now + (Features.PerformanceModeOn ? 0.9f : 0.40f);
 
                 // 场景切换：基线作废
                 try
@@ -149,6 +149,7 @@ namespace ZedZone.UltimateAssistant.Core
             try
             {
                 if (!Features.WeaponDurabilityOn) return;
+                if (Features.PerformanceModeOn && (Time.frameCount & 1) != 0) return;   // 性能模式隔帧执行
 
                 // 每帧执行：射击扣减可能发生在任意帧，250ms 轮询会留下可见下降窗口
 
@@ -270,6 +271,7 @@ namespace ZedZone.UltimateAssistant.Core
             => $"普通耐久锁定={(Features.ItemDurabilityLockOn ? "开" : "关")} 跟踪={_maxSeen.Count}";
     }
 }
+
 
 
 

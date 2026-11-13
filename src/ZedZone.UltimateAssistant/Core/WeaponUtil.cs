@@ -37,7 +37,7 @@ namespace ZedZone.UltimateAssistant.Core
         {
             float now = Time.unscaledTime * 1000f;
             if (now < _nextRefresh) return;
-            _nextRefresh = now + 1000f;
+            _nextRefresh = now + (Features.PerformanceModeOn ? 2500f : 1000f);
 
             try
             {
@@ -258,7 +258,7 @@ namespace ZedZone.UltimateAssistant.Core
                 var arr = _jamWeaponCache;
                 if (arr == null || Time.unscaledTime >= _nextJamCache)
                 {
-                    _nextJamCache = Time.unscaledTime + 1f;
+                    _nextJamCache = Time.unscaledTime + (Features.PerformanceModeOn ? 2.5f : 1f);
                     arr = Resources.FindObjectsOfTypeAll<BasicRangedWeapon>();
                     _jamWeaponCache = arr;
                 }
@@ -305,7 +305,7 @@ namespace ZedZone.UltimateAssistant.Core
         {
             if (!Features.NoJamOn) return 0;
             if (Time.unscaledTime < _nextJamClear) return 0;
-            _nextJamClear = Time.unscaledTime + 0.2f;
+            _nextJamClear = Time.unscaledTime + (Features.PerformanceModeOn ? 1.0f : 0.2f);
 
             int n = 0;
             try
@@ -317,7 +317,7 @@ namespace ZedZone.UltimateAssistant.Core
                 var arr = _jamWeaponCache;
                 if (arr == null || Time.unscaledTime >= _nextJamCache)
                 {
-                    _nextJamCache = Time.unscaledTime + 1f;
+                    _nextJamCache = Time.unscaledTime + (Features.PerformanceModeOn ? 2.5f : 1f);
                     arr = Resources.FindObjectsOfTypeAll<BasicRangedWeapon>();
                     _jamWeaponCache = arr;
                 }
@@ -645,6 +645,7 @@ namespace ZedZone.UltimateAssistant.Core
             => $"武器={_playerWeapons.Count} 耐久修复={(Features.WeaponDurabilityOn ? "开" : "关")} 过热={(Features.NoOverheatOn ? "已取消" : "正常")}";
     }
 }
+
 
 
 

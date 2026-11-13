@@ -66,6 +66,8 @@ namespace ZedZone.UltimateAssistant.Core
                 v => { ModConfig.ZombieEsp.Value = v; Features.SetZombieEsp(v); });
             Add(cfg, "fullbright", "fullbright", () => Features.FullBrightOn,
                 v => { ModConfig.FullBright.Value = v; Features.SetFullBright(v); });
+            Add(cfg, "performance", "performance", () => Features.PerformanceModeOn,
+                v => { ModConfig.PerformanceMode.Value = v; Features.SetPerformanceMode(v); });
 
             Log.Info($"[hotkey] 已注册 {_entries.Count} 个功能快捷键");
         }
@@ -154,5 +156,6 @@ namespace ZedZone.UltimateAssistant.Core
         }
     }
 }
+
 
 

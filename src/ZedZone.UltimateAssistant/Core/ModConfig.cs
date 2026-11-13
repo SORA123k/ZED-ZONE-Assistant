@@ -37,6 +37,7 @@ namespace ZedZone.UltimateAssistant.Core
         internal static ConfigEntry<bool> MoveSpeed;
         internal static ConfigEntry<float> MoveSpeedMultiplier;
         internal static ConfigEntry<bool> FullBright;
+        internal static ConfigEntry<bool> PerformanceMode;
 
         // ---- Zombie ESP 选项 ----
         internal static ConfigEntry<bool> EspShowName;
@@ -252,6 +253,7 @@ namespace ZedZone.UltimateAssistant.Core
                 "移动加速开关。默认关闭。");
             MoveSpeedMultiplier = cfg.Bind("Features", "MoveSpeedMultiplier", 1.0f,
                 new ConfigDescription("移动速度倍率（1.0 - 3.0）。", new AcceptableValueRange<float>(1f, 3f)));
+            PerformanceMode = cfg.Bind("Features", "PerformanceMode", false, "性能模式：降低 ESP/耐久/诊断的刷新频率以提升帧数（功能不变，响应略慢）。默认关闭。");
             FullBright = cfg.Bind("Features", "FullBright", false,
                 "地图全亮：夜间提升场景环境亮度（仅影响画面，不改变时间/天气/AI）。默认关闭。");
             NoJam = cfg.Bind("Features", "NoJam", false,
@@ -291,6 +293,7 @@ namespace ZedZone.UltimateAssistant.Core
         }
     }
 }
+
 
 
 

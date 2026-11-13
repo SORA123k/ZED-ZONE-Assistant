@@ -53,6 +53,7 @@ namespace ZedZone.UltimateAssistant.Core
             float now = Time.unscaledTime * 1000f;
             if (now < _nextRefresh) return;
             int ms = Mathf.Clamp(ModConfig.EspRefreshMs?.Value ?? 150, 50, 2000);
+            if (Features.PerformanceModeOn) ms = Mathf.Max(ms, 350);
             _nextRefresh = now + ms;
 
             var result = new List<Entry>(_entries.Count + 8);
@@ -71,7 +72,8 @@ namespace ZedZone.UltimateAssistant.Core
 
                 float maxDist = ModConfig.EspMaxDistance?.Value ?? 200f;
                 int n = list.Count;
-                for (int i = 0; i < n && result.Count < 300; i++)
+                int cap = Features.PerformanceModeOn ? 120 : 300;
+                for (int i = 0; i < n && result.Count < cap; i++)
                 {
                     BasicCharacterController c = null;
                     try { c = list[i]; } catch { continue; }
@@ -240,4 +242,5 @@ namespace ZedZone.UltimateAssistant.Core
             => $"ZombieEsp={(Features.ZombieEspOn ? "开" : "关")} 目标={_lastCount}";
     }
 }
+
 

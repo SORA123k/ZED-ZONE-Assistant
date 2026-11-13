@@ -486,6 +486,9 @@ namespace ZedZone.UltimateAssistant.UI
             ToggleRow("block_input", ModConfig.BlockGameInput.Value, v => ModConfig.BlockGameInput.Value = v, cx, cw, s, ref y);
             ToggleRow("show_limbs", ModConfig.MenuShowLimbs.Value, v => ModConfig.MenuShowLimbs.Value = v, cx, cw, s, ref y);
 
+            Card("performance", "performance_d", "performance", Features.PerformanceModeOn,
+                v => { ModConfig.PerformanceMode.Value = v; Features.SetPerformanceMode(v); }, cx, cw, s, ref y);
+
             Section("sec_appearance", cx, cw, s, ref y);
             CycleRow("theme", ThemeManager.Current, ThemeManager.Keys, k => ThemeManager.Display(k),
                 k => ThemeManager.Set(k), cx, cw, s, ref y);
@@ -731,6 +734,7 @@ namespace ZedZone.UltimateAssistant.UI
         }
     }
 }
+
 
 
 

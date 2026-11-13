@@ -71,9 +71,9 @@ namespace ZedZone.UltimateAssistant.UI
                     try { LimbData.Refresh(); } catch (Exception e) { Log.ErrorOnce("limbdata", e); }
                     try { ZombieEsp.Refresh(); } catch (Exception e) { Log.ErrorOnce("esp", e); }
                     try { WeaponUtil.Refresh(); } catch (Exception e) { Log.ErrorOnce("weaponutil", e); }
-                    try { Diagnostics.Tick(); } catch (Exception e) { Log.ErrorOnce("diagnostics", e); }
-                    try { GrowthProbe.Tick(); } catch (Exception e) { Log.ErrorOnce("growth", e); }
-                    try { FatigueProbe.Tick(); } catch (Exception e) { Log.ErrorOnce("fatigue", e); }
+                    if (!Features.PerformanceModeOn) { try { Diagnostics.Tick(); } catch (Exception e) { Log.ErrorOnce("diagnostics", e); } }
+                    if (!Features.PerformanceModeOn) { try { GrowthProbe.Tick(); } catch (Exception e) { Log.ErrorOnce("growth", e); } }
+                    if (!Features.PerformanceModeOn) { try { FatigueProbe.Tick(); } catch (Exception e) { Log.ErrorOnce("fatigue", e); } }
                     try { LimbProbe.Tick(); } catch (Exception e) { Log.ErrorOnce("limb", e); }
                     try { LimbApiProbe.Tick(); } catch (Exception e) { Log.ErrorOnce("limbapi", e); }
                     try { DurabilityDiag.Tick(); } catch (Exception e) { Log.ErrorOnce("duragdiag", e); }
@@ -211,6 +211,7 @@ namespace ZedZone.UltimateAssistant.UI
         }
     }
 }
+
 
 
 
