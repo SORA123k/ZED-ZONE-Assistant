@@ -50,6 +50,7 @@ namespace ZedZone.UltimateAssistant.UI
                 // 热键
                 if (KeyDown(_key)) ToggleMenu();
                 if (ClickGui.Open && KeyDown(KeyCode.Escape)) ToggleMenu();
+                if (ClickGui.Open) { try { InputGuard.Tick(); } catch { } }
 
                 // 节流读取
                 if (Time.unscaledTime * 1000f >= _nextReadAt)
@@ -164,5 +165,6 @@ namespace ZedZone.UltimateAssistant.UI
         }
     }
 }
+
 
 

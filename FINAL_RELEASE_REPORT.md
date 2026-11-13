@@ -1,7 +1,7 @@
 # FINAL_RELEASE_REPORT.md — ZED ZONE Ultimate Assistant v1.0.0 最终交付报告
 
 > 交付日期：2026-11-13
-> 交付版本：**v1.0.2**
+> 交付版本：**v1.0.3**
 > 交付状态：**已构建、已安装、加载验证通过**（功能行为未做实机操作验证，见 §12）
 
 ---
@@ -69,7 +69,7 @@ HP / Energy / Hunger / Thirst 恢复与 Phase 3A 动态范围逻辑**保持原�
 ## 6. MD5
 
 ```
-A90E75A3FE5CA0706C64EE2E6049BE73
+4CE861FB6368B02EBDD9CFF0F985B43E
 ```
 
 （构建产物与已安装文件一致；安装时间 2026-11-13 21:07:08）
@@ -263,7 +263,7 @@ git log --oneline -1     → 4e120c7 Final delivery v2.2.0：...（其自身历�
 - 补丁总数 4 → **5**；
 - 每个补丁前 3 次触发会写 `[weapons] ... 已拦截` 日志，便于确认补丁是否真的被调用。
 
-**版本/DLL**：v1.0.1 / 115,712 字节 / MD5 `A90E75A3FE5CA0706C64EE2E6049BE73`
+**版本/DLL**：v1.0.1 / 115,712 字节 / MD5 `4CE861FB6368B02EBDD9CFF0F985B43E`
 
 **仍未实机确认**：开火后弹匣数值是否稳定、是否有音效/动画副作用。
 诊断方法：开一枪后查看 `BepInEx\LogOutput.log` 是否出现
@@ -284,7 +284,37 @@ git log --oneline -1     → 4e120c7 Final delivery v2.2.0：...（其自身历�
 
 **补丁总数**：4（CanFire / GetInventoryAmmoTotal / RemoveAmmoItemData / GetGunTemperature）
 
-**版本/DLL**：v1.0.2 / 121,344 字节 / MD5 `A90E75A3FE5CA0706C64EE2E6049BE73`
+**版本/DLL**：v1.0.2 / 121,344 字节 / MD5 `4CE861FB6368B02EBDD9CFF0F985B43E`
 
 **仍未实机验证**：开火表现、耐久修复后的 UI 显示、过热取消、菜单拖动手感、鼠标指针可见性。
+
+
+---
+
+## 19. v1.0.3 修订（修复"菜单不阻止操作 / 耐久补满无效"）
+
+### 19.1 输入阻断（重做）
+前两版失败原因：
+- `Time.timeScale = 0`：能挡，但游戏像卡死 → 已废弃；
+- 只写 `GameInputManager.windowFocused = false`：**实测无效**，因为焦点门控 `focusGateEnabled` 默认可能是关闭的。
+
+本版三层：
+1. **禁用 `CharacterInput` 组件**（`CharacterInput.instance.enabled = false`）——
+   移动/攻击/使用物品都从该组件读输入，禁用即切断；游戏世界继续运行；
+2. 同时设 `focusGateEnabled = true` + `windowFocused = false`，并**每帧维持**；
+3. 解锁鼠标。
+
+关闭菜单时逐项还原（组件 enabled、焦点门控、鼠标状态）。
+
+### 19.2 耐久修复（加诊断 + 扩大扫描范围）
+- 扫描改为 `CharacterData.inventoryData.GetAllItemsIncludeBackpack()` **加上** `GetCarriedInventoryList()`，
+  覆盖主背包/嵌套背包/装备容器；
+- 每 10 秒输出一次诊断：扫描件数、含耐久件数、修复件数，以及前 10 件的
+  `itemId / durability / GetProperty("durability")` 与写入前后值；
+- 写入仍是**只增不减**（仅在 < 100 时提升）。
+
+**若日志显示"扫描 0 件"，说明物品枚举路径不对；若显示有件数但 durability 不变，说明该字段不是持久化来源** ——
+两种情况都能靠诊断日志区分，再据此修。
+
+**版本/DLL**：v1.0.3 / 123,392 字节 / MD5 `4CE861FB6368B02EBDD9CFF0F985B43E`
 

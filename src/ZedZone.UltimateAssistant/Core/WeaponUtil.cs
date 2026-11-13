@@ -86,37 +86,60 @@ namespace ZedZone.UltimateAssistant.Core
                 var cd = p.characterData;
                 if (cd == null) return result;
 
-                var invs = cd.GetCarriedInventoryList();
-                if (invs == null) return result;
-
-                for (int i = 0; i < invs.Count; i++)
+                // 1) 主背包 + 背包内嵌套（游戏自带递归方法）
+                try
                 {
-                    var inv = invs[i];
-                    if (inv == null) continue;
-                    try
+                    var root = cd.inventoryData;
+                    if (root != null)
                     {
-                        var list = inv.itemList;
-                        if (list == null) continue;
-                        for (int j = 0; j < list.Count; j++)
+                        var all = root.GetAllItemsIncludeBackpack();
+                        if (all != null)
+                            for (int i = 0; i < all.Count; i++) if (all[i] != null) result.Add(all[i]);
+                    }
+                }
+                catch (Exception e) { Log.WarnOnce("weaponutil.all", "[weapons] GetAllItemsIncludeBackpack 失败: " + e.GetType().Name); }
+
+                // 2) 所有携带容器（含装备容器）
+                try
+                {
+                    var invs = cd.GetCarriedInventoryList();
+                    if (invs != null)
+                    {
+                        for (int i = 0; i < invs.Count; i++)
                         {
-                            var it = list[j];
-                            if (it != null) result.Add(it);
+                            var inv = invs[i];
+                            if (inv == null) continue;
+                            var list = inv.itemList;
+                            if (list == null) continue;
+                            for (int j = 0; j < list.Count; j++)
+                            {
+                                var it = list[j];
+                                if (it != null) result.Add(it);
+                            }
                         }
                     }
-                    catch { }
                 }
+                catch { }
             }
             catch (Exception e) { Log.ErrorOnce("weaponutil.items", e); }
             return result;
         }
 
         /// <summary>修复玩家携带物品的耐久（单调增加，绝不降低）。</summary>
+        
+        private static float _nextDiag;
+
         internal static int RepairDurability()
         {
-            int n = 0;
+            int n = 0, scanned = 0, withDur = 0;
             try
             {
                 var items = CollectPlayerItems();
+                scanned = items.Count;
+
+                bool wantDiag = Time.unscaledTime >= _nextDiag;
+                if (wantDiag) _nextDiag = Time.unscaledTime + 10f;
+
                 for (int i = 0; i < items.Count; i++)
                 {
                     var it = items[i];
@@ -124,18 +147,34 @@ namespace ZedZone.UltimateAssistant.Core
                     try
                     {
                         float d = it.durability;
+                        int id = it.itemId;
+                        if (d > 0f) withDur++;
+
+                        if (wantDiag && i < 10)
+                        {
+                            string prop = "n/a";
+                            try { prop = it.GetProperty("durability") ?? "null"; } catch { }
+                            Log.Info($"[weapons] 诊断 item[{i}] id={id} durability={d:0.###} prop(durability)={prop}");
+                        }
+
                         if (d > 0f && d < DurabilityTarget)
                         {
                             it.durability = DurabilityTarget;
+                            float after = it.durability;
+                            if (wantDiag && i < 10)
+                                Log.Info($"[weapons] 诊断写入 item[{i}] id={id} {d:0.###} → {after:0.###}");
                             n++;
                         }
                     }
-                    catch { }
+                    catch (Exception e) { Log.WarnOnce("weaponutil.item", "[weapons] 单件处理异常: " + e.GetType().Name); }
                 }
+
+                if (wantDiag)
+                    Log.Info($"[weapons] 诊断：扫描 {scanned} 件，含耐久 {withDur} 件，本次修复 {n} 件（目标 {DurabilityTarget}）");
             }
             catch (Exception e) { Log.ErrorOnce("weaponutil.repair", e); }
+
             LastRepairCount = n;
-            if (n > 0) Log.Info($"[weapons] 耐久修复：{n} 件物品 → {DurabilityTarget}");
             return n;
         }
 
@@ -187,5 +226,6 @@ namespace ZedZone.UltimateAssistant.Core
             => $"武器={_playerWeapons.Count} 耐久修复={(Features.WeaponDurabilityOn ? "开" : "关")} 过热={(Features.NoOverheatOn ? "已取消" : "正常")}";
     }
 }
+
 
 
