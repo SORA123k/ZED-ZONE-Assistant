@@ -13,3 +13,8 @@ desktop.ini
 # 原生分析大文件（可重新生成，不入库）
 Diagnostics/NativeAnalysis/*.copy
 Diagnostics/NativeAnalysis/ghidraproj/
+
+# 运行时诊断日志（每次游戏自动生成）
+Diagnostics/*.log
+Diagnostics/backup/
+Diagnostics/NativeAnalysis/*.txt
