@@ -15,7 +15,7 @@ namespace ZedZone.UltimateAssistant.UI
         private static readonly Dictionary<string, string[]> _map = new Dictionary<string, string[]>
         {
             // ---- 通用 ----
-            ["title"]        = new[]{ "ZED ZONE · 终极助手", "ZED ZONE · ULTIMATE ASSISTANT", "ZED ZONE · 終極助手" },
+            ["title"]        = new[]{ "SORA助手", "SORA Assistant", "SORA助手" },
             ["hint_close"]   = new[]{ "INSERT 关闭", "INSERT to close", "INSERT 關閉" },
             ["combat"]       = new[]{ "战斗", "Combat", "戰鬥" },
             ["player"]       = new[]{ "玩家", "Player", "玩家" },
@@ -155,4 +155,5 @@ namespace ZedZone.UltimateAssistant.UI
             => code == "en" ? "English" : (code == "zhTW" ? "繁體中文" : "简体中文");
     }
 }
+
 

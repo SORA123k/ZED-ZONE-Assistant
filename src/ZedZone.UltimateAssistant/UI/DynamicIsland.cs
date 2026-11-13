@@ -6,42 +6,58 @@ using ZedZone.UltimateAssistant.Core;
 namespace ZedZone.UltimateAssistant.UI
 {
     /// <summary>
-    /// 灵动岛（Dynamic Island）：屏幕顶部居中的胶囊提示条。
+    /// 灵动岛（Dynamic Island）v2。
     ///
-    /// 参考设计：深色半透明胶囊 + 左侧状态圆点 + 分段文字（SORA · 功能名 · 状态）。
-    /// 行为：功能开启/关闭时展开显示 2.2 秒，随后收缩隐藏；多次触发会排队。
-    /// 只绘制 HUD，不拦截任何游戏输入。
+    /// 改进：
+    ///  * 多个不同功能同时切换 → 同时展示（最多 3 条，最新的在最上）；
+    ///  * 同一个功能被快速反复切换 → 直接覆盖旧条目并刷新计时（旧的被新的顶掉）；
+    ///  * 展开为瞬时（不再慢慢动画），消失时才淡出，响应"跟手"；
+    ///  * 左侧标识改为单字母 S。
     /// </summary>
     internal static class DynamicIsland
     {
-        private struct Msg { internal string Feature; internal bool Enabled; }
+        private sealed class Item
+        {
+            internal string Feature;
+            internal bool Enabled;
+            internal float At;
+        }
 
-        private static readonly Queue<Msg> _queue = new Queue<Msg>();
-        private static Msg? _current;
-        private static float _shownAt;
-        private static float _expand;      // 0..1
+        private static readonly List<Item> _items = new List<Item>();
+        private static float _expand;
         private static Texture2D _circle;
         private static GUIStyle _title, _sub;
 
-        private const float HoldSeconds = 2.2f;
+        private const float HoldSeconds = 2.4f;
+        private const int MaxItems = 3;
 
         internal static void Push(string feature, bool enabled)
         {
-            try { _queue.Enqueue(new Msg { Feature = feature, Enabled = enabled }); }
+            try
+            {
+                // 同一功能：覆盖并顶到最前
+                for (int i = _items.Count - 1; i >= 0; i--)
+                {
+                    if (_items[i].Feature == feature) _items.RemoveAt(i);
+                }
+                _items.Insert(0, new Item { Feature = feature, Enabled = enabled, At = Time.unscaledTime });
+                while (_items.Count > MaxItems) _items.RemoveAt(_items.Count - 1);
+
+                _expand = 1f;   // 瞬时展开
+            }
             catch { }
         }
 
         internal static void Clear()
         {
-            _queue.Clear();
-            _current = null;
+            _items.Clear();
             _expand = 0f;
         }
 
         private static void EnsureAssets()
         {
-            if (_circle != null && _title != null) return;
             if (_circle == null) _circle = MakeCircle(64);
+            if (_title != null) return;
 
             Font f = null;
             try { f = PlayerStatusPanel.instance.daysText.font; } catch { }
@@ -74,98 +90,83 @@ namespace ZedZone.UltimateAssistant.UI
                 ThemeManager.Init();
 
                 float now = Time.unscaledTime;
-
-                if (_current == null)
+                for (int i = _items.Count - 1; i >= 0; i--)
                 {
-                    if (_queue.Count > 0) { _current = _queue.Dequeue(); _shownAt = now; }
-                    else
-                    {
-                        _expand = Mathf.MoveTowards(_expand, 0f, Time.unscaledDeltaTime * 5f);
-                        return;
-                    }
+                    if (now - _items[i].At > HoldSeconds) _items.RemoveAt(i);
                 }
 
-                float age = now - _shownAt;
-                if (age > HoldSeconds)
+                if (_items.Count == 0)
                 {
-                    _current = null;
-                    _expand = Mathf.MoveTowards(_expand, 0f, Time.unscaledDeltaTime * 5f);
+                    _expand = Mathf.MoveTowards(_expand, 0f, Time.unscaledDeltaTime * 9f);
                     return;
                 }
-
-                // 展开动画：前 0.25s 展开，最后 0.3s 收缩
-                float target = (age < 0.25f || age > HoldSeconds - 0.3f) ? 0.55f : 1f;
-                _expand = Mathf.MoveTowards(_expand, target, Time.unscaledDeltaTime * 6f);
+                _expand = 1f;
 
                 var p = ThemeManager.P;
-                var m = _current.Value;
-
                 float scale = Mathf.Clamp(ModConfig.MenuScale?.Value ?? 1f, 0.8f, 1.4f);
-                float h = 34f * scale;
-                float w = (170f + 90f * _expand) * scale;
+                float rowH = 30f * scale;
+                float h = rowH * _items.Count + 8f * scale;
+                float w = 300f * scale;
                 float x = (Screen.width - w) * 0.5f;
-                float y = 12f * scale + (1f - _expand) * -6f * scale;
+                float y = 12f * scale;
 
                 var rect = new Rect(x, y, w, h);
-                var accent = m.Enabled ? p.Good : p.Bad;
-
-                // 阴影 + 胶囊
                 DrawCapsule(new Rect(rect.x + 1f, rect.y + 2f, rect.width, rect.height), new Color(0f, 0f, 0f, 0.45f));
-                DrawCapsule(rect, new Color(p.Window.r, p.Window.g, p.Window.b, 0.94f));
+                DrawCapsule(rect, new Color(p.Window.r, p.Window.g, p.Window.b, 0.95f));
 
-                // 左侧状态圆点
-                float dot = h * 0.34f;
-                var dotRect = new Rect(rect.x + h * 0.36f, rect.y + (h - dot) * 0.5f, dot, dot);
-                GUI.color = accent;
-                GUI.DrawTexture(dotRect, _circle);
-                GUI.color = Color.white;
+                for (int i = 0; i < _items.Count; i++)
+                {
+                    var it = _items[i];
+                    var accent = it.Enabled ? p.Good : p.Bad;
+                    float ry = rect.y + 4f * scale + i * rowH;
 
-                // 文本：SORA · 功能 · 状态
-                string state = m.Enabled ? (L.Current == Lang.En ? "ON" : "已启用")
-                                         : (L.Current == Lang.En ? "OFF" : "已关闭");
-                var old = GUI.color;
-                float tx = dotRect.xMax + h * 0.22f;
+                    float dot = rowH * 0.30f;
+                    var dotRect = new Rect(rect.x + rowH * 0.34f, ry + (rowH - dot) * 0.5f, dot, dot);
+                    GUI.color = accent;
+                    GUI.DrawTexture(dotRect, _circle);
+                    GUI.color = Color.white;
 
-                GUI.color = new Color(p.Text.r, p.Text.g, p.Text.b, 0.85f * _expand + 0.15f);
-                GUI.Label(new Rect(tx, rect.y, 52f * scale, h), "SORA", _sub);
-                tx += 52f * scale;
+                    var old = GUI.color;
+                    float tx = dotRect.xMax + 8f * scale;
+                    float vh = rowH;
 
-                GUI.color = p.SubText;
-                GUI.Label(new Rect(tx, rect.y, 10f * scale, h), "·", _sub);
-                tx += 12f * scale;
+                    GUI.color = new Color(p.Text.r, p.Text.g, p.Text.b, 0.9f);
+                    GUI.Label(new Rect(tx, ry, 16f * scale, vh), "S", _sub);
+                    tx += 18f * scale;
 
-                GUI.color = p.Text;
-                GUI.Label(new Rect(tx, rect.y, 108f * scale, h), m.Feature, _title);
-                tx += 108f * scale;
+                    GUI.color = p.SubText;
+                    GUI.Label(new Rect(tx, ry, 10f * scale, vh), "·", _sub);
+                    tx += 12f * scale;
 
-                GUI.color = p.SubText;
-                GUI.Label(new Rect(tx, rect.y, 10f * scale, h), "·", _sub);
-                tx += 12f * scale;
+                    GUI.color = p.Text;
+                    GUI.Label(new Rect(tx, ry, 130f * scale, vh), it.Feature, _title);
+                    tx += 132f * scale;
 
-                GUI.color = accent;
-                GUI.Label(new Rect(tx, rect.y, 60f * scale, h), state, _sub);
+                    GUI.color = p.SubText;
+                    GUI.Label(new Rect(tx, ry, 10f * scale, vh), "·", _sub);
+                    tx += 12f * scale;
 
-                GUI.color = old;
+                    string state = it.Enabled
+                        ? (L.Current == Lang.En ? "ON" : "已启用")
+                        : (L.Current == Lang.En ? "OFF" : "已关闭");
+                    GUI.color = accent;
+                    GUI.Label(new Rect(tx, ry, 70f * scale, vh), state, _sub);
+
+                    GUI.color = old;
+                }
             }
             catch (Exception e) { Log.ErrorOnce("island", e); }
         }
-
-        // ---------------- 图元 ----------------
 
         private static void DrawCapsule(Rect r, Color c)
         {
             float rad = r.height * 0.5f;
             var old = GUI.color;
             GUI.color = c;
-
-            // 中间矩形
             var mid = new Rect(r.x + rad, r.y, Mathf.Max(0f, r.width - rad * 2f), r.height);
             GUI.DrawTexture(mid, Texture2D.whiteTexture);
-
-            // 两端圆
             GUI.DrawTexture(new Rect(r.x, r.y, r.height, r.height), _circle);
             GUI.DrawTexture(new Rect(r.xMax - r.height, r.y, r.height, r.height), _circle);
-
             GUI.color = old;
         }
 

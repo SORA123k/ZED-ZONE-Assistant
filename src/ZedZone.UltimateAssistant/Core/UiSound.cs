@@ -5,9 +5,11 @@ using UnityEngine;
 namespace ZedZone.UltimateAssistant.Core
 {
     /// <summary>
-    /// 功能开关音效（本地 wav 文件）。
+    /// 功能开关音效（本地 wav）。
     /// 启用：codex-notification.wav；关闭：codex-classic.wav。
-    /// 自行解析 PCM16 WAV，避免依赖 UnityWebRequest/协程与网络。
+    ///
+    /// 采用独立 GameObject + AudioSource（ignoreListenerPause），避免游戏暂停/菜单暂停时静音；
+    /// WAV 为自行解析 PCM16，不依赖网络与协程。
     /// </summary>
     internal static class UiSound
     {
@@ -17,27 +19,66 @@ namespace ZedZone.UltimateAssistant.Core
         private static AudioSource _src;
         private static AudioClip _on, _off;
         private static bool _inited;
+        private static int _playLog;
 
-        internal static void Init(AudioSource src)
+        internal static void Init(AudioSource ignored = null)
         {
             if (_inited) return;
             _inited = true;
-            _src = src;
-            try { _on = LoadWav(OnPath); } catch (Exception e) { Log.Warn("[sound] 启用音效加载失败: " + e.GetType().Name); }
-            try { _off = LoadWav(OffPath); } catch (Exception e) { Log.Warn("[sound] 关闭音效加载失败: " + e.GetType().Name); }
-            Log.Info($"[sound] 音效就绪 on={_on != null} off={_off != null}");
+
+            try
+            {
+                var go = new GameObject("SORA_UiSound");
+                UnityEngine.Object.DontDestroyOnLoad(go);
+                _src = go.AddComponent<AudioSource>();
+                _src.playOnAwake = false;
+                _src.spatialBlend = 0f;
+                _src.volume = 1f;
+                _src.loop = false;
+                _src.ignoreListenerPause = true;
+                _src.ignoreListenerVolume = true;
+            }
+            catch (Exception e) { Log.Warn("[sound] AudioSource 创建失败: " + e.GetType().Name); }
+
+            _on = TryLoad(OnPath, "启用音效");
+            _off = TryLoad(OffPath, "关闭音效");
+            Log.Info($"[sound] 就绪 source={_src != null} on={_on != null} off={_off != null}");
+        }
+
+        private static AudioClip TryLoad(string path, string label)
+        {
+            try
+            {
+                var clip = LoadWav(path);
+                if (clip == null) { Log.Warn($"[sound] {label} 解析失败: {path}"); return null; }
+                Log.Info($"[sound] {label} 已加载: len={clip.length:0.###}s ch={clip.channels} hz={clip.frequency}");
+                return clip;
+            }
+            catch (Exception e)
+            {
+                Log.Warn($"[sound] {label} 加载异常: {e.GetType().Name}: {e.Message}");
+                return null;
+            }
         }
 
         internal static void PlayToggle(bool enabled)
         {
             try
             {
-                if (_src == null) return;
+                if (_src == null) { Log.WarnOnce("sound.nosrc", "[sound] 无 AudioSource，无法播放"); return; }
                 var clip = enabled ? _on : _off;
-                if (clip == null) return;
-                _src.PlayOneShot(clip, 0.7f);
+                if (clip == null)
+                {
+                    // 懒加载重试（Init 早于音频系统就绪时可能失败）
+                    if (enabled) _on = TryLoad(OnPath, "启用音效(重试)");
+                    else _off = TryLoad(OffPath, "关闭音效(重试)");
+                    clip = enabled ? _on : _off;
+                    if (clip == null) { Log.WarnOnce("sound.noclip", "[sound] 音效 clip 为空"); return; }
+                }
+                _src.PlayOneShot(clip, 1f);
+                if (_playLog < 3) { _playLog++; Log.Info($"[sound] 播放 {(enabled ? "启用" : "关闭")} 音效"); }
             }
-            catch { }
+            catch (Exception e) { Log.WarnOnce("sound.play", "[sound] 播放失败: " + e.GetType().Name); }
         }
 
         private static AudioClip LoadWav(string path)
@@ -73,16 +114,22 @@ namespace ZedZone.UltimateAssistant.Core
             }
 
             if (dataOff < 0 || dataLen <= 0) return null;
-            if (bits != 16) return null;
+            if (bits != 16) { Log.Warn("[sound] 仅支持 16-bit PCM wav"); return null; }
+            if (channels <= 0) channels = 1;
+            if (sampleRate <= 0) sampleRate = 44100;
 
-            int sampleCount = dataLen / 2;
-            float[] data = new float[sampleCount];
-            for (int i = 0; i < sampleCount; i++)
+            int totalSamples = dataLen / 2;
+            int frames = totalSamples / channels;
+            if (frames <= 0) return null;
+
+            float[] data = new float[totalSamples];
+            for (int i = 0; i < totalSamples; i++)
                 data[i] = BitConverter.ToInt16(b, dataOff + i * 2) / 32768f;
 
-            var clip = AudioClip.Create("zedua_ui", sampleCount / Math.Max(1, channels), channels, sampleRate, false);
+            var clip = AudioClip.Create("zedua_ui", frames, channels, sampleRate, false);
             clip.SetData(data, 0);
             return clip;
         }
     }
 }
+

@@ -27,7 +27,7 @@ namespace ZedZone.UltimateAssistant
     {
         public const string PluginGuid = "zedzone.ultimateassistant";
         public const string PluginName = "ZED ZONE Ultimate Assistant";
-        public const string PluginVersion = "1.8.0";
+        public const string PluginVersion = "1.8.2";
 
         internal static Plugin Instance;
         internal static ModuleRegistry Registry;
@@ -72,6 +72,7 @@ namespace ZedZone.UltimateAssistant
             Reader = new PlayerStateReader(Registry);
 
             // ---- 只读耐久诊断 ----
+            try { UiSound.Init(); } catch (Exception e) { CoreLog.Warn("音效初始化失败: " + e.GetType().Name); }
             try { HotkeyManager.Init(Config); } catch (Exception e) { CoreLog.Warn("热键初始化失败: " + e.GetType().Name); }
             try { DurabilityDiag.Init(); } catch (Exception e) { CoreLog.Warn("耐久诊断初始化失败: " + e.GetType().Name); }
             try { Il2CppMetaDiag.Init(); } catch (Exception e) { CoreLog.Warn("元数据探查初始化失败: " + e.GetType().Name); }
@@ -134,6 +135,9 @@ namespace ZedZone.UltimateAssistant
         }
     }
 }
+
+
+
 
 
 

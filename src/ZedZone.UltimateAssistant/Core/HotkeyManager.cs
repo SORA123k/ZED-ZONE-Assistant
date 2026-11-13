@@ -28,6 +28,7 @@ namespace ZedZone.UltimateAssistant.Core
         private static readonly List<Entry> _entries = new List<Entry>();
         private static readonly Dictionary<string, KeyCode> _keys = new Dictionary<string, KeyCode>();
         private static string _capturingId;
+        private static float _captureStart;
         private static int _lastFrame = -1;
 
         internal static IReadOnlyList<Entry> Entries => _entries;
@@ -99,7 +100,7 @@ namespace ZedZone.UltimateAssistant.Core
             }
         }
 
-        internal static void BeginCapture(string id) => _capturingId = id;
+        internal static void BeginCapture(string id) { _capturingId = id; _captureStart = Time.unscaledTime; }
         internal static bool IsCapturing(string id) => _capturingId == id;
         internal static void CancelCapture() => _capturingId = null;
 
@@ -111,12 +112,22 @@ namespace ZedZone.UltimateAssistant.Core
             // 捕获模式：任意按键即绑定（Escape 取消）
             if (_capturingId != null)
             {
+                // 开绑的那次左键/同帧输入不算绑定，避免绑成 Mouse0
+                bool guard = (Time.unscaledTime - _captureStart) < 0.25f;
+
                 foreach (KeyCode kc in Enum.GetValues(typeof(KeyCode)))
                 {
                     if (kc == KeyCode.None) continue;
+                    if (guard && (kc == KeyCode.Mouse0 || kc == KeyCode.Mouse1)) continue;
                     if (Input.GetKeyDown(kc))
                     {
-                        if (kc == KeyCode.Escape) { _capturingId = null; return; }
+                        if (kc == KeyCode.Escape)
+                        {
+                            SetKey(_capturingId, KeyCode.None);
+                            Log.Info($"[hotkey] {_capturingId} 已清空绑定（ESC）");
+                            _capturingId = null;
+                            return;
+                        }
                         SetKey(_capturingId, kc);
                         Log.Info($"[hotkey] {_capturingId} 绑定到 {kc}");
                         _capturingId = null;
@@ -143,3 +154,5 @@ namespace ZedZone.UltimateAssistant.Core
         }
     }
 }
+
+

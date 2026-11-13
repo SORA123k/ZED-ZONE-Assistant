@@ -31,10 +31,7 @@ namespace ZedZone.UltimateAssistant.UI
             try { DontDestroyOnLoad(gameObject); } catch { }
             try
             {
-                var src = gameObject.AddComponent<AudioSource>();
-                src.playOnAwake = false;
-                src.spatialBlend = 0f;
-                UiSound.Init(src);
+                UiSound.Init();
             }
             catch (Exception e) { Log.WarnOnce("sound.init", "音效初始化失败: " + e.GetType().Name); }
         }
@@ -210,6 +207,7 @@ namespace ZedZone.UltimateAssistant.UI
         }
     }
 }
+
 
 
 
