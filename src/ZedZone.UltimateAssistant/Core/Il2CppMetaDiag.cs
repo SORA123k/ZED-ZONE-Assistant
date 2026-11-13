@@ -85,6 +85,7 @@ namespace ZedZone.UltimateAssistant.Core
         private static string _path;
         private static bool _inited;
         private static IntPtr _klass;
+        private static IntPtr _itemKlass;
         private static float _nextSample;
         private static bool _dumpedClass;
         private static int _sampleBudget = 12;
@@ -128,6 +129,14 @@ namespace ZedZone.UltimateAssistant.Core
                 }
                 DumpClass(_klass, TargetClass);
                 _dumpedClass = true;
+
+                try
+                {
+                    _itemKlass = FindClass("ItemData");
+                    if (_itemKlass != IntPtr.Zero) DumpClass(_itemKlass, "ItemData");
+                    else W("[WARN] 未找到 ItemData（不猜测）");
+                }
+                catch (Exception e) { W("[WARN] ItemData 元数据失败: " + e.GetType().Name); }
             }
             catch (Exception e)
             {
@@ -327,6 +336,18 @@ namespace ZedZone.UltimateAssistant.Core
                     catch (Exception e) { W("  weaponData 读取失败: " + e.GetType().Name); }
 
                     DumpInstanceValues(basePtr, df);
+
+                    // 同时扫描该武器持有的 ItemData 实例（真实耐久可能在其私有字段）
+                    try
+                    {
+                        var wd2 = wpn.weaponData;
+                        if (wd2 != null && _itemKlass != IntPtr.Zero)
+                        {
+                            W("  --- ItemData 实例字段（查找 ≈ df / df*100 的值） ---");
+                            DumpItemValues(wd2.Pointer, df);
+                        }
+                    }
+                    catch (Exception e) { W("  ItemData 采样失败: " + e.GetType().Name); }
                     break;
                 }
             }
@@ -376,6 +397,52 @@ namespace ZedZone.UltimateAssistant.Core
             }
         }
 
+        private static void DumpItemValues(IntPtr basePtr, float df)
+        {
+            if (basePtr == IntPtr.Zero || _itemKlass == IntPtr.Zero) return;
+            IntPtr iter = IntPtr.Zero;
+            int idx = 0, hits = 0;
+            while (true)
+            {
+                IntPtr f = il2cpp_class_get_fields(_itemKlass, ref iter);
+                if (f == IntPtr.Zero) break;
+                idx++;
+                if (idx > 3000) break;
+
+                uint flags = 0;
+                try { flags = il2cpp_field_get_flags(f); } catch { }
+                if ((flags & 0x0010) != 0) continue;
+
+                int off = -1;
+                try { off = il2cpp_field_get_offset(f); } catch { }
+                if (off < 0x10 || off > 0x4000) continue;
+
+                string fname = Str(il2cpp_field_get_name(f));
+                string ftype = "?";
+                try { ftype = Str(il2cpp_type_get_name(il2cpp_field_get_type(f))); } catch { }
+
+                try
+                {
+                    IntPtr addr = new IntPtr(basePtr.ToInt64() + off);
+                    int i32 = Marshal.ReadInt32(addr);
+                    float f32 = BitConverter.Int32BitsToSingle(i32);
+
+                    string mark = null;
+                    if (Math.Abs(f32 - df) < 0.02f) mark = "≈durabilityFloat";
+                    else if (Math.Abs(f32 - df * 100f) < 2f) mark = "≈df*100";
+                    else if (Math.Abs(f32 - df * 10000f) < 200f) mark = "≈df*10000";
+
+                    if (mark != null)
+                    {
+                        hits++;
+                        W($"    {fname} : {ftype} off=0x{off:X} float={f32:0.#####} int={i32} {mark}");
+                    }
+                }
+                catch { }
+            }
+            W($"    （ItemData 字段 {idx} 个，匹配 {hits} 个）");
+        }
+
         private static void W(string s)
         {
             try { _w?.WriteLine(s); } catch { }
@@ -399,4 +466,5 @@ namespace ZedZone.UltimateAssistant.Core
         }
     }
 }
+
 
