@@ -34,6 +34,7 @@ namespace ZedZone.UltimateAssistant.Core
         internal static bool MoveSpeedOn { get; private set; }
         internal static bool FullBrightOn { get; private set; }
         internal static bool PerformanceModeOn { get; private set; }
+        internal static bool AutoSupplyOn { get; private set; }
         internal static float LastFireAt { get; set; }
         internal static bool NoOverheatOn { get; private set; }
         internal static bool JamBypassOn { get; private set; }
@@ -57,6 +58,7 @@ namespace ZedZone.UltimateAssistant.Core
             bool wantSpeed = ModConfig.MoveSpeed?.Value ?? false;
             bool wantFullBright = ModConfig.FullBright?.Value ?? false;
             bool wantPerf = ModConfig.PerformanceMode?.Value ?? false;
+            bool wantSupply = ModConfig.AutoSupply?.Value ?? false;
             bool wantAmmo = ModConfig.InfiniteAmmo?.Value ?? false;
             bool wantReload = ModConfig.NoReload?.Value ?? false;
             bool wantEsp = ModConfig.ZombieEsp?.Value ?? false;
@@ -93,6 +95,7 @@ namespace ZedZone.UltimateAssistant.Core
             SetMoveSpeed(wantSpeed);
             SetFullBright(wantFullBright);
             SetPerformanceMode(wantPerf);
+            SetAutoSupply(wantSupply);
             ZombieEspOn = wantEsp;
         }
 
@@ -152,6 +155,14 @@ namespace ZedZone.UltimateAssistant.Core
             MoveSpeedOn = on;
             Apply();
             Log.Info("[features] MoveSpeed = " + on);
+        }
+
+        internal static void SetAutoSupply(bool on)
+        {
+            if (AutoSupplyOn == on) return;
+            AutoSupplyOn = on;
+            Apply();
+            Log.Info("[features] AutoSupply = " + on);
         }
 
         internal static void SetPerformanceMode(bool on)
@@ -262,7 +273,7 @@ namespace ZedZone.UltimateAssistant.Core
             // 玩家防扣除补丁（独立生命周期）
             try
             {
-                bool needPlayer = NoHpLossOn || NoStaminaLossOn || NoHungerLossOn || NoThirstLossOn;
+                bool needPlayer = NoHpLossOn || NoStaminaLossOn || NoHungerLossOn || NoThirstLossOn || AutoSupplyOn;
                 if (needPlayer && !_playerPatchesInstalled)
                 {
                     if (_harmony == null) _harmony = new Harmony(Plugin.PluginGuid);
@@ -305,13 +316,14 @@ namespace ZedZone.UltimateAssistant.Core
             InfiniteAmmoOn = NoReloadOn = ZombieEspOn = false;
             WeaponDurabilityOn = NoOverheatOn = JamBypassOn = ItemDurabilityLockOn = false;
             NoHpLossOn = NoStaminaLossOn = NoHungerLossOn = NoThirstLossOn = NoJamOn = false;
-            AlwaysSprintOn = MoveSpeedOn = FullBrightOn = PerformanceModeOn = false;
+            AlwaysSprintOn = MoveSpeedOn = FullBrightOn = PerformanceModeOn = AutoSupplyOn = false;
         }
 
         internal static string StatusText()
             => $"弹药={(InfiniteAmmoOn ? "开" : "关")} 免换弹={(NoReloadOn ? "开" : "关")} ESP={(ZombieEspOn ? "开" : "关")}";
     }
 }
+
 
 
 

@@ -60,6 +60,8 @@ namespace ZedZone.UltimateAssistant.UI
             ["always_sprint_d"]=new[]{ "开枪/攻击时保持奔跑，不被强制切换为走路", "Keeps sprinting while shooting or attacking", "開槍/攻擊時保持奔跑，不被強制切換為走路" },
             ["move_speed"]   = new[]{ "移动加速", "Movement Speed", "移動加速" },
             ["move_speed_d"] = new[]{ "按倍率提高本地玩家移动速度", "Multiplies your movement speed", "按倍率提高本地玩家移動速度" },
+            ["auto_supply"]  = new[]{ "自动补充材料", "Auto Supply", "自動補充材料" },
+            ["auto_supply_d"]= new[]{ "制造/修复时视为材料充足，不再因缺材料失败", "Crafting/repair treat materials as sufficient", "製造/修復時視為材料充足，不再因缺材料失敗" },
             ["performance"]  = new[]{ "性能模式", "Performance Mode", "效能模式" },
             ["performance_d"]= new[]{ "降低 ESP/耐久/诊断刷新频率以提升帧数（功能不变）", "Lower ESP/durability/diagnostic refresh rates for higher FPS (features unchanged)", "降低 ESP/耐久/診斷刷新頻率以提升幀數（功能不變）" },
             ["fullbright"]   = new[]{ "地图全亮", "Full Bright", "地圖全亮" },
@@ -159,6 +161,7 @@ namespace ZedZone.UltimateAssistant.UI
             => code == "en" ? "English" : (code == "zhTW" ? "繁體中文" : "简体中文");
     }
 }
+
 
 
 

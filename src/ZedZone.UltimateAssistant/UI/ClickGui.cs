@@ -223,7 +223,7 @@ namespace ZedZone.UltimateAssistant.UI
             var sw = new Rect(r.xMax - 52f * s, r.y + (ch - 20f * s) * 0.5f, 40f * s, 20f * s);
             DrawSwitch(sw, s, on, titleKey);
 
-            if (Hit(new Rect(r.x, r.y, r.width - 140f * s, r.height))) set(!on);
+            if (Hit(new Rect(r.x, r.y, r.width - 140f * s, r.height)) || Hit(sw)) set(!on);
             y += ch + 6f * s;
             return y;
         }
@@ -352,6 +352,8 @@ namespace ZedZone.UltimateAssistant.UI
                 v => { ModConfig.ItemDurabilityLock.Value = v; Features.SetItemDurabilityLock(v); }, cx, cw, s, ref y);
             Card("gun_dur", "gun_dur_d", "gun_dur", Features.WeaponDurabilityOn,
                 v => { ModConfig.WeaponDurability.Value = v; Features.SetWeaponDurability(v); }, cx, cw, s, ref y);
+            Card("auto_supply", "auto_supply_d", "auto_supply", Features.AutoSupplyOn,
+                v => { ModConfig.AutoSupply.Value = v; Features.SetAutoSupply(v); }, cx, cw, s, ref y);
             Card("no_overheat", "no_overheat_d", "no_overheat", Features.NoOverheatOn,
                 v => { ModConfig.NoOverheat.Value = v; Features.SetNoOverheat(v); }, cx, cw, s, ref y);
             ActionCard("fix_jam", "fix_jam_d", () => WeaponUtil.ClearMalfunction(), cx, cw, s, ref y);
@@ -734,6 +736,7 @@ namespace ZedZone.UltimateAssistant.UI
         }
     }
 }
+
 
 
 

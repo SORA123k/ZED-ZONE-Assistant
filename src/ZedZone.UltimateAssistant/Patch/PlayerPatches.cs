@@ -43,6 +43,31 @@ namespace ZedZone.UltimateAssistant.Patch
                 Installed++;
             });
 
+            // 自动补充材料：材料是否足够的判定 + 数量查询 + 实际扣除
+            Try(harmony, "HasItem", () =>
+            {
+                var m = AccessTools.Method(typeof(InventoryData), "HasItem", new[] { typeof(int), typeof(float) });
+                if (m == null) { Log.Warn("[supply] 未找到 HasItem"); return; }
+                harmony.Patch(m, postfix: new HarmonyMethod(typeof(PlayerPatches), nameof(HasItemPostfix)));
+                Installed++;
+            });
+
+            Try(harmony, "GetTotalItemNumberByID", () =>
+            {
+                var m = AccessTools.Method(typeof(InventoryData), "GetTotalItemNumberByID", new[] { typeof(int) });
+                if (m == null) { Log.Warn("[supply] 未找到 GetTotalItemNumberByID"); return; }
+                harmony.Patch(m, postfix: new HarmonyMethod(typeof(PlayerPatches), nameof(CountPostfix)));
+                Installed++;
+            });
+
+            Try(harmony, "RemoveItems", () =>
+            {
+                var m = AccessTools.Method(typeof(InventoryData), "RemoveItems", new[] { typeof(int), typeof(float) });
+                if (m == null) { Log.Warn("[supply] 未找到 RemoveItems"); return; }
+                harmony.Patch(m, prefix: new HarmonyMethod(typeof(PlayerPatches), nameof(RemoveItemsPrefix)));
+                Installed++;
+            });
+
             Try(harmony, "set_hunger", () =>
             {
                 var m = AccessTools.Method(typeof(BasicCharacterController), "set_hunger", new[] { typeof(float) });
@@ -79,6 +104,9 @@ namespace ZedZone.UltimateAssistant.Patch
                 Unpatch(harmony, typeof(HumanCharacterController), "CostEnergy", new[] { typeof(float) });
                 Unpatch(harmony, typeof(HumanCharacterController), "RunInput", new[] { typeof(bool) });
                 Unpatch(harmony, typeof(BasicCharacterController), "set_hunger", new[] { typeof(float) });
+                Unpatch(harmony, typeof(InventoryData), "HasItem", new[] { typeof(int), typeof(float) });
+                Unpatch(harmony, typeof(InventoryData), "GetTotalItemNumberByID", new[] { typeof(int) });
+                Unpatch(harmony, typeof(InventoryData), "RemoveItems", new[] { typeof(int), typeof(float) });
                 Unpatch(harmony, typeof(BasicCharacterController), "set_thirst", new[] { typeof(float) });
             }
             _hooked = false;
@@ -115,6 +143,45 @@ namespace ZedZone.UltimateAssistant.Patch
         private static int _hpLog, _staLog, _hungerLog, _thirstLog;
 
         // ---------------- 补丁实现 ----------------
+
+        private static int _supplyLog;
+
+        /// <summary>自动补充材料：HasItem 恒定返回 true（制造/修复的材料检查通过）。</summary>
+        internal static void HasItemPostfix(ref bool __result)
+        {
+            try
+            {
+                if (!Features.AutoSupplyOn) return;
+                if (__result) return;
+                __result = true;
+                if (_supplyLog < 3) { _supplyLog++; Log.Info("[supply] HasItem 已拦截 → 视为材料充足"); }
+            }
+            catch { }
+        }
+
+        /// <summary>自动补充材料：数量查询返回充足值。</summary>
+        internal static void CountPostfix(ref float __result)
+        {
+            try
+            {
+                if (!Features.AutoSupplyOn) return;
+                if (__result < 9999f) __result = 9999f;
+            }
+            catch { }
+        }
+
+        /// <summary>自动补充材料：跳过实际扣除，返回空列表（视为已消耗）。</summary>
+        internal static bool RemoveItemsPrefix(InventoryData __instance, int m_itemId, float m_itemNumber, ref Il2CppSystem.Collections.Generic.List<ItemData> __result)
+        {
+            try
+            {
+                if (!Features.AutoSupplyOn) return true;
+                __result = new Il2CppSystem.Collections.Generic.List<ItemData>();
+                if (_supplyLog < 3) { _supplyLog++; Log.Info($"[supply] RemoveItems 已拦截 item={m_itemId} n={m_itemNumber}"); }
+                return false;
+            }
+            catch { return true; }
+        }
 
         /// <summary>
         /// 不会扣饱食度：拦截 set_hunger，**只阻止减少**（进食仍可增加）。
@@ -206,4 +273,5 @@ namespace ZedZone.UltimateAssistant.Patch
         }
     }
 }
+
 

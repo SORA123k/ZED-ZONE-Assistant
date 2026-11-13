@@ -66,6 +66,8 @@ namespace ZedZone.UltimateAssistant.Core
                 v => { ModConfig.ZombieEsp.Value = v; Features.SetZombieEsp(v); });
             Add(cfg, "fullbright", "fullbright", () => Features.FullBrightOn,
                 v => { ModConfig.FullBright.Value = v; Features.SetFullBright(v); });
+            Add(cfg, "auto_supply", "auto_supply", () => Features.AutoSupplyOn,
+                v => { ModConfig.AutoSupply.Value = v; Features.SetAutoSupply(v); });
             Add(cfg, "performance", "performance", () => Features.PerformanceModeOn,
                 v => { ModConfig.PerformanceMode.Value = v; Features.SetPerformanceMode(v); });
 
@@ -156,6 +158,7 @@ namespace ZedZone.UltimateAssistant.Core
         }
     }
 }
+
 
 
 
