@@ -44,7 +44,7 @@ namespace ZedZone.UltimateAssistant.Core
                 if (night)
                 {
                     RenderSettings.ambientLight = Color.Lerp(_amb, new Color(0.78f, 0.80f, 0.86f), 0.85f);
-                    RenderSettings.ambientIntensity = Mathf.Max(_ambIntensity, 1.15f);
+                    RenderSettings.ambientIntensity = Mathf.Max(_ambIntensity, 2.0f);
 
                     if (_sun != null && _sun.intensity < _sunIntensity * 0.55f)
                     {
@@ -92,23 +92,6 @@ namespace ZedZone.UltimateAssistant.Core
             catch { }
         }
 
-        /// <summary>
-        /// 客户端画面提亮（叠加一层极淡的白色）。
-        /// 用于游戏未使用 Unity 灯光/环境光的 2D 渲染场景；强度刻意压低以避免白天过曝。
-        /// </summary>
-        internal static void DrawOverlay()
-        {
-            try
-            {
-                if (!Features.FullBrightOn) return;
-                float a = 0.12f;
-                var old = GUI.color;
-                GUI.color = new Color(1f, 1f, 1f, a);
-                GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), Texture2D.whiteTexture);
-                GUI.color = old;
-            }
-            catch { }
-        }
 
         internal static void Restore()
         {
@@ -126,4 +109,5 @@ namespace ZedZone.UltimateAssistant.Core
         }
     }
 }
+
 

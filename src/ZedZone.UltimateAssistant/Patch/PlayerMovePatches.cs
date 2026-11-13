@@ -28,13 +28,6 @@ namespace ZedZone.UltimateAssistant.Patch
             if (_hooked) return;
             Installed = 0;
 
-            Try(harmony, "IsSprintCanceledByCombatInput", () =>
-            {
-                var m = AccessTools.Method(typeof(CharacterInput), "IsSprintCanceledByCombatInput");
-                if (m == null) { Log.Warn("[move] 未找到 IsSprintCanceledByCombatInput"); return; }
-                harmony.Patch(m, postfix: new HarmonyMethod(typeof(PlayerMovePatches), nameof(SprintCancelPostfix)));
-                Installed++;
-            });
 
             Try(harmony, "realMoveSpeed", () =>
             {
@@ -44,20 +37,12 @@ namespace ZedZone.UltimateAssistant.Patch
                 Installed++;
             });
 
-            // 奔跑时允许鼠标动作（射击）
-            Try(harmony, "CanControlMouseActions", () =>
+            // 停火自动奔跑：开火中不奔跑、停火后自动奔跑
+            Try(harmony, "IsSprintRequested", () =>
             {
-                var m = AccessTools.Method(typeof(CharacterInput), "get_CanControlMouseActions");
-                if (m == null) { Log.Warn("[move] 未找到 get_CanControlMouseActions"); return; }
-                harmony.Patch(m, postfix: new HarmonyMethod(typeof(PlayerMovePatches), nameof(MouseActionPostfix)));
-                Installed++;
-            });
-
-            Try(harmony, "CanPressMouse", () =>
-            {
-                var m = AccessTools.Method(typeof(CharacterInput), "get_CanPressMouse");
-                if (m == null) { Log.Warn("[move] 未找到 get_CanPressMouse"); return; }
-                harmony.Patch(m, postfix: new HarmonyMethod(typeof(PlayerMovePatches), nameof(MouseActionPostfix)));
+                var m = AccessTools.Method(typeof(CharacterInput), "IsSprintRequested");
+                if (m == null) { Log.Warn("[move] 未找到 get_IsSprintRequested"); return; }
+                harmony.Patch(m, postfix: new HarmonyMethod(typeof(PlayerMovePatches), nameof(SprintRequestPostfix)));
                 Installed++;
             });
 
@@ -69,10 +54,9 @@ namespace ZedZone.UltimateAssistant.Patch
         {
             if (harmony != null)
             {
-                Unpatch(harmony, typeof(CharacterInput), "IsSprintCanceledByCombatInput", null);
+
                 Unpatch(harmony, typeof(HumanCharacterController), "get_realMoveSpeed", null);
-                Unpatch(harmony, typeof(CharacterInput), "get_CanControlMouseActions", null);
-                Unpatch(harmony, typeof(CharacterInput), "get_CanPressMouse", null);
+                Unpatch(harmony, typeof(CharacterInput), "IsSprintRequested", null);
             }
             _hooked = false;
             Installed = 0;
@@ -118,23 +102,10 @@ namespace ZedZone.UltimateAssistant.Patch
             catch { return false; }
         }
 
-        private static int _sprintLog, _speedLog, _mouseLog;
+        private static int _sprintLog, _speedLog;
 
         // ---------------- 补丁实现 ----------------
 
-        /// <summary>强制奔跑：攻击/开枪不再取消奔跑。</summary>
-        internal static void SprintCancelPostfix(ref bool __result)
-        {
-            try
-            {
-                if (!Features.AlwaysSprintOn) return;
-                if (!IsLocalPlayerInput()) return;
-                if (!__result) return;
-                if (_sprintLog < 3) { _sprintLog++; Log.Info("[move] IsSprintCanceledByCombatInput 已拦截 → 保持奔跑"); }
-                __result = false;
-            }
-            catch { }
-        }
 
         /// <summary>移动加速：按倍率放大玩家实际移动速度。</summary>
         internal static void MoveSpeedPostfix(HumanCharacterController __instance, ref float __result)
@@ -152,20 +123,27 @@ namespace ZedZone.UltimateAssistant.Patch
         }
 
         /// <summary>
-        /// 强制奔跑：奔跑时允许鼠标动作（射击）。
-        /// CanControlMouseActions / CanPressMouse 是 CharacterInput 中门控鼠标动作的属性。
+        /// 停火自动奔跑：
+        ///  * 最近 0.35 秒内开过枪 → 不请求奔跑（避免"状态无法开枪"）；
+        ///  * 停火超过 0.35 秒 → 请求奔跑（自动恢复）。
         /// </summary>
-        internal static void MouseActionPostfix(ref bool __result)
+        internal static void SprintRequestPostfix(ref bool __result)
         {
             try
             {
                 if (!Features.AlwaysSprintOn) return;
-                if (__result) return;
-                if (_mouseLog < 3) { _mouseLog++; Log.Info("[move] 鼠标动作门控已放开 → 奔跑时可射击"); }
-                __result = true;
+                bool firing = (Time.unscaledTime - Features.LastFireAt) < 0.35f;
+                __result = !firing;
+                if (_sprintLog < 3)
+                {
+                    _sprintLog++;
+                    Log.Info($"[move] IsSprintRequested 接管 → {(firing ? "开火中(不奔跑)" : "停火(自动奔跑)")}");
+                }
             }
             catch { }
         }
     }
 }
+
+
 

@@ -50,6 +50,7 @@ namespace ZedZone.UltimateAssistant.Core
         internal static ConfigEntry<float> MenuScale;
         internal static ConfigEntry<bool> MenuAnimations;
         internal static ConfigEntry<int> MenuFontSize;
+        internal static ConfigEntry<string> MenuKeys;
         internal static ConfigEntry<string> MenuLanguage;
         internal static ConfigEntry<bool> BlockGameInput;
         internal static ConfigEntry<bool> MenuShowLimbs;
@@ -277,6 +278,7 @@ namespace ZedZone.UltimateAssistant.Core
             MenuScale = cfg.Bind("Menu", "Scale", 1.0f,
                 new ConfigDescription("菜单整体缩放。", new AcceptableValueRange<float>(0.7f, 1.6f)));
             MenuAnimations = cfg.Bind("Menu", "Animations", true, "菜单动画（淡入/悬停/开关过渡）。");
+            MenuKeys = cfg.Bind("Menu", "MenuKeys", "", "额外菜单快捷键（KeyCode 名称，逗号分隔，可绑定多个）。Insert 永远可以打开菜单。");
             MenuFontSize = cfg.Bind("Menu", "FontSize", 14,
                 new ConfigDescription("菜单字体大小（12 - 24 px）。", new AcceptableValueRange<int>(12, 24)));
             MenuLanguage = cfg.Bind("Menu", "Language", "zhCN",
@@ -289,6 +291,7 @@ namespace ZedZone.UltimateAssistant.Core
         }
     }
 }
+
 
 
 

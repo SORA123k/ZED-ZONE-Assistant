@@ -298,6 +298,7 @@ namespace ZedZone.UltimateAssistant.Patch
 
         internal static void FireProbePrefix(BasicRangedWeapon __instance)
         {
+            Features.LastFireAt = Time.unscaledTime;
             try
             {
                 if (_fireProbeBudget <= 0) return;
@@ -313,6 +314,7 @@ namespace ZedZone.UltimateAssistant.Patch
 
         internal static void FireProbePostfix(BasicRangedWeapon __instance)
         {
+            Features.LastFireAt = Time.unscaledTime;
             try
             {
                 if (_fireProbeBudget <= 0) return;
@@ -395,6 +397,7 @@ namespace ZedZone.UltimateAssistant.Patch
         }
     }
 }
+
 
 
 

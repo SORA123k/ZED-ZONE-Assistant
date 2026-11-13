@@ -29,6 +29,14 @@ namespace ZedZone.UltimateAssistant.UI
         private void Awake()
         {
             try { DontDestroyOnLoad(gameObject); } catch { }
+            try
+            {
+                var src = gameObject.AddComponent<AudioSource>();
+                src.playOnAwake = false;
+                src.spatialBlend = 0f;
+                UiSound.Init(src);
+            }
+            catch (Exception e) { Log.WarnOnce("sound.init", "音效初始化失败: " + e.GetType().Name); }
         }
 
         private void Start()
@@ -48,11 +56,12 @@ namespace ZedZone.UltimateAssistant.UI
                 if (_firstSync) { _firstSync = false; try { Features.SyncFromConfig(); } catch { } }
 
                 // 热键
-                if (KeyDown(_key)) ToggleMenu();
+                if (MenuKeyDown()) ToggleMenu();
                 if (ClickGui.Open && KeyDown(KeyCode.Escape)) ToggleMenu();
                 if (ClickGui.Open) { try { InputGuard.Tick(); InputGuard.Maintain(); } catch { } }
                 try { FullBright.Tick(); } catch (Exception e) { Log.ErrorOnce("bright", e); }
                 try { RollSpeed.Tick(); } catch (Exception e) { Log.ErrorOnce("roll", e); }
+                try { HotkeyManager.Tick(); } catch (Exception e) { Log.ErrorOnce("hotkey", e); }
 
                 // 节流读取
                 if (Time.unscaledTime * 1000f >= _nextReadAt)
@@ -108,7 +117,7 @@ namespace ZedZone.UltimateAssistant.UI
             try
             {
                 // 世界叠层：无论菜单是否打开都绘制（只要功能开启）
-                FullBright.DrawOverlay();
+                DynamicIsland.Draw();
                 ZombieEsp.Draw();
 
                 if (ClickGui.Open) ClickGui.Draw(_snap);
@@ -135,6 +144,30 @@ namespace ZedZone.UltimateAssistant.UI
             try { DurabilityDiag.Shutdown(); } catch { }
             try { Il2CppMetaDiag.Shutdown(); } catch { }
             try { Features.Shutdown(); } catch { }
+        }
+
+        /// <summary>菜单开关键：Insert 永远有效 + 配置的多绑定键。</summary>
+        private bool MenuKeyDown()
+        {
+            if (KeyDown(KeyCode.Insert)) return true;
+
+            string extra = "";
+            try { extra = ModConfig.MenuKeys?.Value ?? ""; } catch { }
+            if (string.IsNullOrEmpty(extra)) return false;
+
+            var parts = extra.Split(',');
+            for (int i = 0; i < parts.Length; i++)
+            {
+                var s = parts[i].Trim();
+                if (s.Length == 0) continue;
+                try
+                {
+                    var k = (KeyCode)Enum.Parse(typeof(KeyCode), s, true);
+                    if (k != KeyCode.None && KeyDown(k)) return true;
+                }
+                catch { }
+            }
+            return false;
         }
 
         /// <summary>同时检查游戏输入抽象与 Unity 传统 Input，任一命中即算按下。</summary>
@@ -177,6 +210,9 @@ namespace ZedZone.UltimateAssistant.UI
         }
     }
 }
+
+
+
 
 
 

@@ -33,6 +33,7 @@ namespace ZedZone.UltimateAssistant.Core
         internal static bool AlwaysSprintOn { get; private set; }
         internal static bool MoveSpeedOn { get; private set; }
         internal static bool FullBrightOn { get; private set; }
+        internal static float LastFireAt { get; set; }
         internal static bool NoOverheatOn { get; private set; }
         internal static bool JamBypassOn { get; private set; }
 
@@ -301,6 +302,7 @@ namespace ZedZone.UltimateAssistant.Core
             => $"弹药={(InfiniteAmmoOn ? "开" : "关")} 免换弹={(NoReloadOn ? "开" : "关")} ESP={(ZombieEspOn ? "开" : "关")}";
     }
 }
+
 
 
 

@@ -496,11 +496,103 @@ namespace ZedZone.UltimateAssistant.UI
             GUI.color = P.SubText;
             GUI.Label(new Rect(cx, y, cw, 18f * s), L.T("hotkey") + ": " + KeyName(), _small);
             y += 20f * s;
+
+            // 菜单多绑定键
+            MenuKeyRow(cx, cw, s, ref y);
+
+            y += 4f * s;
             GUI.Label(new Rect(cx, y, cw, 18f * s), L.T("hotkey_hint"), _small);
             y += 24f * s;
+
+            // 每个功能的自定义快捷键
+            Section("sec_hotkeys", cx, cw, s, ref y);
+            for (int i = 0; i < HotkeyManager.Entries.Count; i++)
+            {
+                var e = HotkeyManager.Entries[i];
+                FeatureKeyRow(e, cx, cw, s, ref y);
+            }
             GUI.color = P.SubText;
             GUI.Label(new Rect(cx, y, cw, 16f * s), L.T("footer_hint"), _small);
             y += 20f * s;
+        }
+
+        private static bool _menuCapturing;
+
+        private static void MenuKeyRow(float cx, float cw, float s, ref float y)
+        {
+            float rh = (Fs + 20f) * s;
+            var r = new Rect(cx + 6f * s, y, cw - 6f * s, rh);
+            Fill(r, P.Card);
+            GUI.color = P.Text;
+            GUI.Label(new Rect(r.x + 10f * s, r.y, 150f * s, rh), L.T("menu_keys"), _cardDesc);
+
+            string keys = "";
+            try { keys = ModConfig.MenuKeys?.Value ?? ""; } catch { }
+            string shown = "Insert" + (string.IsNullOrEmpty(keys) ? "" : ", " + keys);
+            GUI.color = P.SubText;
+            GUI.Label(new Rect(r.x + 150f * s, r.y, r.width - 320f * s, rh), shown, _small);
+
+            var bind = new Rect(r.xMax - 156f * s, r.y + 3f * s, 72f * s, rh - 6f * s);
+            var clr = new Rect(r.xMax - 80f * s, r.y + 3f * s, 72f * s, rh - 6f * s);
+            Button(bind, _menuCapturing ? L.T("press_key") : L.T("bind"), s, () =>
+            {
+                _menuCapturing = true;
+                Log.Info("[hotkey] 等待菜单按键…");
+            });
+            Button(clr, L.T("clear"), s, () =>
+            {
+                try { ModConfig.MenuKeys.Value = ""; } catch { }
+            });
+            y += rh + 4f * s;
+
+            if (_menuCapturing)
+            {
+                foreach (KeyCode kc in Enum.GetValues(typeof(KeyCode)))
+                {
+                    if (kc == KeyCode.None || !Input.GetKeyDown(kc)) continue;
+                    if (kc == KeyCode.Escape) { _menuCapturing = false; break; }
+                    string cur = "";
+                    try { cur = ModConfig.MenuKeys?.Value ?? ""; } catch { }
+                    if (cur.IndexOf(kc.ToString(), StringComparison.OrdinalIgnoreCase) < 0)
+                    {
+                        cur = string.IsNullOrEmpty(cur) ? kc.ToString() : cur + "," + kc.ToString();
+                        try { ModConfig.MenuKeys.Value = cur; } catch { }
+                        Log.Info("[hotkey] 菜单按键追加: " + kc);
+                    }
+                    _menuCapturing = false;
+                    break;
+                }
+            }
+        }
+
+        private static void FeatureKeyRow(HotkeyManager.Entry e, float cx, float cw, float s, ref float y)
+        {
+            float rh = (Fs + 16f) * s;
+            var r = new Rect(cx + 6f * s, y, cw - 6f * s, rh);
+            Fill(r, P.Card);
+            GUI.color = P.Text;
+            GUI.Label(new Rect(r.x + 10f * s, r.y, r.width - 150f * s, rh), L.T(e.LabelKey), _cardDesc);
+
+            bool cap = HotkeyManager.IsCapturing(e.Id);
+            var br = new Rect(r.xMax - 130f * s, r.y + 2f * s, 120f * s, rh - 4f * s);
+            Button(br, cap ? L.T("press_key") : KeyText(e.Id), s, () => HotkeyManager.BeginCapture(e.Id));
+            y += rh + 3f * s;
+        }
+
+        private static string KeyText(string id)
+        {
+            var k = HotkeyManager.GetKey(id);
+            return k == KeyCode.None ? L.T("not_bound") : k.ToString();
+        }
+
+        private static void Button(Rect r, string text, float s, Action act)
+        {
+            bool hover = r.Contains(Event.current.mousePosition);
+            Fill(r, hover ? P.Accent : P.CardHover);
+            GUI.color = hover ? P.AccentText : P.Text;
+            GUI.Label(r, text, _btn);
+            GUI.color = P.Text;
+            if (Hit(r)) { try { act(); } catch (Exception ex) { Log.ErrorOnce("gui.btn", ex); } }
         }
 
         private static string KeyName()
@@ -640,4 +732,5 @@ namespace ZedZone.UltimateAssistant.UI
         }
     }
 }
+
 
