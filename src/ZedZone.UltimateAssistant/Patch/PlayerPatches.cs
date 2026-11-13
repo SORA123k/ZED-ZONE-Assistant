@@ -45,6 +45,7 @@ namespace ZedZone.UltimateAssistant.Patch
 
             // 自动补充材料：材料是否足够的判定 + 数量查询 + 实际扣除
             // 修复（船只/车辆/建筑）材料可负担判定
+
             Try(harmony, "CanAfford(WallRepairPlan)", () =>
             {
                 var m = AccessTools.Method(typeof(MeleeWeapon_RepairHammer), "CanAfford",
@@ -168,6 +169,7 @@ namespace ZedZone.UltimateAssistant.Patch
         // ---------------- 补丁实现 ----------------
 
         private static int _supplyLog;
+
 
         /// <summary>修复/建造：先自动补齐材料，再让原逻辑判断。</summary>
         internal static bool AffordListPrefix(Il2CppSystem.Collections.Generic.List<BuildingWallDamageSystem.RepairCostEntry> costs)
@@ -358,6 +360,8 @@ namespace ZedZone.UltimateAssistant.Patch
         }
     }
 }
+
+
 
 
 
