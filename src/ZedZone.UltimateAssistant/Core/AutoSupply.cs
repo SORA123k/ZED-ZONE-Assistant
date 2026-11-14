@@ -195,9 +195,6 @@ namespace ZedZone.UltimateAssistant.Core
         }
 
         private static float _nextBoatTick;
-        private static float _nextKit;
-        // 实测（v2.2.3 日志）这条逃生船按 id 查询库存时玩家全部为 0 的物品
-        private static readonly int[] BoatKitIds = { 1, 15, 19, 20, 23, 24, 25, 98, 1718 };
         private static float _nextBoatDiag;
         private static float _nextBoatDiag2;
         private static readonly System.Collections.Generic.Dictionary<IntPtr, float> _lastRepair = new System.Collections.Generic.Dictionary<IntPtr, float>();
@@ -366,6 +363,8 @@ namespace ZedZone.UltimateAssistant.Core
         }
     }
 }
+
+
 
 
 
