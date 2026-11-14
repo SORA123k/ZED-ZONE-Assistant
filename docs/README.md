@@ -41,7 +41,7 @@
 
 | 目录 | 内容 |
 |---|---|
-| [internal/](internal/) | Phase 3A / 3B 各阶段报告、门禁评审、验证报告 |
+| [internal/README.md](internal/README.md) | 内部档案总索引（41 篇，含各阶段报告说明与逆向内容声明） |
 | [internal/reports/](internal/reports/) | `FINAL_RELEASE_REPORT.md`（v1.0.0 交付报告）、`PHASE_2_REPORT.md` |
 | [internal/diagnostics/](internal/diagnostics/) | 耐久诊断报告、Ghidra 原生逆向记录与脚本 |
 | [internal/research/](internal/research/) | 旧项目（FPS 优化模组）可复用工程模式提取 |

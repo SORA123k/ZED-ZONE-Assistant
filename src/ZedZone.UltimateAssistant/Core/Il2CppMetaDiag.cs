@@ -25,7 +25,21 @@ namespace ZedZone.UltimateAssistant.Core
     /// </summary>
     internal static class Il2CppMetaDiag
     {
-        private const string DiagDir = @"<仓库目录>\ZED-ZONE-Assistant\Diagnostics";
+        /// <summary>
+        /// 诊断日志目录：跟随游戏安装目录（`<游戏目录>\Diagnostics`）。
+        ///
+        /// 这里**不能写死绝对路径**：早期版本写死了作者机器上的路径，
+        /// 结果别的用户开诊断时 Directory.CreateDirectory 直接失败（被 try/catch 吞掉），
+        /// 表现就是"开关打开了但没有日志文件"。
+        /// </summary>
+        private static string DiagDir
+        {
+            get
+            {
+                try { return Path.Combine(BepInEx.Paths.GameRootPath, "Diagnostics"); }
+                catch { return Path.Combine(Directory.GetCurrentDirectory(), "Diagnostics"); }
+            }
+        }
         private const string TargetClass = "BasicRangedWeapon";
 
         // ---- IL2CPP 导出函数 ----

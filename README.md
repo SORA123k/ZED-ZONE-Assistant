@@ -321,7 +321,7 @@ docs/                       文档地图见 docs/README.md
 作者不对因使用本模组导致的存档损坏、游戏异常、封禁或任何其他损失负责。请勿在联机/多人环境使用。
 
 本项目未包含任何游戏原始资源；所有实现均基于对游戏公开 IL2CPP 元数据的只读分析与运行时 Harmony 补丁。
-仓库里也不包含反编译产物、游戏二进制或运行日志（`research/`、`Diagnostics/` 已加入 `.gitignore`）。
+仓库不包含游戏原始资源、游戏二进制或运行日志（`research/`、`Diagnostics/` 已加入 `.gitignore`）。`docs/internal/diagnostics/` 保留了少量**只读**逆向分析记录（反汇编片段与推导），仅用于单机离线兼容性研究，请勿用于联机或再分发；范围说明见 [docs/internal/README.md](docs/internal/README.md)。
 
 ### 关于本项目的开发方式（请务必阅读）
 

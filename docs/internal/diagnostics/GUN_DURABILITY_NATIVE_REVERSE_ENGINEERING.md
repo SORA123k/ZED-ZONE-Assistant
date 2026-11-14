@@ -1,3 +1,13 @@
+> ⚠️ **用途与边界（务必先读）**
+>
+> 本文含对游戏原生二进制 `GameAssembly.dll` 的**只读**反汇编片段与据此推导的逻辑，
+> 仅用于**单机离线**环境下的兼容性研究（确认耐久字段的真实来源，避免写错字段毁存档）。
+>
+> - 仓库**不包含**游戏原始资源、`GameAssembly.dll`、`global-metadata.dat` 或运行日志；
+> - 请勿用于联机环境，也请勿再分发本文中的反汇编内容；
+> - 如果你是该游戏的权利方并认为本文不妥，请通过 [SECURITY.md](../../../SECURITY.md) 的渠道告知，会立即移除。
+>
+> 索引与其它档案说明见 [docs/internal/README.md](../README.md)。
 # 枪械耐久原生逆向分析报告（GUN_DURABILITY_NATIVE_REVERSE_ENGINEERING）
 
 - 分析日期：2026-11-13

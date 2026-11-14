@@ -257,6 +257,17 @@ PRs that fix these AI-left pitfalls are equally welcome.
 
 ---
 
+### Scope of the reverse-engineering notes
+
+`docs/internal/diagnostics/` contains **read-only** analysis of the game's native binary
+(disassembly fragments and the logic derived from them). It exists only to avoid writing the wrong
+fields into a single-player save. The repository does not ship game assets, `GameAssembly.dll`,
+`global-metadata.dat` or runtime logs. Do not use these notes in online sessions or redistribute
+them; if you are a rights holder and object to them, contact us via [SECURITY.md](SECURITY.md) and
+they will be removed. Details: [docs/internal/README.md](docs/internal/README.md) (Chinese).
+
+---
+
 ## Contributing
 
 Contributions are welcome — code, translations, docs, bug reports.
