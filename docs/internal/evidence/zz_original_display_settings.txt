@@ -1,0 +1,10 @@
+ORIGINAL ZED ZONE display settings (restore after testing):
+Screenmanager Resolution Width_h182942802 = 2560
+Screenmanager Resolution Height_h2627697771 = 1600
+Screenmanager Resolution Use Native_h1405027254 = 1
+Screenmanager Fullscreen mode_h3630240806 = 1
+Screenmanager Resolution Width Default_h680557497 = 1024
+Screenmanager Resolution Height Default_h1380706816 = 768
+Screenmanager Resolution Use Native Default_h1405981789 = 1
+Screenmanager Fullscreen mode Default_h401710285 = 0
+UnitySelectMonitor_h17969598 = 0

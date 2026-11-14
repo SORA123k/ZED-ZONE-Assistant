@@ -1,0 +1,54 @@
+Phase 3B-2A.1 受控实验原始证据
+采集: 2026-11-13 00:35:23
+游戏: 1.0.16 / build 26600653
+备份: D:\backups\zedzone_3b2a1_20261113_002654（3941 文件，校验 0 差异）
+说明: 实验 A/B 各一次，单变量，未接 UI。
+
+[Info   :ZED ZONE Ultimate Assistant] [limbexp] ===== 开始实验 A（单变量、只调用一个接口）=====
+[Info   :ZED ZONE Ultimate Assistant] [limbexp] scene=Gaming target=5
+[Info   :ZED ZONE Ultimate Assistant] [limbexp] BEFORE idx=0 id=0 name=头部 hp=108/108 pct=1 wounded=0 bleeding=0 fully=1 bandaged=0
+[Info   :ZED ZONE Ultimate Assistant] [limbexp] BEFORE idx=1 id=1 name=躯干 hp=22.428/138 pct=0.163 wounded=1 bleeding=0 fully=0 bandaged=1
+[Info   :ZED ZONE Ultimate Assistant] [limbexp] BEFORE idx=2 id=2 name=左臂 hp=109.558/118 pct=0.928 wounded=0 bleeding=0 fully=0 bandaged=1
+[Info   :ZED ZONE Ultimate Assistant] [limbexp] BEFORE idx=3 id=3 name=右臂 hp=118/118 pct=1 wounded=0 bleeding=0 fully=1 bandaged=0
+[Info   :ZED ZONE Ultimate Assistant] [limbexp] BEFORE idx=4 id=4 name=左腿 hp=64.13/128 pct=0.501 wounded=1 bleeding=0 fully=0 bandaged=1
+[Info   :ZED ZONE Ultimate Assistant] [limbexp] BEFORE idx=5 id=5 name=右腿 hp=64.385/128 pct=0.503 wounded=1 bleeding=0 fully=0 bandaged=1
+[Info   :ZED ZONE Ultimate Assistant] [limbexp] BEFORE global hp=2160 buffCount=3
+[Info   :ZED ZONE Ultimate Assistant] [limbexp] 已调用 HealAllBodyPartInjuries()
+[Info   :ZED ZONE Ultimate Assistant] [limbexp] AFTER  idx=0 id=0 name=头部 hp=108/108 pct=1 wounded=0 bleeding=0 fully=1 bandaged=0
+[Info   :ZED ZONE Ultimate Assistant] [limbexp] AFTER  idx=1 id=1 name=躯干 hp=138/138 pct=1 wounded=0 bleeding=0 fully=1 bandaged=1
+[Info   :ZED ZONE Ultimate Assistant] [limbexp] AFTER  idx=2 id=2 name=左臂 hp=118/118 pct=1 wounded=0 bleeding=0 fully=1 bandaged=1
+[Info   :ZED ZONE Ultimate Assistant] [limbexp] AFTER  idx=3 id=3 name=右臂 hp=118/118 pct=1 wounded=0 bleeding=0 fully=1 bandaged=0
+[Info   :ZED ZONE Ultimate Assistant] [limbexp] AFTER  idx=4 id=4 name=左腿 hp=128/128 pct=1 wounded=0 bleeding=0 fully=1 bandaged=1
+[Info   :ZED ZONE Ultimate Assistant] [limbexp] AFTER  idx=5 id=5 name=右腿 hp=128/128 pct=1 wounded=0 bleeding=0 fully=1 bandaged=1
+[Info   :ZED ZONE Ultimate Assistant] [limbexp] AFTER  global hp=2160 buffCount=0（整体HP变化=无，buff变化=-3）
+[Info   :ZED ZONE Ultimate Assistant] [limbexp] DELTA 变化部位数=4 idx=1(躯干): hp 22.428->138 wounded 1->0 fully 0->1 ; idx=2(左臂): hp 109.558->118 fully 0->1 ; idx=4(左腿): hp 64.13->128 wounded 1->0 fully 0->1 ; idx=5(右腿): hp 64.385->128 wounded 1->0 fully 0->1 ; 
+[Info   :ZED ZONE Ultimate Assistant] [limbexp] ===== 调用完成；后续只做观察快照（T+2s/6s/12s/30s）=====
+[Info   :ZED ZONE Ultimate Assistant] [limbexp] T+2s global hp=2160 buffCount=0
+[Info   :ZED ZONE Ultimate Assistant] [limbexp] T+2s idx=0 id=0 name=头部 hp=108/108 pct=1 wounded=0 bleeding=0 fully=1 bandaged=0
+[Info   :ZED ZONE Ultimate Assistant] [limbexp] T+2s idx=1 id=1 name=躯干 hp=138/138 pct=1 wounded=0 bleeding=0 fully=1 bandaged=1
+[Info   :ZED ZONE Ultimate Assistant] [limbexp] T+2s idx=2 id=2 name=左臂 hp=118/118 pct=1 wounded=0 bleeding=0 fully=1 bandaged=1
+[Info   :ZED ZONE Ultimate Assistant] [limbexp] T+2s idx=3 id=3 name=右臂 hp=118/118 pct=1 wounded=0 bleeding=0 fully=1 bandaged=0
+[Info   :ZED ZONE Ultimate Assistant] [limbexp] T+2s idx=4 id=4 name=左腿 hp=128/128 pct=1 wounded=0 bleeding=0 fully=1 bandaged=1
+[Info   :ZED ZONE Ultimate Assistant] [limbexp] T+2s idx=5 id=5 name=右腿 hp=128/128 pct=1 wounded=0 bleeding=0 fully=1 bandaged=1
+[Info   :ZED ZONE Ultimate Assistant] [limbexp] T+6s global hp=2160 buffCount=0
+[Info   :ZED ZONE Ultimate Assistant] [limbexp] T+6s idx=0 id=0 name=头部 hp=108/108 pct=1 wounded=0 bleeding=0 fully=1 bandaged=0
+[Info   :ZED ZONE Ultimate Assistant] [limbexp] T+6s idx=1 id=1 name=躯干 hp=138/138 pct=1 wounded=0 bleeding=0 fully=1 bandaged=0
+[Info   :ZED ZONE Ultimate Assistant] [limbexp] T+6s idx=2 id=2 name=左臂 hp=118/118 pct=1 wounded=0 bleeding=0 fully=1 bandaged=0
+[Info   :ZED ZONE Ultimate Assistant] [limbexp] T+6s idx=3 id=3 name=右臂 hp=118/118 pct=1 wounded=0 bleeding=0 fully=1 bandaged=0
+[Info   :ZED ZONE Ultimate Assistant] [limbexp] T+6s idx=4 id=4 name=左腿 hp=128/128 pct=1 wounded=0 bleeding=0 fully=1 bandaged=0
+[Info   :ZED ZONE Ultimate Assistant] [limbexp] T+6s idx=5 id=5 name=右腿 hp=128/128 pct=1 wounded=0 bleeding=0 fully=1 bandaged=0
+[Info   :ZED ZONE Ultimate Assistant] [limbexp] T+12s global hp=2160 buffCount=0
+[Info   :ZED ZONE Ultimate Assistant] [limbexp] T+12s idx=0 id=0 name=头部 hp=108/108 pct=1 wounded=0 bleeding=0 fully=1 bandaged=0
+[Info   :ZED ZONE Ultimate Assistant] [limbexp] T+12s idx=1 id=1 name=躯干 hp=138/138 pct=1 wounded=0 bleeding=0 fully=1 bandaged=0
+[Info   :ZED ZONE Ultimate Assistant] [limbexp] T+12s idx=2 id=2 name=左臂 hp=118/118 pct=1 wounded=0 bleeding=0 fully=1 bandaged=0
+[Info   :ZED ZONE Ultimate Assistant] [limbexp] T+12s idx=3 id=3 name=右臂 hp=118/118 pct=1 wounded=0 bleeding=0 fully=1 bandaged=0
+[Info   :ZED ZONE Ultimate Assistant] [limbexp] T+12s idx=4 id=4 name=左腿 hp=128/128 pct=1 wounded=0 bleeding=0 fully=1 bandaged=0
+[Info   :ZED ZONE Ultimate Assistant] [limbexp] T+12s idx=5 id=5 name=右腿 hp=128/128 pct=1 wounded=0 bleeding=0 fully=1 bandaged=0
+[Info   :ZED ZONE Ultimate Assistant] [limbexp] T+30s global hp=2160 buffCount=0
+[Info   :ZED ZONE Ultimate Assistant] [limbexp] T+30s idx=0 id=0 name=头部 hp=108/108 pct=1 wounded=0 bleeding=0 fully=1 bandaged=0
+[Info   :ZED ZONE Ultimate Assistant] [limbexp] T+30s idx=1 id=1 name=躯干 hp=138/138 pct=1 wounded=0 bleeding=0 fully=1 bandaged=0
+[Info   :ZED ZONE Ultimate Assistant] [limbexp] T+30s idx=2 id=2 name=左臂 hp=118/118 pct=1 wounded=0 bleeding=0 fully=1 bandaged=0
+[Info   :ZED ZONE Ultimate Assistant] [limbexp] T+30s idx=3 id=3 name=右臂 hp=118/118 pct=1 wounded=0 bleeding=0 fully=1 bandaged=0
+[Info   :ZED ZONE Ultimate Assistant] [limbexp] T+30s idx=4 id=4 name=左腿 hp=128/128 pct=1 wounded=0 bleeding=0 fully=1 bandaged=0
+[Info   :ZED ZONE Ultimate Assistant] [limbexp] T+30s idx=5 id=5 name=右腿 hp=128/128 pct=1 wounded=0 bleeding=0 fully=1 bandaged=0
+[Info   :ZED ZONE Ultimate Assistant] [limbexp] 观察结束。本次会话不会再调用任何接口。

@@ -1,0 +1,49 @@
+Phase 3A 只读探针首次运行证据
+采集: 2026-11-12 22:59:39
+游戏: 1.0.16
+说明: 从 BepInEx\LogOutput.log 提取的只读摘录。
+
+[Info   :ZED ZONE Ultimate Assistant] [growth] INIT t=22:58:29 scene=Loading player=null
+[Info   :ZED ZONE Ultimate Assistant] [growth] CHANGE t=22:58:39 scene=MainMenu player=null
+[Info   :ZED ZONE Ultimate Assistant] [growth] CHANGE t=22:59:12 scene=MainMenu player=null
+[Info   :ZED ZONE Ultimate Assistant] [fatigue] t=22:59:19 scene=Gaming fatigue=77.75/100 dF=0.00 energy=180/180 dE=0.00 sprint=0 sprintFlag=0 mov=(0.00,0.00) vel=0.00 intensity=0.00 moving=0
+[Info   :ZED ZONE Ultimate Assistant] [fatigue] t=22:59:19 scene=Gaming fatigue=77.75/100 dF=0.00 energy=180/180 dE=0.00 sprint=0 sprintFlag=0 mov=(0.00,0.00) vel=0.00 intensity=0.00 moving=0
+[Info   :ZED ZONE Ultimate Assistant] [fatigue] t=22:59:20 scene=Gaming fatigue=77.75/100 dF=0.00 energy=180/180 dE=0.00 sprint=0 sprintFlag=0 mov=(0.00,0.00) vel=0.00 intensity=0.00 moving=0
+[Info   :ZED ZONE Ultimate Assistant] [fatigue] t=22:59:20 scene=Gaming fatigue=77.75/100 dF=0.00 energy=180/180 dE=0.00 sprint=0 sprintFlag=0 mov=(0.00,0.00) vel=0.00 intensity=0.00 moving=0
+[Info   :ZED ZONE Ultimate Assistant] [fatigue] t=22:59:21 scene=Gaming fatigue=77.75/100 dF=0.00 energy=180/180 dE=0.00 sprint=0 sprintFlag=0 mov=(0.00,0.00) vel=0.00 intensity=0.00 moving=0
+[Info   :ZED ZONE Ultimate Assistant] [fatigue] t=22:59:21 scene=Gaming fatigue=77.75/100 dF=0.00 energy=180/180 dE=0.00 sprint=0 sprintFlag=0 mov=(0.00,0.00) vel=0.00 intensity=0.00 moving=0
+[Info   :ZED ZONE Ultimate Assistant] [growth] CHANGE t=22:59:22 scene=Gaming level=N/A coopLevel=0 conGained=2 conExp=100.09 hp=2000 maxhp=2000 maxHPfield=1000 FullHP=1000 appliedMaxHPConstitution=20 skillProperty_MaxHPFloat=1 appliedMaxHPSkillFloat=1 maxHPBalanceFloat=1 appliedMaxHPBalanceFloat=0 skillProperty_StaminaFloat=0 maxEnergy=180 maxHunger=120 maxThirst=120 maxFatigue=100
+[Info   :ZED ZONE Ultimate Assistant] [fatigue] t=22:59:22 scene=Gaming fatigue=77.75/100 dF=0.00 energy=180/180 dE=0.00 sprint=0 sprintFlag=0 mov=(0.00,0.00) vel=0.00 intensity=0.00 moving=0
+[Info   :ZED ZONE Ultimate Assistant] [fatigue] t=22:59:22 scene=Gaming fatigue=77.75/100 dF=0.00 energy=180/180 dE=0.00 sprint=0 sprintFlag=0 mov=(0.00,0.00) vel=0.00 intensity=0.00 moving=0
+[Info   :ZED ZONE Ultimate Assistant] [fatigue] t=22:59:23 scene=Gaming fatigue=77.75/100 dF=0.00 energy=180/180 dE=0.00 sprint=0 sprintFlag=0 mov=(1.00,0.00) vel=3.01 intensity=1.00 moving=1
+[Info   :ZED ZONE Ultimate Assistant] [fatigue] t=22:59:24 scene=Gaming fatigue=77.72/100 dF=-0.03 energy=180/180 dE=0.00 sprint=0 sprintFlag=0 mov=(0.00,0.00) vel=0.00 intensity=0.00 moving=0
+[Info   :ZED ZONE Ultimate Assistant] [fatigue] t=22:59:24 scene=Gaming fatigue=77.72/100 dF=0.00 energy=180/180 dE=0.00 sprint=0 sprintFlag=0 mov=(0.00,0.00) vel=0.00 intensity=0.00 moving=0
+[Info   :ZED ZONE Ultimate Assistant] [fatigue] t=22:59:25 scene=Gaming fatigue=77.69/100 dF=-0.03 energy=180/180 dE=0.00 sprint=0 sprintFlag=0 mov=(0.00,0.00) vel=0.00 intensity=0.00 moving=0
+[Info   :ZED ZONE Ultimate Assistant] [fatigue] t=22:59:25 scene=Gaming fatigue=77.44/100 dF=-0.25 energy=178/180 dE=-2.00 sprint=0 sprintFlag=0 mov=(0.00,0.00) vel=0.00 intensity=0.00 moving=0
+[Info   :ZED ZONE Ultimate Assistant] [fatigue] t=22:59:26 scene=Gaming fatigue=77.42/100 dF=-0.03 energy=178/180 dE=0.00 sprint=0 sprintFlag=0 mov=(0.00,0.00) vel=0.00 intensity=0.00 moving=0
+[Info   :ZED ZONE Ultimate Assistant] [fatigue] t=22:59:26 scene=Gaming fatigue=77.17/100 dF=-0.25 energy=176/180 dE=-2.00 sprint=0 sprintFlag=0 mov=(0.00,0.00) vel=0.00 intensity=0.00 moving=0
+[Info   :ZED ZONE Ultimate Assistant] [fatigue] t=22:59:27 scene=Gaming fatigue=77.14/100 dF=-0.03 energy=176/180 dE=0.00 sprint=0 sprintFlag=0 mov=(0.00,0.00) vel=0.00 intensity=0.00 moving=0
+[Info   :ZED ZONE Ultimate Assistant] [fatigue] t=22:59:27 scene=Gaming fatigue=77.14/100 dF=0.00 energy=178.45/180 dE=+2.45 sprint=0 sprintFlag=0 mov=(0.00,0.00) vel=0.00 intensity=0.00 moving=0
+[Info   :ZED ZONE Ultimate Assistant] [fatigue] t=22:59:28 scene=Gaming fatigue=77.11/100 dF=-0.03 energy=180/180 dE=+1.55 sprint=0 sprintFlag=0 mov=(0.00,0.00) vel=0.00 intensity=0.00 moving=0
+[Info   :ZED ZONE Ultimate Assistant] [fatigue] t=22:59:28 scene=Gaming fatigue=77.11/100 dF=0.00 energy=180/180 dE=0.00 sprint=0 sprintFlag=0 mov=(-1.00,0.00) vel=3.18 intensity=1.00 moving=1
+[Info   :ZED ZONE Ultimate Assistant] [fatigue] t=22:59:29 scene=Gaming fatigue=77.08/100 dF=-0.03 energy=180/180 dE=0.00 sprint=0 sprintFlag=0 mov=(0.00,0.00) vel=0.00 intensity=0.00 moving=0
+[Info   :ZED ZONE Ultimate Assistant] [fatigue] t=22:59:29 scene=Gaming fatigue=77.08/100 dF=0.00 energy=180/180 dE=0.00 sprint=0 sprintFlag=0 mov=(0.00,0.00) vel=0.00 intensity=0.00 moving=0
+[Info   :ZED ZONE Ultimate Assistant] [fatigue] t=22:59:30 scene=Gaming fatigue=77.06/100 dF=-0.03 energy=180/180 dE=0.00 sprint=0 sprintFlag=0 mov=(0.00,0.00) vel=0.00 intensity=0.00 moving=0
+[Info   :ZED ZONE Ultimate Assistant] [fatigue] t=22:59:30 scene=Gaming fatigue=77.06/100 dF=0.00 energy=180/180 dE=0.00 sprint=0 sprintFlag=0 mov=(-1.00,0.00) vel=3.18 intensity=1.00 moving=1
+[Info   :ZED ZONE Ultimate Assistant] [fatigue] t=22:59:31 scene=Gaming fatigue=76.78/100 dF=-0.28 energy=178/180 dE=-2.00 sprint=0 sprintFlag=0 mov=(-1.00,0.00) vel=3.18 intensity=1.00 moving=1
+[Info   :ZED ZONE Ultimate Assistant] [fatigue] t=22:59:31 scene=Gaming fatigue=76.78/100 dF=0.00 energy=178/180 dE=0.00 sprint=0 sprintFlag=0 mov=(0.00,0.00) vel=0.02 intensity=0.00 moving=0
+[Info   :ZED ZONE Ultimate Assistant] [growth] heartbeat t=22:59:32 scene=Gaming level=N/A coopLevel=0 conGained=2 conExp=100.09 hp=2000 maxhp=2000 maxHPfield=1000 FullHP=1000 appliedMaxHPConstitution=20 skillProperty_MaxHPFloat=1 appliedMaxHPSkillFloat=1 maxHPBalanceFloat=1 appliedMaxHPBalanceFloat=0 skillProperty_StaminaFloat=0 maxEnergy=180 maxHunger=120 maxThirst=120 maxFatigue=100
+[Info   :ZED ZONE Ultimate Assistant] [fatigue] t=22:59:32 scene=Gaming fatigue=76.75/100 dF=-0.03 energy=178.96/180 dE=+0.96 sprint=0 sprintFlag=0 mov=(0.00,0.00) vel=0.00 intensity=0.00 moving=0
+[Info   :ZED ZONE Ultimate Assistant] [fatigue] t=22:59:32 scene=Gaming fatigue=76.75/100 dF=0.00 energy=180/180 dE=+1.04 sprint=0 sprintFlag=0 mov=(0.00,0.00) vel=0.00 intensity=0.00 moving=0
+[Info   :ZED ZONE Ultimate Assistant] [fatigue] t=22:59:33 scene=Gaming fatigue=76.72/100 dF=-0.03 energy=180/180 dE=0.00 sprint=0 sprintFlag=0 mov=(0.00,0.00) vel=0.00 intensity=0.00 moving=0
+[Info   :ZED ZONE Ultimate Assistant] [fatigue] t=22:59:33 scene=Gaming fatigue=76.72/100 dF=0.00 energy=180/180 dE=0.00 sprint=0 sprintFlag=0 mov=(0.00,0.00) vel=0.00 intensity=0.00 moving=0
+[Info   :ZED ZONE Ultimate Assistant] [fatigue] t=22:59:34 scene=Gaming fatigue=76.69/100 dF=-0.03 energy=180/180 dE=0.00 sprint=0 sprintFlag=0 mov=(0.00,0.00) vel=0.00 intensity=0.00 moving=0
+[Info   :ZED ZONE Ultimate Assistant] [fatigue] t=22:59:34 scene=Gaming fatigue=76.67/100 dF=-0.03 energy=180/180 dE=0.00 sprint=0 sprintFlag=0 mov=(0.00,0.00) vel=0.00 intensity=0.00 moving=0
+[Info   :ZED ZONE Ultimate Assistant] [fatigue] t=22:59:35 scene=Gaming fatigue=76.67/100 dF=0.00 energy=180/180 dE=0.00 sprint=0 sprintFlag=0 mov=(0.00,0.00) vel=0.00 intensity=0.00 moving=0
+[Info   :ZED ZONE Ultimate Assistant] [fatigue] t=22:59:36 scene=Gaming fatigue=76.64/100 dF=-0.03 energy=180/180 dE=0.00 sprint=0 sprintFlag=0 mov=(0.00,0.00) vel=0.00 intensity=0.00 moving=0
+[Info   :ZED ZONE Ultimate Assistant] [fatigue] t=22:59:36 scene=Gaming fatigue=76.64/100 dF=0.00 energy=180/180 dE=0.00 sprint=0 sprintFlag=0 mov=(0.00,0.00) vel=0.00 intensity=0.00 moving=0
+[Info   :ZED ZONE Ultimate Assistant] [fatigue] t=22:59:37 scene=Gaming fatigue=76.61/100 dF=-0.03 energy=180/180 dE=0.00 sprint=0 sprintFlag=0 mov=(0.00,0.00) vel=0.00 intensity=0.00 moving=0
+[Info   :ZED ZONE Ultimate Assistant] [fatigue] t=22:59:37 scene=Gaming fatigue=76.61/100 dF=0.00 energy=180/180 dE=0.00 sprint=0 sprintFlag=0 mov=(0.00,0.00) vel=0.00 intensity=0.00 moving=0
+[Info   :ZED ZONE Ultimate Assistant] [fatigue] t=22:59:38 scene=Gaming fatigue=76.58/100 dF=-0.03 energy=180/180 dE=0.00 sprint=0 sprintFlag=0 mov=(0.00,0.00) vel=0.00 intensity=0.00 moving=0
+[Info   :ZED ZONE Ultimate Assistant] [fatigue] t=22:59:38 scene=Gaming fatigue=76.58/100 dF=0.00 energy=180/180 dE=0.00 sprint=0 sprintFlag=0 mov=(0.00,0.00) vel=0.00 intensity=0.00 moving=0
+[Info   :ZED ZONE Ultimate Assistant] [fatigue] t=22:59:39 scene=Gaming fatigue=76.56/100 dF=-0.03 energy=180/180 dE=0.00 sprint=0 sprintFlag=0 mov=(0.00,0.00) vel=0.00 intensity=0.00 moving=0

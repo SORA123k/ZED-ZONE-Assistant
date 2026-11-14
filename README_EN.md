@@ -2,9 +2,13 @@
 
 <p align="right"><a href="README.md">简体中文</a> | <b>English</b></p>
 
+[![CI](https://github.com/SORA123k/ZED-ZONE-Assistant/actions/workflows/ci.yml/badge.svg)](https://github.com/SORA123k/ZED-ZONE-Assistant/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/SORA123k/ZED-ZONE-Assistant)](https://github.com/SORA123k/ZED-ZONE-Assistant/releases)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 A **single-player, offline-only** utility mod for **ZED ZONE** (Steam AppID `1211600`), built on **BepInEx 6 (IL2CPP)** + **HarmonyX**. It ships an in-game ClickGUI-style menu (default hotkey `INSERT`) with durability, ammo, protection, movement and visual helpers.
 
-> **Single-player / offline use only.** All state-modifying features are automatically disabled when the game reports an online session (fail-closed). Do not use it in multiplayer.
+> **Single-player / offline use only.** When an online session is detected, **every state-modifying feature** (ammo, durability, overheat, jam, HP/stamina/hunger/thirst, auto supply, movement) plus **ESP** is refused and forcibly turned off (fail-closed). Do not use it in multiplayer.
 
 ---
 
@@ -76,40 +80,66 @@ The menu has four categories: **Combat / Player / Visuals / Settings**. Every fe
 |---|---|
 | Game | ZED ZONE **1.0.17** (Steam AppID `1211600`) |
 | Engine | Unity 2023.1.18f1 / IL2CPP **x64** |
-| Mod loader | **BepInEx 6** (IL2CPP, BleedingEdge 6.0.0-be.*) |
+| Mod loader | **BepInEx 6** (IL2CPP). Easiest: the [Steam Workshop code-mod loader](https://steamcommunity.com/sharedfiles/filedetails/?id=3834614258) (one-click install). Manual: BepInEx BleedingEdge 6.0.0-be.* |
 | Runtime | .NET 6.0 (bundled with BepInEx) |
 | OS | Windows 10/11 x64 |
+
+After a game update the `Assembly-CSharp` IL2CPP signatures may change. The plugin logs a
+"version mismatch" warning; see [docs/COMPATIBILITY.md](docs/COMPATIBILITY.md) (Chinese).
 
 ---
 
 ## Installation
 
-### Option A — download the release (recommended)
+### Step 1 — get a mod loader (BepInEx 6)
 
-1. Open **Releases** and download `ZedZone.UltimateAssistant.dll`.
-2. Make sure BepInEx 6 (IL2CPP) is installed and the game has been launched once, so `BepInEx/interop/` exists.
-3. Copy the DLL to:
+**A. Steam Workshop (recommended for beginners)**
+
+[ZED ZONE 代码模组加载器 (BepInEx IL2CPP / DLL Mods)](https://steamcommunity.com/sharedfiles/filedetails/?id=3834614258)
+
+1. Subscribe (Steam downloads it, ~36 MB).
+2. Open `...\steamapps\workshop\content\1211600\3834614258\` and run **`install.cmd`**
+   (fully offline; run as administrator if the game is under `Program Files`).
+   The script locates the game and installs BepInEx + the loader automatically.
+3. Launch the game **through Steam**.
+4. The main menu shows `ZED MODS: N code mod(s) loaded` when the loader is active.
+
+This loader scans `Mods\<name>\*.dll` in the game folder (that's where this mod goes), DLLs from
+Workshop items / `.zedmod` archives, and `LocalLow\LevenLiu\ZEDZONE\Mods\Workspace`.
+Uninstall with `uninstall.cmd` in the same folder. BepInEx 6.0.0-be.793 is bundled (LGPL-2.1).
+
+> The loader and the steps above are provided by the Workshop author **star fox**;
+> they are summarized from the Workshop page. If anything differs, the Workshop page wins.
+
+**B. Manual BepInEx 6 (IL2CPP BleedingEdge)**
+
+Download `BepInEx-Unity.IL2CPP-win-x64-6.0.0-be.*` from the BepInEx releases, extract it into the
+game root, then launch the game once so `BepInEx\interop\` is generated.
+
+### Step 2 — install this mod
+
+1. Download `ZedZone.UltimateAssistant.dll` from **Releases** (optionally verify the SHA256 in the release notes).
+2. Copy it to:
    ```
    <Game>\Mods\ZedZone.UltimateAssistant\ZedZone.UltimateAssistant.dll
    ```
    (`BepInEx\plugins\` also works — pick **one** location only.)
-4. Launch the game, load a save, press **INSERT**.
-
-### Option B — build from source
-
-See [Build from source](#build-from-source).
+3. Launch the game, load a save, press **INSERT**.
 
 ### Verify
 
 Check `<Game>\BepInEx\LogOutput.log` for:
 
 ```
-[Info   :ZED ZONE Ultimate Assistant] ZED ZONE Ultimate Assistant v1.0.0 loading
-[Info   :ZED ZONE Ultimate Assistant] [weapons] 补丁安装完成，成功 N 个
+[Info   :ZED ZONE Ultimate Assistant] ZED ZONE Ultimate Assistant v1.0.1 loading
+[Info   :ZED ZONE Ultimate Assistant] detected game version: 1.0.17
+[Info   :ZED ZONE Ultimate Assistant] [patches] 启动时已挂载补丁数 = 0（功能开启后按需增加）
 [Info   :ZED ZONE Ultimate Assistant] [ui] ClickGUI 已就绪（INSERT 开关，当前关闭）
 ```
 
-A detailed step-by-step guide (including installing BepInEx) is in [INSTALL.md](INSTALL.md) (Chinese) and [GUIDE.md](GUIDE.md) (beginner walkthrough, Chinese).
+`patches = 0` is expected: patches are only applied while their feature is enabled.
+
+Detailed guides are Chinese-only for now: [INSTALL.md](INSTALL.md), [GUIDE.md](GUIDE.md) (beginner walkthrough).
 
 ---
 
@@ -134,60 +164,77 @@ While the menu is open the mod blocks character input, disables the game's UI ra
 <Game>\BepInEx\config\zedzone.ultimateassistant.cfg
 ```
 
-Key sections: `[General]`, `[UI]`, `[Features]`, `[Hotkeys]`, `[Menu]`, `[Esp]`, `[Diagnostics]`.
-See the Chinese README for the full key list.
+- Changes made in the menu apply immediately and are written back to the file.
+- Edits made by hand require a game restart.
+- Defaults: **all state-modifying features off**, all diagnostics off.
+- The complete reference (69 config entries + 16 hotkeys) is in [docs/CONFIG.md](docs/CONFIG.md) (Chinese, but key names and defaults are language-neutral).
 
 ---
 
 ## Build from source
 
-Requirements: .NET SDK 6.0+, ZED ZONE + BepInEx 6 installed (interop assemblies are used as compile references).
+Requirements: .NET SDK 6.0+, ZED ZONE + BepInEx 6 installed (interop assemblies are compile references).
 
-```bash
-cd src/ZedZone.UltimateAssistant
-dotnet build -c Release
-```
-
-Output: `bin/ZedZone.UltimateAssistant.dll`
-
-Build and install in one step:
+Point the build at your game folder (pick one):
 
 ```powershell
-pwsh tools/build.ps1
+# 1) environment variable
+$env:ZEDZONE_GAME_ROOT = "D:\SteamLibrary\steamapps\common\ZED ZONE"
+
+# 2) MSBuild property
+dotnet build src/ZedZone.UltimateAssistant -c Release -p:GameRoot="D:\...\ZED ZONE"
+
+# 3) helper script (auto-detects Steam libraries, then installs)
+pwsh tools/build.ps1            # build + copy to Mods\
+pwsh tools/build.ps1 -SkipInstall
 ```
 
-Override the game path when needed:
+Output: `src/ZedZone.UltimateAssistant/bin/ZedZone.UltimateAssistant.dll`
 
-```bash
-dotnet build -c Release -p:GameRoot="E:\Steam\steamapps\common\ZED ZONE\"
+Tests and checks:
+
+```powershell
+dotnet run --project tests/ZedUaOfflineTests/ZedUaOfflineTests.csproj -c Release
+python3 tools/ci/check_links.py
 ```
+
+`tests/ZedUaOfflineTests` is a console assertion runner (not xUnit), hence `dotnet run` rather than `dotnet test`.
 
 ---
 
 ## Project layout
 
 ```
+Directory.Build.props         single source of truth for the version
+ZedZone.Assistant.sln         solution (plugin + tests)
 src/ZedZone.UltimateAssistant/
-  Plugin.cs                  entry point
-  Core/                      logic (config, features, durability, ESP, services)
-  Patch/                     Harmony patches
-  UI/                        IMGUI menu (ClickGui, themes, island, input guard)
-docs/                        research & verification reports
-Diagnostics/                 durability + native reverse-engineering reports
-tests/                       offline unit tests
-tools/build.ps1              build & install script
-tools/release.ps1            bump version → build → tag → GitHub release
+  Plugin.cs                   entry point
+  Core/                       logic (config, features, gate, durability, ESP, services)
+  Patch/                      Harmony patches
+  UI/                         IMGUI menu (ClickGui, themes, island, input guard)
+tests/                        offline tests (console runner)
+tools/                        build.ps1, release.ps1, ci checks
+docs/                         documentation map: docs/README.md
+  CONFIG.md                   full config reference
+  COMPATIBILITY.md            game-version adaptation
+  reference/                  game internals research
+  internal/                   historical phase reports (archive, don't trust blindly)
+.github/                      CI, issue/PR templates
 ```
 
 ---
 
 ## Known limitations
 
-- **Offline single-player only**; state-modifying features are disabled online.
-- Tied to game **1.0.17** interop signatures; a major game update may require re-adaptation.
+- **Offline single-player only**: state-modifying features and ESP refuse to enable and are turned off
+  when an online session is detected (including sessions detected after the fact). This only governs the
+  mod's own behaviour — it cannot control what a multiplayer server decides.
+- Tied to game **1.0.17** interop signatures. A mismatch only produces a warning (not a hard block);
+  adaptation steps: [docs/COMPATIBILITY.md](docs/COMPATIBILITY.md).
 - Auto Supply handles normal crafting/building; the island escape boat uses a separate path and is handled by "force finish construction", which may affect quest flow — back up your save.
 - Full Bright relies on URP 2D global light and ambient light; a custom darkening method would reduce the effect.
 - Gun durability is written into `ItemData.properties[0]`, which is persisted in the save.
+- The codebase is AI-written (see disclaimer); edge cases are not exhaustively covered.
 
 ---
 
@@ -207,15 +254,19 @@ So if you find a bug, a logic flaw, a crash, or anything that bothers you, **ple
 Open an issue with the log and reproduction steps — no need to be formal, and no one will blame you. Reporting a problem is itself the biggest help to this project.
 
 PRs that fix these AI-left pitfalls are equally welcome.
+
 ---
 
 ## Contributing
 
 Contributions are welcome — code, translations, docs, bug reports.
 
-- Read [DEVELOPMENT.md](DEVELOPMENT.md) for architecture, patch conventions and the new-feature checklist.
-- Read [CONTRIBUTING.md](CONTRIBUTING.md) for the workflow, code style and PR checklist.
-- Use the issue templates for bug reports / feature requests.
+- Documentation map: [docs/README.md](docs/README.md) (read this first)
+- Architecture, patch conventions, new-feature checklist: [DEVELOPMENT.md](DEVELOPMENT.md) (Chinese)
+- Workflow, code style, PR checklist: [CONTRIBUTING.md](CONTRIBUTING.md) (Chinese)
+- Rules for AI coding assistants: [AGENTS.md](AGENTS.md)
+- Config reference: [docs/CONFIG.md](docs/CONFIG.md) · Game compatibility: [docs/COMPATIBILITY.md](docs/COMPATIBILITY.md)
+- Security issues: [SECURITY.md](SECURITY.md)
 
 If you want to become a maintainer (write access), open an issue or contact the owner — see CONTRIBUTING.md.
 
@@ -224,5 +275,3 @@ If you want to become a maintainer (write access), open an issue or contact the 
 ## License
 
 [MIT](LICENSE) © 2026 SORA123k
-
-

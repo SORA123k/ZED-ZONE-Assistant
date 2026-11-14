@@ -134,15 +134,15 @@ namespace ZedZone.UltimateAssistant.Core
                 "仅用于 Phase 3 的 API 验证，为 true 时每次启动转储一次；不修改任何数据。");
 
             // ---- Phase 3A 只读实验探针（不写任何数值） ----
-            GrowthLog = cfg.Bind("Diagnostics", "GrowthLog", true,
-                "只读成长探针：定期记录 等级(N/A)/体质成长/HP/三个候选最大生命值/各项加成系数/场景。" +
+            GrowthLog = cfg.Bind("Diagnostics", "GrowthLog", false,
+                "只读成长探针（默认关闭）：定期记录 等级(N/A)/体质成长/HP/三个候选最大生命值/各项加成系数/场景。" +
                 "数值变化时输出 CHANGE 行，无变化时输出 heartbeat。用于升级、换装、加点前后对比。");
 
             GrowthLogIntervalSec = cfg.Bind("Diagnostics", "GrowthLogIntervalSec", 10,
                 new ConfigDescription("成长探针心跳间隔（秒）。", new AcceptableValueRange<int>(2, 600)));
 
-            FatigueProbe = cfg.Bind("Diagnostics", "FatigueProbe", true,
-                "只读疲劳探针：把 fatigue / energy 与 冲刺请求、移动输入、速度、场景 一起按时间采样，" +
+            FatigueProbe = cfg.Bind("Diagnostics", "FatigueProbe", false,
+                "只读疲劳探针（默认关闭）：把 fatigue / energy 与 冲刺请求、移动输入、速度、场景 一起按时间采样，" +
                 "用于判定 fatigue 的数值方向。只读，不写任何数值。");
 
             FatigueProbeIntervalMs = cfg.Bind("Diagnostics", "FatigueProbeIntervalMs", 500,
@@ -235,7 +235,7 @@ namespace ZedZone.UltimateAssistant.Core
             ZombieEsp = cfg.Bind("Features", "ZombieEsp", false,
                 "僵尸透视：在屏幕上标记当前已加载的僵尸，可显示名称与距离。默认关闭。");
 
-            WeaponDurability = cfg.Bind("Features", "WeaponDurability", true,
+            WeaponDurability = cfg.Bind("Features", "WeaponDurability", false,
                 "无限耐久：开启后工具/武器使用时不消耗耐久（拦截 CostItemDurability），并每 2 秒兜底修复一次。默认关闭。");
             NoOverheat = cfg.Bind("Features", "NoOverheat", false,
                 "取消枪械过热：开启后玩家自己的枪械温度恒为 0（不影响 NPC）。默认关闭。");
@@ -262,12 +262,12 @@ namespace ZedZone.UltimateAssistant.Core
                 "不会卡壳：开启后阻止本地玩家枪械进入卡壳状态，并清除已存在的卡壳标记。默认关闭。");
             NoStaminaLoss = cfg.Bind("Features", "NoStaminaLoss", false,
                 "不会扣体力：开启后本地玩家奔跑/跳跃等不再消耗体力（独立开关，与一键恢复无关）。默认关闭。");
-            ItemDurabilityLock = cfg.Bind("Features", "ItemDurabilityLock", true,
-                "工具/近战/装备耐久锁定：以实测有效的 ItemData.durability 为依据，只增不减（不会超过你已有的最高耐久）。默认开启。");
-            MetaDiag = cfg.Bind("Diagnostics", "MetaDiag", true,
-                "IL2CPP 私有字段元数据探查（只读）：列出 BasicRangedWeapon 全部字段/偏移/方法并采样实例值，写入 Diagnostics 目录。默认开启，定位完成后可关闭。");
-            DurabilityDiag = cfg.Bind("Diagnostics", "DurabilityDiag", true,
-                "耐久只读诊断：记录运行时、装备槽物品、武器耐久字段与变化前后及调用栈，写入 Diagnostics 目录。只读，不修改任何对象。");
+            ItemDurabilityLock = cfg.Bind("Features", "ItemDurabilityLock", false,
+                "工具/近战/装备耐久锁定：以实测有效的 ItemData.durability 为依据，只增不减（不会超过你已有的最高耐久）。默认关闭。");
+            MetaDiag = cfg.Bind("Diagnostics", "MetaDiag", false,
+                "IL2CPP 私有字段元数据探查（只读）：列出 BasicRangedWeapon 全部字段/偏移/方法并采样实例值，写入 Diagnostics 目录。默认关闭，仅在排查时手动打开。");
+            DurabilityDiag = cfg.Bind("Diagnostics", "DurabilityDiag", false,
+                "耐久只读诊断：记录运行时、装备槽物品、武器耐久字段与变化前后及调用栈，写入 Diagnostics 目录。默认关闭，只读，不修改任何对象。");
 
             EspShowName = cfg.Bind("Esp", "ShowName", true, "ESP 显示僵尸名称/类型。");
             EspShowDistance = cfg.Bind("Esp", "ShowDistance", true, "ESP 显示与玩家的距离。");

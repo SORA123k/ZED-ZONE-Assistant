@@ -44,8 +44,8 @@ git clone https://github.com/<you>/ZED-ZONE-Assistant.git
 git checkout -b feat/your-feature
 
 # 3. 构建（需先装 BepInEx 6 IL2CPP 并启动过一次游戏）
-cd src/ZedZone.UltimateAssistant
-dotnet build -c Release          # 必须 0 警告 0 错误
+$env:ZEDZONE_GAME_ROOT = "D:\SteamLibrary\steamapps\common\ZED ZONE"
+pwsh tools/build.ps1 -SkipInstall     # 必须 0 警告 0 错误
 
 # 4. 实机验证后提交
 git commit -m "feat: 你的改动说明"
@@ -64,9 +64,14 @@ git push origin feat/your-feature
 - 只对**本地玩家**生效（`PlayerAccessor.Resolve()` 后比较 `Pointer`）；
 - 禁止：修改全局 `GameConfigs`、改存档结构、影响 NPC/其它角色、猜测字段偏移写内存；
 - 日志用 `Log.Info/Warn/Error`，高频日志必须限流（`WarnOnce` / `ErrorOnce` / 计数预算）；
-- 新增 UI 文案必须同时提供三语（`zhCN` / `en` / `zhTW`），走 `L.T("key")`。
+- 新增 UI 文案必须同时提供三语（`zhCN` / `en` / `zhTW`），走 `L.T("key")`；
+- **所有修改游戏状态的开关必须经过 `Features.GateOnline(...)`**（联机 fail-closed），
+  漏掉会被打回；
+- 新增配置项要同步 `docs/CONFIG.md`；新增/改动补丁要同步 `docs/API_PATCH_MAPPING.md`；
+- 用 AI 助手改代码的话，先读 [AGENTS.md](AGENTS.md)。
 
-详细的架构说明与"新增功能检查清单"见 [DEVELOPMENT.md](DEVELOPMENT.md)。
+详细的架构说明与"新增功能检查清单"见 [DEVELOPMENT.md](DEVELOPMENT.md)，
+文档地图见 [docs/README.md](docs/README.md)。
 
 ---
 
@@ -74,13 +79,17 @@ git push origin feat/your-feature
 
 提交 PR 前请确认：
 
-- [ ] `dotnet build -c Release` → **0 警告 0 错误**
-- [ ] 新增功能：配置项 + 开关 + 补丁卸载 + UI 卡片 + 三语文案 + 热键注册
+- [ ] `pwsh tools/build.ps1 -SkipInstall` → **0 警告 0 错误**
+- [ ] `dotnet run --project tests/ZedUaOfflineTests/ZedUaOfflineTests.csproj -c Release` 通过
+- [ ] `python3 tools/ci/check_links.py` 通过（改过文档时）
+- [ ] 新增功能：配置项 + `GateOnline` 联机门禁 + 补丁卸载 + UI 卡片 + 三语文案 + 热键注册
+- [ ] 新增功能：`docs/CONFIG.md` 已登记；补丁改动：`docs/API_PATCH_MAPPING.md` 已更新
 - [ ] 已在游戏内实机验证（或明确说明"仅编译验证"）
 - [ ] 未破坏已有功能（耐久 / 弹药 / 防护 / ESP / 菜单 / 配置）
-- [ ] 未提交 `bin/`、`obj/`、`Diagnostics/*.log`、备份 DLL
+- [ ] 未提交 `bin/`、`obj/`、`Diagnostics/*.log`、备份 DLL、`research/`（反编译产物）
+- [ ] 改过版本号的地方一致（只改 `Directory.Build.props`，`Plugin.cs` 由脚本同步）
 - [ ] 更新了 `README.md` / `README_EN.md` 功能表（如适用）
-- [ ] 更新了 `CHANGELOG.md`
+- [ ] 更新了 `CHANGELOG.md`（需要有 `## vX.Y.Z` 小节，发版脚本会校验）
 
 PR 描述请包含：
 
@@ -111,15 +120,16 @@ pwsh tools/release.ps1 -Version 1.0.1
 
 脚本会自动完成：
 
-1. 校验版本号格式；
-2. 检查工作区是否干净；
-3. 修改 `Plugin.cs` 里的 `PluginVersion`；
-4. `dotnet build -c Release`（0 警告 0 错误才继续）；
-5. 提交 "release vX.Y.Z"；
-6. 打 tag `vX.Y.Z` 并推送 `main` + tag；
-7. 调用 `gh release create` 创建 GitHub Release，并附上构建出的 DLL。
+1. 校验版本号格式、工作区干净；
+2. **校验 `CHANGELOG.md` 里已有 `## vX.Y.Z` 小节**（没有就中止）；
+3. 同时更新 `Directory.Build.props`（Version/AssemblyVersion/FileVersion）与
+   `Plugin.cs` 的 `PluginVersion`（两处必须一致，CI 也会校验）；
+4. `dotnet build -c Release` 并校验产物 `FileVersion`；
+5. 计算 SHA256 / MD5；
+6. 提交 "release vX.Y.Z"、打 tag、推送 `main` + tag；
+7. `gh release create`：正文自动带 CHANGELOG 对应小节 + 校验值 + 安装说明。
 
-如需自定义发布说明，可先编辑 `CHANGELOG.md`。
+发版前先把本次改动写进 `CHANGELOG.md`，并注明哪些功能已实机验证。
 
 ---
 
@@ -127,4 +137,5 @@ pwsh tools/release.ps1 -Version 1.0.1
 
 - 尊重所有贡献者，技术讨论对事不对人；
 - 不接受"外挂/联机作弊"相关需求；
-- 不提交他人代码 / 资源而不标注来源与许可。
+- 不提交他人代码 / 资源而不标注来源与许可；
+- 不提交游戏反编译产物、游戏二进制拷贝或运行日志（`research/`、`Diagnostics/` 已在 `.gitignore` 里）。

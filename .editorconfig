@@ -1,0 +1,38 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 4
+
+[*.{md,yml,yaml,json}]
+indent_size = 2
+trim_trailing_whitespace = false
+
+[*.cs]
+indent_size = 4
+# 本项目面向 BepInEx 6 / .NET 6 的 Unity 插件，命名不强制使用此风格
+dotnet_sort_system_directives_first = true
+csharp_new_line_before_open_brace = all
+csharp_style_namespace_declarations = block_scoped:suggestion
+
+# interop 桩程序集与 BepInEx 内置类型存在预期的重复定义/版本差异
+dotnet_diagnostic.CS0436.severity = none
+dotnet_diagnostic.CS1701.severity = none
+dotnet_diagnostic.CS1702.severity = none
+
+[*.{ps1,psm1}]
+end_of_line = crlf
+indent_size = 4
+
+[*.cmd]
+end_of_line = crlf
+
+[*.sh]
+end_of_line = lf
+
+[*.sln]
+end_of_line = crlf

@@ -1,0 +1,23 @@
+# 统一换行符，避免 Windows 机器提交时整文件改动
+* text=auto
+
+*.cs        text eol=lf
+*.md        text eol=lf
+*.yml       text eol=lf
+*.yaml      text eol=lf
+*.json      text eol=lf
+*.sh        text eol=lf
+
+*.ps1       text eol=crlf
+*.cmd       text eol=crlf
+*.sln       text eol=crlf
+*.csproj    text eol=crlf
+*.props     text eol=crlf
+
+*.dll       binary
+*.pdb       binary
+*.png       binary
+*.jpg       binary
+*.wav       binary
+*.zip       binary
+*.7z        binary

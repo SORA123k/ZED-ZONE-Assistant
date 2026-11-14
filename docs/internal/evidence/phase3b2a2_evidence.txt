@@ -1,0 +1,13 @@
+Phase 3B-2A.2 证据摘录
+采集: 2026-11-13 00:48:00
+来源: BepInEx\LogOutput.log（只读摘录，未改写）
+说明: A2 实验 + 重载 VERIFY
+
+[Info   :ZED ZONE Ultimate Assistant] [limbx] ===== VERIFY（只读，不调用任何接口）=====
+[Info   :ZED ZONE Ultimate Assistant] [limbx] VERIFY t=4.18 globalHp=1957.419 buffCount=2
+[Info   :ZED ZONE Ultimate Assistant] [limbx] VERIFY idx=0 id=0 name=头部 hp=109.009/112 wounded=0 bleeding=0 fully=0 bandaged=0
+[Info   :ZED ZONE Ultimate Assistant] [limbx] VERIFY idx=1 id=1 name=躯干 hp=29.882/142 wounded=1 bleeding=0 fully=0 bandaged=1
+[Info   :ZED ZONE Ultimate Assistant] [limbx] VERIFY idx=2 id=2 name=左臂 hp=122/122 wounded=0 bleeding=0 fully=1 bandaged=0
+[Info   :ZED ZONE Ultimate Assistant] [limbx] VERIFY idx=3 id=3 name=右臂 hp=122/122 wounded=0 bleeding=0 fully=1 bandaged=0
+[Info   :ZED ZONE Ultimate Assistant] [limbx] VERIFY idx=4 id=4 name=左腿 hp=107.798/132 wounded=1 bleeding=0 fully=0 bandaged=1
+[Info   :ZED ZONE Ultimate Assistant] [limbx] VERIFY idx=5 id=5 name=右腿 hp=48.388/132 wounded=1 bleeding=0 fully=0 bandaged=1

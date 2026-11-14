@@ -1,0 +1,17 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 新手安装教程 / 常见问题
+    url: https://github.com/SORA123k/ZED-ZONE-Assistant/blob/main/GUIDE.md
+    about: 装不上、按 INSERT 没反应、日志报错，先看这个（纯文字手把手）。
+  - name: 安装指南（含创意工坊加载器 / 手动 BepInEx）
+    url: https://github.com/SORA123k/ZED-ZONE-Assistant/blob/main/INSTALL.md
+    about: 两条安装路径与校验步骤。
+  - name: 游戏版本不匹配 / 更新后失效
+    url: https://github.com/SORA123k/ZED-ZONE-Assistant/blob/main/docs/COMPATIBILITY.md
+    about: 版本矩阵、失效现象、重新适配步骤与回归清单。
+  - name: 配置项说明
+    url: https://github.com/SORA123k/ZED-ZONE-Assistant/blob/main/docs/CONFIG.md
+    about: 全部 69 个配置项 + 16 个快捷键的默认值与含义。
+  - name: 安全问题（存档损坏 / 联机门禁失效 / 发布物被篡改）
+    url: https://github.com/SORA123k/ZED-ZONE-Assistant/security/policy
+    about: 请走私有渠道，不要在公开 Issue 里贴敏感信息。

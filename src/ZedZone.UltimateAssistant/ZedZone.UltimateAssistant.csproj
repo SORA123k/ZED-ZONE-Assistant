@@ -3,21 +3,29 @@
   <PropertyGroup>
     <AssemblyName>ZedZone.UltimateAssistant</AssemblyName>
     <RootNamespace>ZedZone.UltimateAssistant</RootNamespace>
-    <Version>0.2.0</Version>
     <OutputPath>bin\</OutputPath>
     <TargetFramework>net6.0</TargetFramework>
-    <LangVersion>latest</LangVersion>
-    <Nullable>disable</Nullable>
-    <ImplicitUsings>disable</ImplicitUsings>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <GenerateDependencyFile>false</GenerateDependencyFile>
     <DebugType>portable</DebugType>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <!-- CS0436/1701/1702：interop 桩程序集与 BepInEx 内置类型同名/版本不一致，属于预期噪声 -->
     <NoWarn>$(NoWarn);CS0436;CS1701;CS1702</NoWarn>
-    <GameRoot Condition="'$(GameRoot)' == ''"><游戏目录>\</GameRoot>
+
+    <!-- 版本号在仓库根的 Directory.Build.props 统一定义，这里不要再写 <Version> -->
+
+    <!-- 游戏目录：环境变量 ZEDZONE_GAME_ROOT，或 dotnet build -p:GameRoot=... -->
     <BepInExCore>$(GameRoot)BepInEx\core\</BepInExCore>
     <InteropDir>$(GameRoot)BepInEx\interop\</InteropDir>
   </PropertyGroup>
+
+  <!-- 缺游戏程序集时给出可读报错，而不是几十行 "找不到类型/命名空间" -->
+  <Target Name="CheckGameRefs" BeforeTargets="ResolveAssemblyReferences">
+    <Error Condition="'$(GameRoot)' == ''"
+           Text="未指定游戏目录。请设置环境变量 ZEDZONE_GAME_ROOT 指向 ZED ZONE 安装目录，或执行 dotnet build -p:GameRoot=&quot;D:\...\ZED ZONE&quot;。详见 DEVELOPMENT.md。" />
+    <Error Condition="!Exists('$(InteropDir)Assembly-CSharp.dll')"
+           Text="找不到 $(InteropDir)Assembly-CSharp.dll。请先安装 BepInEx 6 (IL2CPP) 并至少启动一次游戏，让 BepInEx 生成 interop 程序集。详见 INSTALL.md。" />
+  </Target>
 
   <ItemGroup>
     <Reference Include="BepInEx.Core"><HintPath>$(BepInExCore)BepInEx.Core.dll</HintPath><Private>false</Private></Reference>
@@ -38,6 +46,3 @@
   </ItemGroup>
 
 </Project>
-
-
-

@@ -1,0 +1,15 @@
+Phase 3A 动态最大值修复 —— 实机验证证据
+采集时间: 2026-11-12 22:50:30
+游戏版本: 1.0.16
+说明: 从真实运行日志提取的只读摘录。
+
+[Info   :ZED ZONE Ultimate Assistant] [vitals] 场景=Gaming hp=1000.19/1000 bloodVolume=5000/5000 bodyTemperature=36.62 radiationDose=0 hunger=119.47/120 thirst=119/120 stamina=180/180 energy=180/180 fatigue=85.36/100 sanity=0 casEnergy=0 deadFlag=0 netDeadFlag=0 isPlayer=1 buffCount=0 失败项=0
+[Info   :ZED ZONE Ultimate Assistant] [range] stat=Hp current=1000.21 min=0 max=2000 source=CharacterStatusData.maxhp candidates=[CharacterStatusData.maxhp=2000, BasicCharacterController.FullHP=1000, BasicCharacterController.maxHP=1000] reliable=True
+[Info   :ZED ZONE Ultimate Assistant] [write] stat=Hp before=1000.21 target=2000 after=2000 maxSource=CharacterStatusData.maxhp
+[Info   :ZED ZONE Ultimate Assistant] [range] stat=Energy current=178 min=0 max=180 source=CharacterStatusData.maxEnergy candidates=[CharacterStatusData.maxEnergy=180] reliable=True
+[Info   :ZED ZONE Ultimate Assistant] [write] stat=Energy before=178 target=180 after=180 maxSource=CharacterStatusData.maxEnergy
+[Info   :ZED ZONE Ultimate Assistant] [range] stat=Hp current=2000 min=0 max=2000 source=CharacterStatusData.maxhp candidates=[CharacterStatusData.maxhp=2000, BasicCharacterController.FullHP=1000, BasicCharacterController.maxHP=1000] reliable=True
+[Warning:ZED ZONE Ultimate Assistant] [write.reject] stat=Hp reason=SkippedNoChange detail=当前 2000 已不低于目标 2000
+[Info   :ZED ZONE Ultimate Assistant] [vitals] 场景=Gaming hp=2000/1000 bloodVolume=5000/5000 bodyTemperature=36.62 radiationDose=0 hunger=119.27/120 thirst=118.6/120 stamina=180/180 energy=180/180 fatigue=84.19/100 sanity=0 casEnergy=0 deadFlag=0 netDeadFlag=0 isPlayer=1 buffCount=0 失败项=0
+[Info   :ZED ZONE Ultimate Assistant] [vitals] 场景=Gaming hp=2000/1000 bloodVolume=5000/5000 bodyTemperature=36.62 radiationDose=0 hunger=118.97/120 thirst=118/120 stamina=176/180 energy=176/180 fatigue=83.44/100 sanity=0 casEnergy=0 deadFlag=0 netDeadFlag=0 isPlayer=1 buffCount=0 失败项=0
+[Info   :ZED ZONE Ultimate Assistant] [vitals] 场景=Gaming hp=2000/1000 bloodVolume=5000/5000 bodyTemperature=36.61 radiationDose=0 hunger=118.63/120 thirst=117.33/120 stamina=180/180 energy=180/180 fatigue=81.17/100 sanity=0 casEnergy=0 deadFlag=0 netDeadFlag=0 isPlayer=1 buffCount=0 失败项=0

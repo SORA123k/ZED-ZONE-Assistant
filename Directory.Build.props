@@ -1,0 +1,38 @@
+<Project>
+
+  <!--
+    版本号的唯一定义位置：改这里，csproj / 程序集元数据 / Release 说明全部跟着走。
+    tools/release.ps1 会同时更新本文件与 src/.../Plugin.cs 的 PluginVersion，
+    CI（.github/workflows/ci.yml）会校验两者一致。
+  -->
+  <PropertyGroup>
+    <Version>1.0.1</Version>
+    <AssemblyVersion>1.0.1.0</AssemblyVersion>
+    <FileVersion>1.0.1.0</FileVersion>
+    <Product>ZED ZONE Assistant</Product>
+    <Company>SORA123k</Company>
+    <Authors>SORA123k</Authors>
+    <Copyright>Copyright (c) 2026 SORA123k</Copyright>
+    <RepositoryUrl>https://github.com/SORA123k/ZED-ZONE-Assistant</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <Deterministic>true</Deterministic>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+  </PropertyGroup>
+
+  <!--
+    游戏目录（仅 mod 工程需要，用于引用 BepInEx/interop 里的游戏程序集）。
+    优先级：命令行 -p:GameRoot=... > 环境变量 ZEDZONE_GAME_ROOT。
+    两者都没有时由 csproj 里的 CheckGameRefs 目标给出可读报错。
+  -->
+  <PropertyGroup Condition="'$(GameRoot)' == '' and '$(ZEDZONE_GAME_ROOT)' != ''">
+    <GameRoot>$(ZEDZONE_GAME_ROOT)</GameRoot>
+  </PropertyGroup>
+
+  <!-- 统一补齐结尾反斜杠：GameRoot 不带 \ 时，$(GameRoot)BepInEx\... 会拼成 "ZED ZONEBepInEx" -->
+  <PropertyGroup Condition="'$(GameRoot)' != ''">
+    <GameRoot>$([MSBuild]::EnsureTrailingSlash('$(GameRoot)'))</GameRoot>
+  </PropertyGroup>
+
+</Project>

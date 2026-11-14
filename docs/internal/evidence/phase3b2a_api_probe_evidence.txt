@@ -1,0 +1,27 @@
+Phase 3B-2A 恢复接口只读校验证据
+采集: 2026-11-13 00:21:21
+游戏: 1.0.16 / build 26600653
+说明: 全部为只读调用（ReadWoundInput / GetRecoveryBuffId / IsBodyPartWounded），未调用任何恢复或写入接口。
+
+[Info   :ZED ZONE Ultimate Assistant] [limbapi] ===== 只读校验（不写任何数据、不调用任何恢复接口）=====
+[limbapi] scene=Gaming ptr=0x1D68F06B000
+[limbapi] humanBodyPartCount=6 arrayLen=6
+[limbapi] ---- 数据侧真值 ----
+[limbapi]  data[0] id=0 textId=80 hp=108 max=108 hpFloat=1 wounded=0 bleeding=0 fully=1 IsBodyPartWounded=0 一致=yes
+[limbapi]  data[1] id=1 textId=81 hp=12.492 max=138 hpFloat=0.091 wounded=1 bleeding=0 fully=0 IsBodyPartWounded=0 一致=NO
+[limbapi]  data[2] id=2 textId=180 hp=101.062 max=118 hpFloat=0.856 wounded=1 bleeding=0 fully=0 IsBodyPartWounded=0 一致=NO
+[limbapi]  data[3] id=3 textId=181 hp=118 max=118 hpFloat=1 wounded=0 bleeding=0 fully=1 IsBodyPartWounded=0 一致=yes
+[limbapi]  data[4] id=4 textId=182 hp=54.914 max=128 hpFloat=0.429 wounded=1 bleeding=0 fully=0 IsBodyPartWounded=0 一致=NO
+[limbapi]  data[5] id=5 textId=183 hp=55.169 max=128 hpFloat=0.431 wounded=1 bleeding=0 fully=0 IsBodyPartWounded=0 一致=NO
+[limbapi] ---- ReadWoundInput(bodyPartId) 探测 ----
+[limbapi]  id=0 ReadWoundInput={hpFloat=1, bandaged=0} GetRecoveryBuffId=34
+[limbapi]  id=1 ReadWoundInput={hpFloat=0.091, bandaged=1} GetRecoveryBuffId=35
+[limbapi]  id=2 ReadWoundInput={hpFloat=0.856, bandaged=1} GetRecoveryBuffId=36
+[limbapi]  id=3 ReadWoundInput={hpFloat=1, bandaged=0} GetRecoveryBuffId=36
+[limbapi]  id=4 ReadWoundInput={hpFloat=0.429, bandaged=1} GetRecoveryBuffId=37
+[limbapi]  id=5 ReadWoundInput={hpFloat=0.431, bandaged=1} GetRecoveryBuffId=37
+[limbapi]  id=6 ReadWoundInput={hpFloat=-1, bandaged=0} GetRecoveryBuffId=37
+[limbapi]  id=7 ReadWoundInput={hpFloat=-1, bandaged=0} GetRecoveryBuffId=37
+[limbapi]  id=8 ReadWoundInput={hpFloat=-1, bandaged=0} GetRecoveryBuffId=37
+[limbapi]  id=9 ReadWoundInput={hpFloat=-1, bandaged=0} GetRecoveryBuffId=37
+[limbapi] ===== 结束（以上全部为只读调用）=====

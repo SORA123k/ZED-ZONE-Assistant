@@ -1,0 +1,16 @@
+Phase 3A 疲劳方向观测统计
+采集: 2026-11-12 23:02:14  游戏: 1.0.16  来源: BepInEx\LogOutput.log 的 [fatigue] 行
+说明: 由只读探针自动采集，未经人工修改。
+
+解析样本总数: 297
+全样本                  n=297  avg_dF= -0.041  avg_dE=  -0.000  dF_min=-2.73 dF_max=0.00
+冲刺(sprint=1)         n= 37  avg_dF= -0.014  avg_dE=  -1.361  dF_min=-0.03 dF_max=0.00
+非冲刺                  n=260  avg_dF= -0.045  avg_dE=   0.193  dF_min=-2.73 dF_max=0.00
+静止(moving=0)         n=229  avg_dF= -0.047  avg_dE=   0.180  dF_min=-2.73 dF_max=0.00
+移动(moving=1)         n= 68  avg_dF= -0.020  avg_dE=  -0.607  dF_min=-0.28 dF_max=0.00
+
+fatigue 区间: [65.77, 77.75]
+energy  区间: [87.51, 180.00]
+
+判读: dF 最大值 = 0.00 -> 全程 fatigue 从未上升 -> '越高越糟(疲劳累积)' 假说被否定。
+

@@ -1,8 +1,8 @@
+# ---- 构建产物 ----
 bin/
 obj/
 [Bb]in/
 [Oo]bj/
-research/decompiled/
 .vs/
 .idea/
 *.user
@@ -10,11 +10,14 @@ research/decompiled/
 Thumbs.db
 desktop.ini
 
-# 原生分析大文件（可重新生成，不入库）
-Diagnostics/NativeAnalysis/*.copy
-Diagnostics/NativeAnalysis/ghidraproj/
-
-# 运行时诊断日志（每次游戏自动生成）
-Diagnostics/*.log
+# ---- 本地逆向 / 运行时取证（体积大、含游戏原始文件，绝不入库）----
+# research/ 下是本机的反编译结果、探针 txt、游戏截图等，
+# 只是为了方便本地复现，没有任何一项需要进仓库。
+research/
+Diagnostics/NativeAnalysis/
 Diagnostics/backup/
-Diagnostics/NativeAnalysis/*.txt
+Diagnostics/*.log
+Diagnostics/*.txt
+
+# ---- 运行时日志 ----
+*.log

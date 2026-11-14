@@ -1,0 +1,44 @@
+Phase 3B-0.1 实机证据摘录
+采集: 2026-11-12 23:46:52
+游戏: 1.0.16 / build 26600653
+来源: BepInEx\LogOutput.log（只读摘录）
+
+[Info   :ZED ZONE Ultimate Assistant] [growth] INIT t=23:42:38 scene=Loading player=null
+[Info   :ZED ZONE Ultimate Assistant] [state] 玩家引用=0x2A05F8D9000 场景='Gaming' 经由=GameController.instance.playerCharacter
+[Info   :ZED ZONE Ultimate Assistant] [limb] ===== 肢体枚举 (重新枚举) =====
+[limb] scene=Gaming ptr=0x2A05F8D9000 isPlayer=1
+[limb] humanBodyPartCount=6 arrayLen=6 textIdAryLen=6 defaultHPAryLen=6 appliedBodyPartConstitution=16
+[limb] idx | bodyPartId | textId | name | hp | maxHP | defaultHP | wounded | bleeding | recovered | hpFloat
+[limb] 0 | 0 | 80 | 头部 | 84 | 84 | 20 | 0 | 0 | 1 | 1
+[limb] 1 | 1 | 81 | 躯干 | 114 | 114 | 50 | 0 | 0 | 1 | 1
+[limb] 2 | 2 | 180 | 左臂 | 94 | 94 | 30 | 0 | 0 | 1 | 1
+[limb] 3 | 3 | 181 | 右臂 | 94 | 94 | 30 | 0 | 0 | 1 | 1
+[limb] 4 | 4 | 182 | 左腿 | 104 | 104 | 40 | 0 | 0 | 1 | 1
+[limb] 5 | 5 | 183 | 右腿 | 104 | 104 | 40 | 0 | 0 | 1 | 1
+[limb] ===== 枚举结束（6 个肢体）=====
+[limb] humanBodyPartTextIdAry = [80, 81, 180, 181, 182, 183]  -> names = [头部, 躯干, 左臂, 右臂, 左腿, 右腿]
+[limb] humanBodyPartDefaultHPAry = [20, 50, 30, 30, 40, 40]
+[limb] 视觉组件数量=11（GetBodyPartByIndex 遍历）
+[limb]   visual[0] bodypartDataID=1 nameTextId=81 name=躯干 clothing=1
+[limb]   visual[1] bodypartDataID=4 nameTextId=182 name=左腿 clothing=1
+[limb]   visual[2] bodypartDataID=4 nameTextId=182 name=左腿 clothing=1
+[limb]   visual[3] bodypartDataID=5 nameTextId=182 name=左腿 clothing=1
+[limb]   visual[4] bodypartDataID=5 nameTextId=182 name=左腿 clothing=1
+[limb]   visual[5] bodypartDataID=0 nameTextId=80 name=头部 clothing=1
+[limb]   visual[6] bodypartDataID=0 nameTextId=80 name=头部 clothing=1
+[limb]   visual[7] bodypartDataID=2 nameTextId=180 name=左臂 clothing=1
+[limb]   visual[8] bodypartDataID=2 nameTextId=180 name=左臂 clothing=1
+[limb]   visual[9] bodypartDataID=3 nameTextId=181 name=右臂 clothing=1
+[limb]   visual[10] bodypartDataID=3 nameTextId=181 name=右臂 clothing=1
+[Info   :ZED ZONE Ultimate Assistant] [growth] CHANGE t=23:42:48 scene=Gaming level=N/A coopLevel=0 conGained=2 conExp=204.52 hp=1520.35 maxhp=1680 maxHPfield=1000 FullHP=1000 appliedMaxHPConstitution=16 skillProperty_MaxHPFloat=1 appliedMaxHPSkillFloat=1 maxHPBalanceFloat=1 appliedMaxHPBalanceFloat=0 skillProperty_StaminaFloat=0 maxEnergy=156 maxHunger=112 maxThirst=112 maxFatigue=100
+[Info   :ZED ZONE Ultimate Assistant] [growth] CHANGE t=23:42:58 scene=Gaming level=N/A coopLevel=0 conGained=2 conExp=204.52 hp=1520.38 maxhp=1680 maxHPfield=1000 FullHP=1000 appliedMaxHPConstitution=16 skillProperty_MaxHPFloat=1 appliedMaxHPSkillFloat=1 maxHPBalanceFloat=1 appliedMaxHPBalanceFloat=0 skillProperty_StaminaFloat=0 maxEnergy=156 maxHunger=112 maxThirst=112 maxFatigue=100
+[Info   :ZED ZONE Ultimate Assistant] [growth] heartbeat t=23:43:08 scene=Gaming level=N/A coopLevel=0 conGained=2 conExp=204.52 hp=1520.38 maxhp=1680 maxHPfield=1000 FullHP=1000 appliedMaxHPConstitution=16 skillProperty_MaxHPFloat=1 appliedMaxHPSkillFloat=1 maxHPBalanceFloat=1 appliedMaxHPBalanceFloat=0 skillProperty_StaminaFloat=0 maxEnergy=156 maxHunger=112 maxThirst=112 maxFatigue=100
+[Info   :ZED ZONE Ultimate Assistant] [limb] heartbeat scene=Gaming samples=54 changes=0 | 头部=84/84; 躯干=114/114; 左臂=94/94; 右臂=94/94; 左腿=104/104; 右腿=104/104
+[Info   :ZED ZONE Ultimate Assistant] [growth] heartbeat t=23:43:18 scene=Gaming level=N/A coopLevel=0 conGained=2 conExp=204.52 hp=1520.38 maxhp=1680 maxHPfield=1000 FullHP=1000 appliedMaxHPConstitution=16 skillProperty_MaxHPFloat=1 appliedMaxHPSkillFloat=1 maxHPBalanceFloat=1 appliedMaxHPBalanceFloat=0 skillProperty_StaminaFloat=0 maxEnergy=156 maxHunger=112 maxThirst=112 maxFatigue=100
+[Info   :ZED ZONE Ultimate Assistant] [growth] heartbeat t=23:43:28 scene=Gaming level=N/A coopLevel=0 conGained=2 conExp=204.52 hp=1520.38 maxhp=1680 maxHPfield=1000 FullHP=1000 appliedMaxHPConstitution=16 skillProperty_MaxHPFloat=1 appliedMaxHPSkillFloat=1 maxHPBalanceFloat=1 appliedMaxHPBalanceFloat=0 skillProperty_StaminaFloat=0 maxEnergy=156 maxHunger=112 maxThirst=112 maxFatigue=100
+[Info   :ZED ZONE Ultimate Assistant] [growth] CHANGE t=23:43:38 scene=Gaming level=N/A coopLevel=0 conGained=2 conExp=204.52 hp=1520.46 maxhp=1680 maxHPfield=1000 FullHP=1000 appliedMaxHPConstitution=16 skillProperty_MaxHPFloat=1 appliedMaxHPSkillFloat=1 maxHPBalanceFloat=1 appliedMaxHPBalanceFloat=0 skillProperty_StaminaFloat=0 maxEnergy=156 maxHunger=112 maxThirst=112 maxFatigue=100
+[Info   :ZED ZONE Ultimate Assistant] [limb] heartbeat scene=Gaming samples=110 changes=0 | 头部=84/84; 躯干=114/114; 左臂=94/94; 右臂=94/94; 左腿=104/104; 右腿=104/104
+[Info   :ZED ZONE Ultimate Assistant] [growth] CHANGE t=23:43:48 scene=Gaming level=N/A coopLevel=0 conGained=2 conExp=204.52 hp=1680 maxhp=1680 maxHPfield=1000 FullHP=1000 appliedMaxHPConstitution=16 skillProperty_MaxHPFloat=1 appliedMaxHPSkillFloat=1 maxHPBalanceFloat=1 appliedMaxHPBalanceFloat=0 skillProperty_StaminaFloat=0 maxEnergy=156 maxHunger=112 maxThirst=112 maxFatigue=100
+[Info   :ZED ZONE Ultimate Assistant] [state] 玩家对象消失（场景=Loading）：GameController.playerCharacter == null（尚未生成/已销毁）
+[Info   :ZED ZONE Ultimate Assistant] [limb] 玩家对象消失（场景=Loading），等待重新出现。
+[Info   :ZED ZONE Ultimate Assistant] [growth] CHANGE t=23:43:58 scene=MainMenu player=null

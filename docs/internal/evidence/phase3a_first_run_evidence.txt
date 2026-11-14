@@ -1,0 +1,59 @@
+Phase 3A 首次实机运行证据（用户手动测试）
+采集时间: 2026-11-12 22:43:24
+游戏版本: 1.0.16
+来源: BepInEx\LogOutput.log
+说明: 本文件是从真实游戏运行日志中提取的只读摘录，未做任何修改。
+[Info   :ZED ZONE Ultimate Assistant] [state] 玩家引用=0x246425C2000 场景='Gaming' 经由=GameController.instance.playerCharacter
+[Info   :ZED ZONE Ultimate Assistant] [vitals] 场景=Gaming hp=1840/1000 bloodVolume=5000/5000 bodyTemperature=36.62 radiationDose=0 hunger=111.77/116 thirst=107.53/116 stamina=147.33/168 energy=147.33/168 fatigue=91.22/100 sanity=0 casEnergy=0 deadFlag=0 netDeadFlag=0 isPlayer=1 buffCount=0 失败项=0
+[Info   :ZED ZONE Ultimate Assistant] [write] stat=Thirst before=107.47 target=116 after=116
+[Info   :ZED ZONE Ultimate Assistant] [ui] 恢复按钮 Thirst -> Ok before=107.47 target=116 after=116
+[Info   :ZED ZONE Ultimate Assistant] [write] stat=Hunger before=111.67 target=116 after=116
+[Info   :ZED ZONE Ultimate Assistant] [ui] 恢复按钮 Hunger -> Ok before=111.67 target=116 after=116
+[Info   :ZED ZONE Ultimate Assistant] [write] stat=Energy before=156.47 target=168 after=168
+[Info   :ZED ZONE Ultimate Assistant] [ui] 恢复按钮 Energy -> Ok before=156.47 target=168 after=168
+[Info   :ZED ZONE Ultimate Assistant] [vitals] 场景=Gaming hp=1840/1000 bloodVolume=5000/5000 bodyTemperature=36.62 radiationDose=0 hunger=115.9/116 thirst=115.67/116 stamina=168/168 energy=168/168 fatigue=90.31/100 sanity=0 casEnergy=0 deadFlag=0 netDeadFlag=0 isPlayer=1 buffCount=0 失败项=0
+[Info   :ZED ZONE Ultimate Assistant] [write] stat=Hp before=1840 target=1000 after=1000
+[Info   :ZED ZONE Ultimate Assistant] [ui] 恢复按钮 Hp -> Ok before=1840 target=1000 after=1000
+[Warning:ZED ZONE Ultimate Assistant] [write.reject] stat=Hp reason=SkippedNoChange detail=当前已接近目标（1000/1000）
+[Info   :ZED ZONE Ultimate Assistant] [ui] 恢复按钮 Hp -> SkippedNoChange 当前已接近目标（1000/1000）
+[Info   :ZED ZONE Ultimate Assistant] [write] stat=Hp before=1160.04 target=1000 after=1000
+[Info   :ZED ZONE Ultimate Assistant] [ui] 恢复按钮 Hp -> Ok before=1160.04 target=1000 after=1000
+[Info   :ZED ZONE Ultimate Assistant] [ui] 恢复按钮 Hp -> SkippedNoChange 当前已接近目标（1000/1000）
+[Info   :ZED ZONE Ultimate Assistant] [ui] 恢复按钮 Hp -> SkippedNoChange 当前已接近目标（1000/1000）
+[Info   :ZED ZONE Ultimate Assistant] [ui] 恢复按钮 Hp -> SkippedNoChange 当前已接近目标（1000/1000）
+[Info   :ZED ZONE Ultimate Assistant] [ui] 恢复按钮 Hp -> SkippedNoChange 当前已接近目标（1000/1000）
+[Info   :ZED ZONE Ultimate Assistant] [ui] 恢复按钮 Hp -> SkippedNoChange 当前已接近目标（1000.01/1000）
+[Info   :ZED ZONE Ultimate Assistant] [ui] 恢复按钮 Hp -> SkippedNoChange 当前已接近目标（1000.01/1000）
+[Info   :ZED ZONE Ultimate Assistant] [ui] 恢复按钮 Hp -> SkippedNoChange 当前已接近目标（1000.01/1000）
+[Info   :ZED ZONE Ultimate Assistant] [ui] 恢复按钮 Hp -> SkippedNoChange 当前已接近目标（1000.01/1000）
+[Info   :ZED ZONE Ultimate Assistant] [ui] 恢复按钮 Hp -> SkippedNoChange 当前已接近目标（1000.01/1000）
+[Info   :ZED ZONE Ultimate Assistant] [ui] 恢复按钮 Hp -> SkippedNoChange 当前已接近目标（1000.01/1000）
+[Info   :ZED ZONE Ultimate Assistant] [ui] 恢复按钮 Hp -> SkippedNoChange 当前已接近目标（1000.03/1000）
+[Info   :ZED ZONE Ultimate Assistant] [ui] 恢复按钮 Hp -> SkippedNoChange 当前已接近目标（1000.03/1000）
+[Info   :ZED ZONE Ultimate Assistant] [ui] 恢复按钮 Hp -> SkippedNoChange 当前已接近目标（1000.03/1000）
+[Info   :ZED ZONE Ultimate Assistant] [ui] 恢复按钮 Hp -> SkippedNoChange 当前已接近目标（1000.03/1000）
+[Info   :ZED ZONE Ultimate Assistant] [vitals] 场景=Gaming hp=1000.08/1000 bloodVolume=5000/5000 bodyTemperature=36.62 radiationDose=0 hunger=115.57/120 thirst=115/120 stamina=178.25/180 energy=178.25/180 fatigue=88.53/100 sanity=0 casEnergy=0 deadFlag=0 netDeadFlag=0 isPlayer=1 buffCount=0 失败项=0
+[Info   :ZED ZONE Ultimate Assistant] [write] stat=Hp before=1000.08 target=1000 after=1000
+[Info   :ZED ZONE Ultimate Assistant] [ui] 恢复按钮 Hp -> Ok before=1000.08 target=1000 after=1000
+[Info   :ZED ZONE Ultimate Assistant] [ui] 恢复按钮 Hp -> SkippedNoChange 当前已接近目标（1000/1000）
+[Info   :ZED ZONE Ultimate Assistant] [ui] 恢复按钮 Hp -> SkippedNoChange 当前已接近目标（1000.01/1000）
+[Info   :ZED ZONE Ultimate Assistant] [ui] 恢复按钮 Hp -> SkippedNoChange 当前已接近目标（1000.01/1000）
+[Info   :ZED ZONE Ultimate Assistant] [ui] 恢复按钮 Hp -> SkippedNoChange 当前已接近目标（1000.01/1000）
+[Info   :ZED ZONE Ultimate Assistant] [write] stat=Hp before=1000.05 target=1000 after=1000
+[Info   :ZED ZONE Ultimate Assistant] [ui] 恢复按钮 Hp -> Ok before=1000.05 target=1000 after=1000
+[Info   :ZED ZONE Ultimate Assistant] [ui] 恢复按钮 Hp -> SkippedNoChange 当前已接近目标（1000/1000）
+[Info   :ZED ZONE Ultimate Assistant] [ui] 恢复按钮 Hp -> SkippedNoChange 当前已接近目标（1000.01/1000）
+[Info   :ZED ZONE Ultimate Assistant] [write] stat=Energy before=177.41 target=180 after=180
+[Info   :ZED ZONE Ultimate Assistant] [ui] 恢复按钮 Energy -> Ok before=177.41 target=180 after=180
+[Info   :ZED ZONE Ultimate Assistant] [write] stat=Hunger before=115.3 target=120 after=120
+[Info   :ZED ZONE Ultimate Assistant] [ui] 恢复按钮 Hunger -> Ok before=115.3 target=120 after=120
+[Info   :ZED ZONE Ultimate Assistant] [write] stat=Thirst before=114.4 target=120 after=120
+[Info   :ZED ZONE Ultimate Assistant] [ui] 恢复按钮 Thirst -> Ok before=114.4 target=120 after=120
+[Info   :ZED ZONE Ultimate Assistant] [vitals] 场景=Gaming hp=1000.08/1000 bloodVolume=5000/5000 bodyTemperature=36.62 radiationDose=0 hunger=119.93/120 thirst=119.93/120 stamina=176/180 energy=176/180 fatigue=86.5/100 sanity=0 casEnergy=0 deadFlag=0 netDeadFlag=0 isPlayer=1 buffCount=0 失败项=0
+[Info   :ZED ZONE Ultimate Assistant] [write] stat=Hp before=1000.08 target=1000 after=1000
+[Info   :ZED ZONE Ultimate Assistant] [ui] 恢复按钮 Hp -> Ok before=1000.08 target=1000 after=1000
+[Info   :ZED ZONE Ultimate Assistant] [write] stat=Energy before=173.27 target=180 after=180
+[Info   :ZED ZONE Ultimate Assistant] [ui] 恢复按钮 Energy -> Ok before=173.27 target=180 after=180
+[Info   :ZED ZONE Ultimate Assistant] [ui] 恢复按钮 Hp -> SkippedNoChange 当前已接近目标（1000.03/1000）
+[Info   :ZED ZONE Ultimate Assistant] [vitals] 场景=Gaming hp=1000.13/1000 bloodVolume=5000/5000 bodyTemperature=36.62 radiationDose=0 hunger=119.6/120 thirst=119.27/120 stamina=180/180 energy=180/180 fatigue=85.47/100 sanity=0 casEnergy=0 deadFlag=0 netDeadFlag=0 isPlayer=1 buffCount=0 失败项=0
+[Info   :ZED ZONE Ultimate Assistant] [state] 玩家对象消失（场景=Loading）：GameController.playerCharacter == null（尚未生成/已销毁）

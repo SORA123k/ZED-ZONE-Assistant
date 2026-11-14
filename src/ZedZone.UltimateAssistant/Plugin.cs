@@ -27,7 +27,7 @@ namespace ZedZone.UltimateAssistant
     {
         public const string PluginGuid = "zedzone.ultimateassistant";
         public const string PluginName = "ZED ZONE Ultimate Assistant";
-        public const string PluginVersion = "1.0.0";
+        public const string PluginVersion = "1.0.1";
 
         internal static Plugin Instance;
         internal static ModuleRegistry Registry;
@@ -40,11 +40,12 @@ namespace ZedZone.UltimateAssistant
             Instance = this;
             CoreLog.Init(Log);   // Log 这里是 BasePlugin.Log（ManualLogSource）
 
-            CoreLog.Info($"{PluginName} v{PluginVersion} loading (Final v1.0.0 = ClickGUI)");
+            CoreLog.Info($"{PluginName} v{PluginVersion} loading");
 
             string gameVer = "unknown";
             try { gameVer = Application.version; } catch { }
             CoreLog.Info($"detected game version: {gameVer}");
+            CheckGameVersion(gameVer);
 
             // ---- 配置 ----
             ModConfig.Bind(Config);
@@ -77,7 +78,7 @@ namespace ZedZone.UltimateAssistant
             try { DurabilityDiag.Init(); } catch (Exception e) { CoreLog.Warn("耐久诊断初始化失败: " + e.GetType().Name); }
             try { Il2CppMetaDiag.Init(); } catch (Exception e) { CoreLog.Warn("元数据探查初始化失败: " + e.GetType().Name); }
 
-            // ---- 补丁（Phase 2 必须为 0） ----
+            // ---- 补丁（初始为 0，功能开启后按需安装） ----
             int patches = PatchManager.InstallAll(PluginGuid);
 
             // ---- GUI ----
@@ -94,7 +95,7 @@ namespace ZedZone.UltimateAssistant
             }
 
             // ---- 自查 ----
-            CoreLog.Info("=== 自查（最终版 v1.0.0） ===");
+            CoreLog.Info("=== 自查 v" + PluginVersion + " ===");
             CoreLog.Info("  阶段              : 最终版（ClickGUI + 状态恢复 + 弹药/ESP）");
             CoreLog.Info("  写入路径          : 唯一入口 PlayerWriteGate（只写属性 setter）");
             CoreLog.Info("  只读功能          : 保留（7 个读取模块）");
@@ -113,6 +114,26 @@ namespace ZedZone.UltimateAssistant
             CoreLog.Info("====================");
         }
 
+        /// <summary>本项目适配并实机验证过的游戏版本（见 docs/COMPATIBILITY.md）。</summary>
+        internal const string TestedGameVersion = "1.0.17";
+
+        /// <summary>
+        /// 游戏版本兼容性提示（只提示，不阻断）。
+        /// 原因：interop 方法签名在游戏大版本更新后可能变化，补丁会失效或行为异常，
+        /// 但对版本"硬拦截"会让用户在补丁仍可用时也用不了，故这里只给出明确告警。
+        /// </summary>
+        private static void CheckGameVersion(string gameVer)
+        {
+            if (string.IsNullOrEmpty(gameVer) || gameVer == "unknown") return;
+            if (gameVer == TestedGameVersion) return;
+
+            CoreLog.Warn("==============================================================");
+            CoreLog.Warn($" 游戏版本不匹配：本模组适配 {TestedGameVersion}，当前 {gameVer}");
+            CoreLog.Warn(" 可能出现：功能无效 / 开关无效 / 报错。请先看 docs/COMPATIBILITY.md");
+            CoreLog.Warn(" （记录适配步骤），并到仓库提交 Issue 附 BepInEx/LogOutput.log");
+            CoreLog.Warn("==============================================================");
+        }
+
         private static string SafeKeyName()
         {
             try { return ModConfig.ToggleKey.Value.MainKey.ToString(); }
@@ -129,6 +150,8 @@ namespace ZedZone.UltimateAssistant
 
         public override bool Unload()
         {
+            // 顺序：先让功能层卸载自己装的补丁 / 还原运行时改动，再清 PatchManager。
+            try { Features.Shutdown(); } catch { }
             try { PatchManager.UninstallAll(); } catch { }
             CoreLog.Info("unloaded");
             return true;
