@@ -19,7 +19,7 @@
 - **菜单里有 5 处文案显示成原始 key**：`menu_keys` / `bind` / `clear` / `press_key` / `not_bound`
   在 `UI/Localization.cs` 里缺失（`L.T()` 找不到就返回 key 本身），已补齐三语。
 - **归档文档脱敏**：`docs/internal/`、`docs/reference/` 里 28 处本机绝对路径
-  （`<apps>\...`、`<用户目录>`）替换为 `<游戏目录>` / `<dotnet>` 等占位符。
+  （作者本机绝对路径）替换为 `<游戏目录>` / `<dotnet>` 等占位符。
 
 ---
 
@@ -46,7 +46,7 @@
 - **版本号三处不一致**：csproj 里的 `<Version>` 一直是 `0.2.0`，导致发出去的 DLL
   程序集版本是 `0.2.0.0`。版本号改为由 `Directory.Build.props` 单点定义，
   发版脚本同时更新它和 `Plugin.cs`，CI 校验一致性。
-- **构建不可移植**：csproj 与 `tools/build.ps1` 写死了 `<apps>\...` 本机路径，
+- **构建不可移植**：csproj 与 `tools/build.ps1` 写死了作者本机的绝对路径，
   别人 clone 后必然失败。现在支持 `ZEDZONE_GAME_ROOT` 环境变量 / `-p:GameRoot=`，
   构建脚本会自动扫描 Steam 库目录；缺 interop 时给出可读报错。
 - **删除死代码**：`UI/PanelRenderer.cs`（27KB，Phase 2 只读面板）已无任何调用方，移除；
@@ -74,7 +74,7 @@
 
 - README / README_EN 的 fail-closed 描述改为与实际代码一致（逐项列出被禁用的功能）。
 - `DEVELOPMENT.md` 的测试命令 `dotnet test` 改为 `dotnet run`（测试工程是控制台断言器）。
-- 移除 README 里"GameRoot 默认 <apps>\..."的说明，改为两种显式指定方式。
+- 移除 README 里"GameRoot 默认指向作者机器"的说明，改为两种显式指定方式。
 - 仓库不再包含运行日志、备份 DLL、游戏截图（`.gitignore` 覆盖 `research/`、`Diagnostics/`）。
 
 ### 已知限制

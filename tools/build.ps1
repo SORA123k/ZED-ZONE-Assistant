@@ -84,14 +84,14 @@ if ((Get-Process ZEDZONE -ErrorAction SilentlyContinue) -and -not $SkipInstall) 
     throw "ZED ZONE 正在运行，DLL 被占用。请先关闭游戏。"
 }
 
+# 只用环境变量 DOTNET_ROOT 或 PATH 里的 dotnet，不猜任何本机路径
 $dotnet = "dotnet"
 if ($env:DOTNET_ROOT) {
     $candidate = Join-Path $env:DOTNET_ROOT "dotnet.exe"
     if (Test-Path $candidate) { $dotnet = $candidate }
-} elseif (Test-Path "<dotnet>\dotnet.exe") {
-    # 本仓库作者的机器布局；其他机器走 PATH
-    $candidate = "<dotnet>\dotnet.exe"
-    if (Test-Path $candidate) { $dotnet = $candidate }
+}
+if (-not (Get-Command $dotnet -ErrorAction SilentlyContinue) -and -not (Test-Path $dotnet)) {
+    throw "找不到 dotnet。请把 .NET SDK 6+ 加到 PATH，或设置 DOTNET_ROOT。"
 }
 
 Write-Host "==> building" -ForegroundColor Cyan
