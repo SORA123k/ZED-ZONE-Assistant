@@ -345,6 +345,7 @@ docs/                       文档地图见 docs/README.md
 欢迎一起维护本项目（代码 / 翻译 / 文档 / 测试反馈都算）。
 
 - 文档地图：[docs/README.md](docs/README.md)（先看这个，别在 40 多篇旧报告里迷路）
+- English docs: [GUIDE_EN.md](GUIDE_EN.md) ｜ [INSTALL_EN.md](INSTALL_EN.md) ｜ [DEVELOPMENT_EN.md](DEVELOPMENT_EN.md) ｜ [CONTRIBUTING_EN.md](CONTRIBUTING_EN.md)
 - 开发说明：[DEVELOPMENT.md](DEVELOPMENT.md)（架构、补丁规范、新增功能检查清单）
 - 贡献流程：[CONTRIBUTING.md](CONTRIBUTING.md)（分支、PR 检查清单、**如何获得维护者权限**）
 - AI 助手规则：[AGENTS.md](AGENTS.md)（用 AI 改代码前必读的硬约束）

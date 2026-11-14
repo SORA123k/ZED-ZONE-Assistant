@@ -98,6 +98,11 @@ namespace ZedZone.UltimateAssistant.UI
             ["sec_controls"] = new[]{ "控制", "CONTROLS", "控制" },
             ["hotkey"]       = new[]{ "菜单快捷键", "Menu hotkey", "選單快捷鍵" },
             ["hotkey_hint"]  = new[]{ "在配置文件 [UI] ToggleKey 修改", "Change [UI] ToggleKey in the config file", "在設定檔 [UI] ToggleKey 修改" },
+            ["menu_keys"]    = new[]{ "菜单按键", "Menu keys", "選單按鍵" },
+            ["bind"]         = new[]{ "绑定", "Bind", "綁定" },
+            ["clear"]        = new[]{ "清除", "Clear", "清除" },
+            ["press_key"]    = new[]{ "按键…", "Press key…", "按鍵…" },
+            ["not_bound"]    = new[]{ "未绑定", "Not bound", "未綁定" },
             ["footer_hint"]  = new[]{ "全部功能仅作用于本地玩家；联机自动禁用", "All features affect the local player only; disabled online", "全部功能僅作用於本地玩家；連線時自動停用" },
 
             // ---- 状态 ----

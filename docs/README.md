@@ -6,17 +6,17 @@
 
 | 文档 | 内容 |
 |---|---|
-| [README.md](../README.md) | 功能一览、环境要求、安装、配置文件、已知限制 |
-| [GUIDE.md](../GUIDE.md) | 新手教程：从零装到能用，含报错排查 |
-| [INSTALL.md](../INSTALL.md) | 安装细节：创意工坊加载器 / 手动 BepInEx 两条路 |
+| [README.md](../README.md) / [README_EN.md](../README_EN.md) | 功能一览、环境要求、安装、配置文件、已知限制 |
+| [GUIDE.md](../GUIDE.md) / [GUIDE_EN.md](../GUIDE_EN.md) | 新手教程：从零装到能用，含报错排查 |
+| [INSTALL.md](../INSTALL.md) / [INSTALL_EN.md](../INSTALL_EN.md) | 安装细节：创意工坊加载器 / 手动 BepInEx 两条路 |
 | [CHANGELOG.md](../CHANGELOG.md) | 每个版本改了什么 |
 
 ## 面向开发者（怎么改、怎么发）
 
 | 文档 | 内容 |
 |---|---|
-| [DEVELOPMENT.md](../DEVELOPMENT.md) | 架构、构建、补丁规范、新增功能检查清单 |
-| [CONTRIBUTING.md](../CONTRIBUTING.md) | 分支 / PR 流程、代码风格、获得维护权限 |
+| [DEVELOPMENT.md](../DEVELOPMENT.md) / [DEVELOPMENT_EN.md](../DEVELOPMENT_EN.md) | 架构、构建、补丁规范、新增功能检查清单 |
+| [CONTRIBUTING.md](../CONTRIBUTING.md) / [CONTRIBUTING_EN.md](../CONTRIBUTING_EN.md) | 分支 / PR 流程、代码风格、获得维护权限 |
 | [AGENTS.md](../AGENTS.md) | AI 编码助手的项目规则（本项目的硬约束） |
 | [CONFIG.md](CONFIG.md) | **全部配置项**（69 项，按 section 列出默认值/范围/说明） |
 | [COMPATIBILITY.md](COMPATIBILITY.md) | 游戏版本适配矩阵 + 游戏更新后的重新适配步骤 |

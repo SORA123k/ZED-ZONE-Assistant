@@ -3,7 +3,7 @@
 面向想继续开发本项目的开发者。项目基于 **BepInEx 6（IL2CPP）+ HarmonyX + Il2CppInterop**。
 
 > 用 AI 助手改代码前，先读 [AGENTS.md](AGENTS.md)（里面是会被打回的硬约束）。
-> 文档地图见 [docs/README.md](docs/README.md)。
+> 文档地图见 [docs/README.md](docs/README.md)。英文版：[DEVELOPMENT_EN.md](DEVELOPMENT_EN.md)。
 
 ---
 

@@ -139,7 +139,7 @@ Check `<Game>\BepInEx\LogOutput.log` for:
 
 `patches = 0` is expected: patches are only applied while their feature is enabled.
 
-Detailed guides are Chinese-only for now: [INSTALL.md](INSTALL.md), [GUIDE.md](GUIDE.md) (beginner walkthrough).
+Detailed guides: [INSTALL_EN.md](INSTALL_EN.md) and [GUIDE_EN.md](GUIDE_EN.md) (beginner walkthrough). Chinese versions: [INSTALL.md](INSTALL.md), [GUIDE.md](GUIDE.md).
 
 ---
 
@@ -262,8 +262,8 @@ PRs that fix these AI-left pitfalls are equally welcome.
 Contributions are welcome — code, translations, docs, bug reports.
 
 - Documentation map: [docs/README.md](docs/README.md) (read this first)
-- Architecture, patch conventions, new-feature checklist: [DEVELOPMENT.md](DEVELOPMENT.md) (Chinese)
-- Workflow, code style, PR checklist: [CONTRIBUTING.md](CONTRIBUTING.md) (Chinese)
+- Architecture, patch conventions, new-feature checklist: [DEVELOPMENT_EN.md](DEVELOPMENT_EN.md) (Chinese: [DEVELOPMENT.md](DEVELOPMENT.md))
+- Workflow, code style, PR checklist: [CONTRIBUTING_EN.md](CONTRIBUTING_EN.md) (Chinese: [CONTRIBUTING.md](CONTRIBUTING.md))
 - Rules for AI coding assistants: [AGENTS.md](AGENTS.md)
 - Config reference: [docs/CONFIG.md](docs/CONFIG.md) · Game compatibility: [docs/COMPATIBILITY.md](docs/COMPATIBILITY.md)
 - Security issues: [SECURITY.md](SECURITY.md)

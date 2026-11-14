@@ -5,6 +5,24 @@
 
 ---
 
+## 未发布（main 分支）
+
+### 新增
+
+- **英文文档**：`GUIDE_EN.md` / `INSTALL_EN.md` / `DEVELOPMENT_EN.md` / `CONTRIBUTING_EN.md`，
+  README_EN 与 docs/README 已互相链接（中文文档保持不变）。
+- **CI 增加「UI 文案一致性」检查**：`tools/ci/check_localization.py` 校验本地化表每条有 3 种语言、
+  非空，且 UI 引用的 key 都存在。
+
+### 修复
+
+- **菜单里有 5 处文案显示成原始 key**：`menu_keys` / `bind` / `clear` / `press_key` / `not_bound`
+  在 `UI/Localization.cs` 里缺失（`L.T()` 找不到就返回 key 本身），已补齐三语。
+- **归档文档脱敏**：`docs/internal/`、`docs/reference/` 里 28 处本机绝对路径
+  （`<apps>\...`、`<用户目录>`）替换为 `<游戏目录>` / `<dotnet>` 等占位符。
+
+---
+
 ## v1.0.1 — 2026-11-15（工程质量修复版）
 
 本次发布**不新增玩法**，只修工程与安全问题，并把文档补齐。
