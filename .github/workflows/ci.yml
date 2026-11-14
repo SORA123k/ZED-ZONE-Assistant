@@ -14,8 +14,8 @@ jobs:
     name: 离线单元测试
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-dotnet@v5
         with:
           dotnet-version: '8.0.x'
       - name: 运行离线测试
@@ -26,7 +26,7 @@ jobs:
     name: 版本号一致性
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: 校验 Directory.Build.props / Plugin.cs / CHANGELOG
         run: bash tools/ci/check-version.sh
 
@@ -34,7 +34,7 @@ jobs:
     name: 文档链接检查
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: 校验 Markdown 相对链接
         run: python3 tools/ci/check_links.py
 
@@ -42,6 +42,6 @@ jobs:
     name: UI 文案一致性
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: 校验本地化表与引用
         run: python3 tools/ci/check_localization.py
