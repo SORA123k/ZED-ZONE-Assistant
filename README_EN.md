@@ -1,4 +1,4 @@
-# ZED ZONE Ultimate Assistant (SORA Assistant)
+# ZED ZONE Assistant (SORA Assistant)
 
 <p align="right"><a href="README.md">简体中文</a> | <b>English</b></p>
 
@@ -206,3 +206,4 @@ If you want to become a maintainer (write access), open an issue or contact the 
 ## License
 
 [MIT](LICENSE) © 2026 SORA123k
+

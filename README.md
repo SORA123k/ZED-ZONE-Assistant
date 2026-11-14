@@ -1,4 +1,4 @@
-# ZED ZONE Ultimate Assistant（SORA助手）
+# ZED ZONE Assistant（SORA助手）
 
 <p align="right"><b>简体中文</b> | <a href="README_EN.md">English</a></p>
 
@@ -324,4 +324,5 @@ tools/build.ps1             构建安装脚本
 ## 许可
 
 [MIT](LICENSE) © 2026 SORA123k
+
 
