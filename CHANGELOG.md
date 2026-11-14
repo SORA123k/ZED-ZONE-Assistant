@@ -16,7 +16,7 @@
   「不会扣血 / 体力 / 饱食 / 水分」「自动补充材料」「强制奔跑」「移动加速」
   「工具耐久」「枪械耐久」「取消过热」「不会卡壳」全部接入
   `Features.GateOnline`，并在进入联机会话（检测发生在启用之后）时由
-  `Features.EnforceOffline` **主动关闭**。拒绝启用时会把配置项写回 `false`，避免菜单显示失真。
+  `Features.EnforceOffline` **主动关闭**。拒绝启用时只关运行时开关、**不改写配置文件**（避免检测误判把用户偏好清掉），回到单机后自动按配置恢复。
 - **枪械耐久单独开启不生效**：`SetWeaponDurability` 之前没有调用 `Features.Apply()`，
   只开这一个功能时补丁不会被安装。已修正。
 - **卸载残留**：`Plugin.Unload` 现在先 `Features.Shutdown()`（卸载功能层补丁、还原全亮、

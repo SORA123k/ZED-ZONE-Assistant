@@ -49,16 +49,19 @@ namespace ZedZone.UltimateAssistant.Core
         /// <summary>
         /// 联机门禁（fail-closed）。
         /// 返回 true 表示"这次启用请求被拒绝"，调用方应把 on 改回 false。
-        /// 拒绝时同时把配置项写回 false，避免菜单/配置文件继续显示"已开启"。
+        ///
+        /// 刻意**不改写配置文件**：检测本身有极小概率误判（异常按联机处理），
+        /// 自动写配置会把用户的偏好永久清掉。这里只关运行时开关，
+        /// 回到单机后 SyncFromConfig 会按配置自动恢复。
         /// </summary>
-        private static bool GateOnline(string feature, BepInEx.Configuration.ConfigEntry<bool> cfg, bool want)
+        private static bool GateOnline(string feature, bool want)
         {
             if (!want) return false;
             if (!PlayerWriteGate.IsMultiplayer(out string why)) return false;
 
             Log.WarnOnce("gate.online." + feature,
-                "[features] " + feature + " 已拒绝启用：检测到联机状态（" + why + "），fail-closed。");
-            try { if (cfg != null && cfg.Value) cfg.Value = false; } catch { }
+                "[features] " + feature + " 已拒绝启用：检测到联机状态（" + why + "），fail-closed。" +
+                "（你的配置文件不会被改写，回到单机后自动恢复）");
             return true;
         }
 
@@ -148,7 +151,7 @@ namespace ZedZone.UltimateAssistant.Core
 
         internal static void SetInfiniteAmmo(bool on)
         {
-            if (GateOnline("InfiniteAmmo", ModConfig.InfiniteAmmo, on)) on = false;
+            if (GateOnline("InfiniteAmmo", on)) on = false;
             if (InfiniteAmmoOn == on) return;
             InfiniteAmmoOn = on;
             Apply();
@@ -157,7 +160,7 @@ namespace ZedZone.UltimateAssistant.Core
 
         internal static void SetNoReload(bool on)
         {
-            if (GateOnline("NoReload", ModConfig.NoReload, on)) on = false;
+            if (GateOnline("NoReload", on)) on = false;
             if (NoReloadOn == on) return;
             NoReloadOn = on;
             Apply();
@@ -171,7 +174,7 @@ namespace ZedZone.UltimateAssistant.Core
         /// </summary>
         internal static void SetWeaponDurability(bool on)
         {
-            if (GateOnline("WeaponDurability", ModConfig.WeaponDurability, on)) on = false;
+            if (GateOnline("WeaponDurability", on)) on = false;
             if (WeaponDurabilityOn == on) return;
             WeaponDurabilityOn = on;
             if (!on) DurabilityLock.Reset();
@@ -181,7 +184,7 @@ namespace ZedZone.UltimateAssistant.Core
 
         internal static void SetNoOverheat(bool on)
         {
-            if (GateOnline("NoOverheat", ModConfig.NoOverheat, on)) on = false;
+            if (GateOnline("NoOverheat", on)) on = false;
             if (NoOverheatOn == on) return;
             NoOverheatOn = on;
             Apply();
@@ -190,7 +193,7 @@ namespace ZedZone.UltimateAssistant.Core
 
         internal static void SetAlwaysSprint(bool on)
         {
-            if (GateOnline("AlwaysSprint", ModConfig.AlwaysSprint, on)) on = false;
+            if (GateOnline("AlwaysSprint", on)) on = false;
             if (AlwaysSprintOn == on) return;
             AlwaysSprintOn = on;
             Apply();
@@ -199,7 +202,7 @@ namespace ZedZone.UltimateAssistant.Core
 
         internal static void SetMoveSpeed(bool on)
         {
-            if (GateOnline("MoveSpeed", ModConfig.MoveSpeed, on)) on = false;
+            if (GateOnline("MoveSpeed", on)) on = false;
             if (MoveSpeedOn == on) return;
             MoveSpeedOn = on;
             Apply();
@@ -208,7 +211,7 @@ namespace ZedZone.UltimateAssistant.Core
 
         internal static void SetAutoSupply(bool on)
         {
-            if (GateOnline("AutoSupply", ModConfig.AutoSupply, on)) on = false;
+            if (GateOnline("AutoSupply", on)) on = false;
             if (AutoSupplyOn == on) return;
             AutoSupplyOn = on;
             Apply();
@@ -232,7 +235,7 @@ namespace ZedZone.UltimateAssistant.Core
 
         internal static void SetNoHungerLoss(bool on)
         {
-            if (GateOnline("NoHungerLoss", ModConfig.NoHungerLoss, on)) on = false;
+            if (GateOnline("NoHungerLoss", on)) on = false;
             if (NoHungerLossOn == on) return;
             NoHungerLossOn = on;
             Apply();
@@ -241,7 +244,7 @@ namespace ZedZone.UltimateAssistant.Core
 
         internal static void SetNoThirstLoss(bool on)
         {
-            if (GateOnline("NoThirstLoss", ModConfig.NoThirstLoss, on)) on = false;
+            if (GateOnline("NoThirstLoss", on)) on = false;
             if (NoThirstLossOn == on) return;
             NoThirstLossOn = on;
             Apply();
@@ -250,7 +253,7 @@ namespace ZedZone.UltimateAssistant.Core
 
         internal static void SetNoJam(bool on)
         {
-            if (GateOnline("NoJam", ModConfig.NoJam, on)) on = false;
+            if (GateOnline("NoJam", on)) on = false;
             if (NoJamOn == on) return;
             NoJamOn = on;
             Apply();
@@ -259,7 +262,7 @@ namespace ZedZone.UltimateAssistant.Core
 
         internal static void SetNoHpLoss(bool on)
         {
-            if (GateOnline("NoHpLoss", ModConfig.NoHpLoss, on)) on = false;
+            if (GateOnline("NoHpLoss", on)) on = false;
             if (NoHpLossOn == on) return;
             NoHpLossOn = on;
             Apply();
@@ -268,7 +271,7 @@ namespace ZedZone.UltimateAssistant.Core
 
         internal static void SetNoStaminaLoss(bool on)
         {
-            if (GateOnline("NoStaminaLoss", ModConfig.NoStaminaLoss, on)) on = false;
+            if (GateOnline("NoStaminaLoss", on)) on = false;
             if (NoStaminaLossOn == on) return;
             NoStaminaLossOn = on;
             Apply();
@@ -277,7 +280,7 @@ namespace ZedZone.UltimateAssistant.Core
 
         internal static void SetItemDurabilityLock(bool on)
         {
-            if (GateOnline("ItemDurabilityLock", ModConfig.ItemDurabilityLock, on)) on = false;
+            if (GateOnline("ItemDurabilityLock", on)) on = false;
             if (ItemDurabilityLockOn == on) return;
             ItemDurabilityLockOn = on;
             if (!on) DurabilityLock.Reset();
@@ -287,7 +290,7 @@ namespace ZedZone.UltimateAssistant.Core
 
         internal static void SetJamBypass(bool on)
         {
-            if (GateOnline("JamBypass", ModConfig.JamBypass, on)) on = false;
+            if (GateOnline("JamBypass", on)) on = false;
             if (JamBypassOn == on) return;
             JamBypassOn = on;
             Apply();
@@ -296,7 +299,7 @@ namespace ZedZone.UltimateAssistant.Core
 
         internal static void SetZombieEsp(bool on)
         {
-            if (GateOnline("ZombieEsp", ModConfig.ZombieEsp, on)) on = false;
+            if (GateOnline("ZombieEsp", on)) on = false;
             if (ZombieEspOn == on) return;
             ZombieEspOn = on;
             if (!on) ZombieEsp.Clear();
