@@ -19,7 +19,7 @@ param(
     [string]$Version,
 
     [string]$Notes = "",
-    [string]$Repo = "SORA123k/ZED-ZONE-Ultimate-Assistant",
+    [string]$Repo = "SORA123k/ZED-ZONE-Assistant",
     [switch]$SkipPush,
     [switch]$Draft
 )

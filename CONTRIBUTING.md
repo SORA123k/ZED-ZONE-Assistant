@@ -38,7 +38,7 @@
 
 ```bash
 # 1. fork & clone
-git clone https://github.com/<you>/ZED-ZONE-Ultimate-Assistant.git
+git clone https://github.com/<you>/ZED-ZONE-Assistant.git
 
 # 2. 建分支
 git checkout -b feat/your-feature

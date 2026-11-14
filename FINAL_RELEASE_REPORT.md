@@ -44,7 +44,7 @@ HP / Energy / Hunger / Thirst 恢复与 Phase 3A 动态范围逻辑**保持原�
 
 | 项 | 值 |
 |---|---|
-| 仓库 | `<仓库目录>\ZED-ZONE-Ultimate-Assistant` |
+| 仓库 | `<仓库目录>\ZED-ZONE-Assistant` |
 | 最终提交 | **`763f598`**（另有一次 README/报告提交随后） |
 | 分支 | main |
 

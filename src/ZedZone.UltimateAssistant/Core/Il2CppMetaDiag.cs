@@ -25,7 +25,7 @@ namespace ZedZone.UltimateAssistant.Core
     /// </summary>
     internal static class Il2CppMetaDiag
     {
-        private const string DiagDir = @"<仓库目录>\ZED-ZONE-Ultimate-Assistant\Diagnostics";
+        private const string DiagDir = @"<仓库目录>\ZED-ZONE-Assistant\Diagnostics";
         private const string TargetClass = "BasicRangedWeapon";
 
         // ---- IL2CPP 导出函数 ----

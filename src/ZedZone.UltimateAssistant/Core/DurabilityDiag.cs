@@ -18,7 +18,7 @@ namespace ZedZone.UltimateAssistant.Core
     ///  * 只读：不写任何 ItemData / 组件字段（唯一的 Harmony 补丁都是 postfix 纯记录）；
     ///  * 不修改 GameConfigs；
     ///  * 不改动恢复/弹药/ESP/菜单功能；
-    ///  * 日志写到 <仓库目录>\ZED-ZONE-Ultimate-Assistant\Diagnostics\。
+    ///  * 日志写到 <仓库目录>\ZED-ZONE-Assistant\Diagnostics\。
     ///
     /// 记录内容：
     ///  运行时（Unity / .NET / BepInEx / Harmony / IL2CPP / 位数）、
@@ -29,7 +29,7 @@ namespace ZedZone.UltimateAssistant.Core
     /// </summary>
     internal static class DurabilityDiag
     {
-        private const string DiagDir = @"<仓库目录>\ZED-ZONE-Ultimate-Assistant\Diagnostics";
+        private const string DiagDir = @"<仓库目录>\ZED-ZONE-Assistant\Diagnostics";
 
         private static bool _inited;
         private static bool _enabled;
