@@ -191,6 +191,24 @@ tools/release.ps1            bump version → build → tag → GitHub release
 
 ---
 
+## Disclaimer
+
+### How this project was built (please read)
+
+This project is a **vibe coding** product: most of the code was written by AI, with a human providing requirements, testing and review.
+
+That means:
+
+- Code style, comments and structure may not be "engineering grade", and AI-specific mistakes are possible;
+- Real in-game testing does not cover every edge case;
+- Some implementations favor "it works" over "the optimal design".
+
+So if you find a bug, a logic flaw, a crash, or anything that bothers you, **please point it out kindly**.
+Open an issue with the log and reproduction steps — no need to be formal, and no one will blame you. Reporting a problem is itself the biggest help to this project.
+
+PRs that fix these AI-left pitfalls are equally welcome.
+---
+
 ## Contributing
 
 Contributions are welcome — code, translations, docs, bug reports.
@@ -206,4 +224,5 @@ If you want to become a maintainer (write access), open an issue or contact the 
 ## License
 
 [MIT](LICENSE) © 2026 SORA123k
+
 
