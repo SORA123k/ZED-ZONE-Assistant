@@ -1,5 +1,7 @@
 # ZED ZONE Ultimate Assistant（SORA助手）
 
+<p align="right"><b>简体中文</b> | <a href="README_EN.md">English</a></p>
+
 《ZED ZONE / 隔离区-丧尸末日生存》的**单人离线**辅助模组。基于 **BepInEx 6 (IL2CPP) + HarmonyX**，提供一套 ClickGUI 风格的游戏内菜单（默认 `INSERT` 打开），以及耐久、弹药、防护、移动、视觉等一整套辅助功能。
 
 > **仅供单人离线使用。** 联机状态下所有状态修改类功能会自动禁用（fail-closed）。请勿用于多人游戏，也不要在联机模式下尝试启用。
@@ -8,6 +10,7 @@
 
 ## 目录
 
+- [新手教程](GUIDE.md)（萌新必看）
 - [功能一览](#功能一览)
 - [环境要求](#环境要求)
 - [安装（普通用户）](#安装普通用户)
@@ -17,6 +20,7 @@
 - [项目结构](#项目结构)
 - [已知限制](#已知限制)
 - [免责声明](#免责声明)
+- [参与开发](#参与开发)
 - [许可](#许可)
 
 ---
@@ -304,6 +308,20 @@ tools/build.ps1             构建安装脚本
 
 ---
 
+## 参与开发
+
+欢迎一起维护本项目（代码 / 翻译 / 文档 / 测试反馈都算）。
+
+- 开发说明：[DEVELOPMENT.md](DEVELOPMENT.md)（架构、补丁规范、新增功能检查清单）
+- 贡献流程：[CONTRIBUTING.md](CONTRIBUTING.md)（分支、PR 检查清单、**如何获得维护者权限**）
+- 发布流程：维护者执行 `pwsh tools/release.ps1 -Version x.y.z`，脚本会自动改版本 → 构建 → 打 tag → 推送 → 创建 GitHub Release 并附 DLL
+- Bug 反馈请使用仓库的 Issue 模板
+
+> 想成为长期维护者：先提交 1–2 个 PR，然后在 Issue 里说明，仓库所有者会把加入 Collaborators（写权限）。
+
+---
+
 ## 许可
 
 [MIT](LICENSE) © 2026 SORA123k
+

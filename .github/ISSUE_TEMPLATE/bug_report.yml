@@ -1,0 +1,52 @@
+name: Bug 报告
+description: 功能异常 / 游戏崩溃 / 与其它 Mod 冲突
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢反馈！请尽量填写完整信息，否则很难定位问题。
+  - type: input
+    id: game-version
+    attributes:
+      label: 游戏版本
+      description: Steam → 库 → 右键游戏 → 属性 → 已安装文件
+      placeholder: "1.0.17"
+    validations:
+      required: true
+  - type: input
+    id: bepinex-version
+    attributes:
+      label: BepInEx 版本
+      placeholder: "6.0.0-be.xxx (IL2CPP win-x64)"
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: 问题描述
+      description: 发生了什么？期望是什么？
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: 复现步骤
+      placeholder: |
+        1. 打开菜单
+        2. 开启 XXX
+        3. 出现 YYY
+    validations:
+      required: true
+  - type: textarea
+    id: log
+    attributes:
+      label: 日志片段
+      description: 粘贴 BepInEx/LogOutput.log 中与本模组相关的部分
+      render: text
+  - type: textarea
+    id: other-mods
+    attributes:
+      label: 其它已安装的 Mod
+      placeholder: 例如 ZED ZONE FPS Optimizer 2.2.0

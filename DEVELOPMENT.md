@@ -140,9 +140,39 @@ dotnet test
 
 ---
 
-## 7. 提交规范
+## 7. 发布流程
+
+维护者一条命令完成发版：
+
+```powershell
+pwsh tools/release.ps1 -Version 1.0.1
+```
+
+脚本依次执行：
+
+1. 校验版本号格式（`x.y.z`）
+2. 检查工作区是否干净
+3. 修改 `Plugin.cs` 的 `PluginVersion`
+4. `dotnet build -c Release`（0 警告 0 错误才继续）
+5. 提交 `release vX.Y.Z`
+6. 打 tag `vX.Y.Z` 并推送 `main` + tag
+7. `gh release create` 创建 GitHub Release 并附 DLL（打印大小与 MD5）
+
+可选参数：
+
+| 参数 | 作用 |
+|---|---|
+| `-Notes "..."` | 自定义 Release 说明 |
+| `-Draft` | 创建草稿 Release |
+| `-SkipPush` | 只本地提交与打 tag（不推送、不建 Release） |
+| `-Repo owner/name` | 指定仓库（默认本仓库） |
+
+> 发版前请先更新 `CHANGELOG.md`，并把"实机验证结论"写进 Release 说明。
+
+## 8. 提交规范
 
 - 一个功能/修复一个 PR；
 - Commit message 用中文即可，说明"改了什么 + 为什么"；
 - 不要提交 `bin/`、`obj/`、`Diagnostics/*.log`、备份 DLL（`.gitignore` 已覆盖）；
 - PR 请附：构建结果（0 警告 0 错误）+ 实机验证结论（或说明未验证）。
+

@@ -1,0 +1,27 @@
+name: 功能建议
+description: 想要的新功能 / 改进想法
+title: "[Feature] "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: purpose
+    attributes:
+      label: 使用场景
+      description: 你希望在什么情况下使用它？
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: 期望行为
+      description: 你希望它具体做什么？
+    validations:
+      required: true
+  - type: dropdown
+    id: implement
+    attributes:
+      label: 是否愿意自己实现
+      options:
+        - "愿意提交 PR"
+        - "需要有人指导"
+        - "只是建议"
