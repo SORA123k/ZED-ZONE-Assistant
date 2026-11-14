@@ -22,7 +22,7 @@
   <!-- 缺游戏程序集时给出可读报错，而不是几十行 "找不到类型/命名空间" -->
   <Target Name="CheckGameRefs" BeforeTargets="ResolveAssemblyReferences">
     <Error Condition="'$(GameRoot)' == ''"
-           Text="未指定游戏目录。请设置环境变量 ZEDZONE_GAME_ROOT 指向 ZED ZONE 安装目录，或执行 dotnet build -p:GameRoot=&quot;D:\...\ZED ZONE&quot;。详见 DEVELOPMENT.md。" />
+           Text="未指定游戏目录。请设置环境变量 ZEDZONE_GAME_ROOT 指向 ZED ZONE 安装目录，或执行 dotnet build -p:GameRoot=&quot;X:\path\to\ZED ZONE&quot;。详见 DEVELOPMENT.md。" />
     <Error Condition="!Exists('$(InteropDir)Assembly-CSharp.dll')"
            Text="找不到 $(InteropDir)Assembly-CSharp.dll。请先安装 BepInEx 6 (IL2CPP) 并至少启动一次游戏，让 BepInEx 生成 interop 程序集。详见 INSTALL.md。" />
   </Target>
