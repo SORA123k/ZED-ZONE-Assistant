@@ -5,6 +5,83 @@
 
 ---
 
+## v1.2.1 — 2026-11-15（适配游戏 1.0.18：辐射控制 / 连点器 / 提示音 / 实验性瞄准功能移除）
+
+> 适配套件：游戏 **1.0.18**（build 26679895）。本节汇总自 v1.0.3 之后的全部改动。
+
+### 新增
+
+- **立即清空辐射**（按钮，位于「一键恢复」分组）：把本地玩家 `CharacterStatusData.radiationDose` 置 0。
+  写入走 IL2CPP 元数据 API（`il2cpp_field_set_value`，按字段名定位，不猜偏移），
+  失败自动降级为"元数据取偏移后按偏移写"，并回读验证。
+- **保持 0 辐射**（开关，位于「防护」分组）：持续把辐射压到 0，并给 `RadiationDose.Step`
+  打后置补丁返回 0 作为保险；关闭立即卸载补丁。
+- **连点器**（战斗辅助）：开关 + 0–1000ms 间隔滑条，`mouse_event` 系统级左键；
+  只在游戏窗口处于前台时点击，最小间隔 5ms，线程 BelowNormal，避免掉帧。
+- **ESP 血量**（`EspShowHealth`）：显示 `hp / FullHP` 数字与血条。
+- **提示音资源**：`assets/sounds/on.wav`（开）、`off.wav`（关），来源于 Codex 桌面版内置通知音。
+- 新增 `Core/Il2CppFields.cs`、`Core/RadiationControl.cs`、`Patch/RadiationPatches.cs`、
+  `Core/AutoClicker.cs`、`Core/MouseNative.cs`、`Core/Targeting.cs`。
+
+### 变更
+
+- 「自动补充材料」显示名改为 **「一键维修小船」**（配置键 `AutoSupply` 不变，兼容旧配置）。
+- ESP 识别改为创意工坊「Enemy Health Bar」(3835884410) 的方法：
+  `FindObjectsByType<BasicCharacterController>` + 排除人类/玩家/友方 + 存活过滤。
+- **一键恢复**（血量/体力/饱食/水分）改为与「立即清空辐射」一致的卡片样式。
+- 战斗辅助里的 **「一键修复卡壳」按钮移除**（`WeaponUtil.ClearMalfunction` 代码保留）。
+- 音效模块重写：不再写死本机路径，改为多目录自动查找 + `[Sound] OnPath/OffPath` 可配置。
+
+### 移除
+
+- **静默自瞄 / 自动开火 / 墙体遮挡检测**：多套实现（子弹目标改写、瞄准辅助改写、角度改写、
+  命中结算、武器 API、输入流、Triggerbot）实测均未达到预期效果，经确认**整体删除**，
+  相关配置项、快捷键、菜单分组、文档一并清理。
+
+---
+## v1.2.0 — 2026-11-15（瞄准辅助 + ESP 血量 + 分组调整）
+
+### 新增
+
+- **静默自瞄**（开关 + 距离滑条）：给 `BasicRangedWeapon.fireAngle` 打后置补丁，
+  只改本地玩家那把武器的弹道角度，**不转视角**。敌我判定复用 `Targeting`：
+  只处理"非人类 + 非玩家 + 存活"的对象，人类/队友/友方 NPC/宠物一律排除。
+- **自动开火**（开关 + 距离滑条）：目标进入范围后调用玩家自己的开火入口
+  `OnMouseDown_Leven(0)` / `OnMouseUp_Leven(0)`，不绕过弹药/热量/耐久逻辑。
+- **ESP 血量**：`EspShowHealth`，显示 `hp / FullHP` 数字与血条。
+- **ESP 识别方式改造**：改用创意工坊 mod「Enemy Health Bar」(3835884410) 的识别方法
+  —— `FindObjectsByType<BasicCharacterController>` + 排除人类/玩家/友方 + 存活过滤，
+  替代原先依赖 `ZombieController` 类型的过滤（更不容易漏怪）。
+
+### 变更
+
+- 「立即清空辐射」按钮移入 **一键恢复** 分组。
+- 「保持 0 辐射」开关移入 **防护**（不掉血/不掉体力…）分组。
+- 新增配置：`SilentAim`、`SilentAimRange`、`AutoFire`、`AutoFireRange`、`EspShowHealth`；
+  新增快捷键 `silent_aim`、`auto_fire`。
+
+---
+## v1.1.0 — 2026-11-15（适配 1.0.18：辐射控制 + 一键维修小船）
+
+### 新增
+
+- **立即清空辐射**（按钮）：一键把本地玩家 `CharacterStatusData.radiationDose` 置 0。
+  写入走 IL2CPP 元数据 API（`il2cpp_field_set_value`，按字段名定位），失败时降级为
+  "元数据取偏移后按偏移写"，并回读验证。
+- **保持 0 辐射**（开关）：持续把辐射值压到 0；同时给 `RadiationDose.Step` 打后置补丁返回 0
+  作为保险，即使字段写入路径失效也不会增长。关闭开关立即卸载补丁。
+- 新增 `Core/Il2CppFields.cs`（按字段名读写的通用封装，不猜偏移）、
+  `Core/RadiationControl.cs`、`Patch/RadiationPatches.cs`。
+
+### 变更
+
+- 「自动补充材料」显示名改为 **「一键维修小船」**（配置键 `AutoSupply` 保持不变，兼容旧配置）。
+
+### 兼容
+
+- 适配游戏 **1.0.18**（build 26679895）；旧功能回归正常。
+
+---
 ## v1.0.3 — 2026-11-15（诊断日志路径修复 + 文档一致性）
 
 ### 修复
@@ -165,3 +242,8 @@
 - 仅支持离线单人；联机自动禁用状态修改
 - 基于游戏 1.0.17 的 interop 签名，游戏大版本更新后可能需要适配
 - 岛屿逃生船的强制完成建造可能影响任务流程，请先备份存档
+
+
+
+
+

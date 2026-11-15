@@ -66,6 +66,10 @@ namespace ZedZone.UltimateAssistant.Core
                 v => { ModConfig.ZombieEsp.Value = v; Features.SetZombieEsp(v); });
             Add(cfg, "fullbright", "fullbright", () => Features.FullBrightOn,
                 v => { ModConfig.FullBright.Value = v; Features.SetFullBright(v); });
+            Add(cfg, "auto_click", "auto_click", () => Features.LeftClickerOn,
+                v => { ModConfig.LeftClicker.Value = v; Features.SetLeftClicker(v); });
+            Add(cfg, "rad_lock", "rad_lock", () => Features.RadiationLockOn,
+                v => { ModConfig.RadiationLock.Value = v; Features.SetRadiationLock(v); });
             Add(cfg, "auto_supply", "auto_supply", () => Features.AutoSupplyOn,
                 v => { ModConfig.AutoSupply.Value = v; Features.SetAutoSupply(v); });
             Add(cfg, "performance", "performance", () => Features.PerformanceModeOn,
@@ -158,6 +162,11 @@ namespace ZedZone.UltimateAssistant.Core
         }
     }
 }
+
+
+
+
+
 
 
 

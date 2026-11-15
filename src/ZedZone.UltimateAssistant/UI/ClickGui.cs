@@ -255,7 +255,6 @@ namespace ZedZone.UltimateAssistant.UI
             y += ch + 6f * s;
             return y;
         }
-
         private static float ToggleRow(string labelKey, bool on, Action<bool> set, float cx, float cw, float s, ref float y)
         {
             float rh = (Fs + 16f) * s;
@@ -356,7 +355,13 @@ namespace ZedZone.UltimateAssistant.UI
                 v => { ModConfig.AutoSupply.Value = v; Features.SetAutoSupply(v); }, cx, cw, s, ref y);
             Card("no_overheat", "no_overheat_d", "no_overheat", Features.NoOverheatOn,
                 v => { ModConfig.NoOverheat.Value = v; Features.SetNoOverheat(v); }, cx, cw, s, ref y);
-            ActionCard("fix_jam", "fix_jam_d", () => WeaponUtil.ClearMalfunction(), cx, cw, s, ref y);
+            // 「一键修复卡壳」按钮已移除（WeaponUtil.ClearMalfunction 代码保留）
+
+            Section("sec_clicker", cx, cw, s, ref y);
+            Card("auto_click", "auto_click_d", "auto_click", Features.LeftClickerOn,
+                v => { ModConfig.LeftClicker.Value = v; Features.SetLeftClicker(v); }, cx, cw, s, ref y);
+            SliderRow("interval", "auto_click", ModConfig.LeftClickInterval.Value, 0f, 1000f, 10f,
+                v => ModConfig.LeftClickInterval.Value = (int)Mathf.Round(v), "0' ms'", cx, cw, s, ref y);
         }
 
         private static void DrawPlayer(float cx, float cw, float s, ref float y, PlayerSnapshot snap)
@@ -370,6 +375,9 @@ namespace ZedZone.UltimateAssistant.UI
                 v => { ModConfig.NoHungerLoss.Value = v; Features.SetNoHungerLoss(v); }, cx, cw, s, ref y);
             Card("no_thirst", "no_thirst_d", "no_thirst", Features.NoThirstLossOn,
                 v => { ModConfig.NoThirstLoss.Value = v; Features.SetNoThirstLoss(v); }, cx, cw, s, ref y);
+
+            Card("rad_lock", "rad_lock_d", "rad_lock", Features.RadiationLockOn,
+                v => { ModConfig.RadiationLock.Value = v; Features.SetRadiationLock(v); }, cx, cw, s, ref y);
 
             Section("sec_move", cx, cw, s, ref y);
             Card("always_sprint", "always_sprint_d", "always_sprint", Features.AlwaysSprintOn,
@@ -393,6 +401,7 @@ namespace ZedZone.UltimateAssistant.UI
             RestoreCard("energy", "energy", StatId.Energy, snap, cx, cw, s, ref y);
             RestoreCard("hunger", "hunger", StatId.Hunger, snap, cx, cw, s, ref y);
             RestoreCard("thirst", "thirst", StatId.Thirst, snap, cx, cw, s, ref y);
+            ActionCard("rad_clear", "rad_clear_d", () => RadiationControl.ClearNow(), cx, cw, s, ref y);
 
             if (ModConfig.MenuShowLimbs?.Value ?? true)
             {
@@ -404,11 +413,13 @@ namespace ZedZone.UltimateAssistant.UI
         private static void RestoreCard(string labelKey, string statKey, StatId stat, PlayerSnapshot snap,
             float cx, float cw, float s, ref float y)
         {
-            float ch = (Fs + 22f) * s;
+            // 与 ActionCard（如"立即清空辐射"）统一外观：整卡可点、悬停高亮、左标题右数值
+            float ch = (Fs + 26f) * s;
             var r = new Rect(cx, y, cw, ch);
-            Fill(r, P.Card);
-            GUI.color = P.Text;
-            GUI.Label(new Rect(r.x + 12f * s, r.y, 160f * s, ch), L.T(labelKey), _cardDesc);
+            bool hover = r.Contains(Event.current.mousePosition);
+            Fill(r, hover ? P.Accent : P.CardHover);
+            GUI.color = hover ? P.AccentText : P.Text;
+            GUI.Label(new Rect(r.x + 12f * s, r.y, cw * 0.45f, ch), L.T(labelKey), _btn);
 
             string val = "—";
             if (snap != null && snap.HasPlayer)
@@ -416,16 +427,11 @@ namespace ZedZone.UltimateAssistant.UI
                 var v = snap.Get(statKey);
                 if (v != null) val = v.HasMax ? $"{v.Value:0.#} / {v.Max:0.#}" : v.ValueText();
             }
-            GUI.color = P.SubText;
-            GUI.Label(new Rect(r.x + 170f * s, r.y, 140f * s, ch), val, _small);
+            GUI.color = hover ? P.AccentText : P.SubText;
+            GUI.Label(new Rect(r.x + cw * 0.45f, r.y, cw * 0.53f, ch), L.T("restore") + "  " + val, _small);
 
-            var br = new Rect(r.xMax - 96f * s, r.y + (ch - 26f * s) * 0.5f, 86f * s, 26f * s);
-            bool hov = br.Contains(Event.current.mousePosition);
-            Fill(br, hov ? P.Accent : P.CardHover);
-            GUI.color = hov ? P.AccentText : P.Text;
-            GUI.Label(br, L.T("restore"), _btn);
-            if (Hit(br)) { try { RestoreService.Restore(stat); } catch (Exception e) { Log.ErrorOnce("gui.restore", e); } }
-            y += ch + 4f * s;
+            if (Hit(r)) { try { RestoreService.Restore(stat); } catch (Exception e) { Log.ErrorOnce("gui.restore", e); } }
+            y += ch + 6f * s;
         }
 
         private static void DrawLimbs(float cx, float cw, float s, ref float y)
@@ -736,6 +742,13 @@ namespace ZedZone.UltimateAssistant.UI
         }
     }
 }
+
+
+
+
+
+
+
 
 
 

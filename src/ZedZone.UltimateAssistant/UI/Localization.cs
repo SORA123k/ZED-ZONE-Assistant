@@ -56,12 +56,21 @@ namespace ZedZone.UltimateAssistant.UI
             ["thirst"]       = new[]{ "水分", "Thirst", "水分" },
             ["restore"]      = new[]{ "恢复", "Restore", "恢復" },
             ["sec_move"]     = new[]{ "移动与时间", "MOVEMENT & TIME", "移動與時間" },
-            ["always_sprint"]= new[]{ "强制奔跑", "Always Sprint", "強制奔跑" },
-            ["always_sprint_d"]=new[]{ "开枪/攻击时保持奔跑，不被强制切换为走路", "Keeps sprinting while shooting or attacking", "開槍/攻擊時保持奔跑，不被強制切換為走路" },
+            ["always_sprint"]= new[]{ "保持奔跑", "Keep Sprinting", "保持奔跑" },
+            ["always_sprint_d"]=new[]{ "自动保持奔跑", "Automatically keeps sprinting", "自動保持奔跑" },
             ["move_speed"]   = new[]{ "移动加速", "Movement Speed", "移動加速" },
             ["move_speed_d"] = new[]{ "按倍率提高本地玩家移动速度", "Multiplies your movement speed", "按倍率提高本地玩家移動速度" },
-            ["auto_supply"]  = new[]{ "自动补充材料", "Auto Supply", "自動補充材料" },
-            ["auto_supply_d"]= new[]{ "制造/修复时视为材料充足，不再因缺材料失败", "Crafting/repair treat materials as sufficient", "製造/修復時視為材料充足，不再因缺材料失敗" },
+            ["auto_supply"]  = new[]{ "一键维修小船", "Boat Repair", "一鍵維修小船" },
+            ["auto_supply_d"]= new[]{ "靠近可维修船只时自动补齐建造材料并尝试完成建造", "Auto-supplies materials and finishes construction when near a repairable boat", "靠近可維修船隻時自動補齊建造材料並嘗試完成建造" },
+            ["sec_rad"]      = new[]{ "辐射", "RADIATION", "輻射" },
+            ["sec_clicker"]  = new[]{ "连点器", "AUTO CLICKER", "連點器" },
+            ["auto_click"]   = new[]{ "连点器", "Auto Clicker", "連點器" },
+            ["auto_click_d"] = new[]{ "按设定间隔自动左键单击（走玩家自己的攻击入口）", "Auto left-clicks at the configured interval", "按設定間隔自動左鍵單擊（走玩家自己的攻擊入口）" },
+            ["interval"]     = new[]{ "点击间隔", "Interval", "點擊間隔" },
+            ["rad_clear"]    = new[]{ "立即清空辐射", "Clear Radiation Now", "立即清空輻射" },
+            ["rad_clear_d"]  = new[]{ "点击一次：把当前辐射值清零", "One click: set your radiation dose to zero", "點擊一次：把目前輻射值清零" },
+            ["rad_lock"]     = new[]{ "保持 0 辐射", "Keep Radiation at 0", "保持 0 輻射" },
+            ["rad_lock_d"]   = new[]{ "持续把辐射值压到 0（含 Step 兜底）", "Continuously forces radiation dose to 0", "持續把輻射值壓到 0（含 Step 兜底）" },
             ["performance"]  = new[]{ "性能模式", "Performance Mode", "效能模式" },
             ["performance_d"]= new[]{ "降低 ESP/耐久/诊断刷新频率以提升帧数（功能不变）", "Lower ESP/durability/diagnostic refresh rates for higher FPS (features unchanged)", "降低 ESP/耐久/診斷刷新頻率以提升幀數（功能不變）" },
             ["fullbright"]   = new[]{ "地图全亮", "Full Bright", "地圖全亮" },
@@ -166,6 +175,14 @@ namespace ZedZone.UltimateAssistant.UI
             => code == "en" ? "English" : (code == "zhTW" ? "繁體中文" : "简体中文");
     }
 }
+
+
+
+
+
+
+
+
 
 
 

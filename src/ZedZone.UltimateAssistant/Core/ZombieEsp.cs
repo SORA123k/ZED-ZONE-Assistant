@@ -25,6 +25,8 @@ namespace ZedZone.UltimateAssistant.Core
             internal Vector3 World;
             internal float Distance;
             internal bool Alive = true;
+            internal float Hp;
+            internal float MaxHp;
         }
 
         private static readonly List<Entry> _entries = new List<Entry>(64);
@@ -60,58 +62,33 @@ namespace ZedZone.UltimateAssistant.Core
 
             try
             {
-                var gc = GameController.instance;
-                if (gc == null) { _entries.Clear(); return; }
-                var list = gc.characterList;
-                if (list == null) { _entries.Clear(); return; }
-
                 HumanCharacterController player = null;
                 try { player = PlayerAccessor.Resolve(out _, out _); } catch { }
                 Vector3 ppos = Vector3.zero;
                 if (player != null) { try { ppos = player.transform.position; } catch { } }
 
                 float maxDist = ModConfig.EspMaxDistance?.Value ?? 200f;
-                int n = list.Count;
+
+                // 与创意工坊 mod「Enemy Health Bar」相同的识别方式：
+                // FindObjectsByType<BasicCharacterController> → 排除人类/玩家/友方 → 存活 → 距离
+                Targeting.Refresh(maxDist);
+
                 int cap = Features.PerformanceModeOn ? 120 : 300;
-                for (int i = 0; i < n && result.Count < cap; i++)
+                var all = Targeting.All;
+                for (int i = 0; i < all.Count && result.Count < cap; i++)
                 {
-                    BasicCharacterController c = null;
-                    try { c = list[i]; } catch { continue; }
-                    if (c == null) continue;
-
-                    // 类型过滤：ZombieController 及其它僵尸类型（Giant/Horde 等可能不派生自它）
-                    bool isPlayer = false;
-                    try { isPlayer = c.isPlayer; } catch { }
-                    if (isPlayer) continue;
-
-                    bool isZombie = false;
-                    try { if (c.TryCast<ZombieController>() != null) isZombie = true; } catch { }
-                    if (!isZombie)
+                    var t = all[i];
+                    if (t == null || t.C == null) continue;
+                    result.Add(new Entry
                     {
-                        try
-                        {
-                            var tn = c.GetType().Name;
-                            if (tn != null && tn.IndexOf("Zombie", StringComparison.OrdinalIgnoreCase) >= 0) isZombie = true;
-                        }
-                        catch { }
-                    }
-                    if (!isZombie) continue;
-
-                    bool dead = false;
-                    try { dead = c.deadFlag; } catch { }
-                    if (dead) continue;
-
-                    Vector3 wp = Vector3.zero;
-                    try { wp = c.transform.position; } catch { continue; }
-
-                    float dist = 0f;
-                    try { dist = Vector3.Distance(ppos, wp); } catch { }
-                    if (dist > maxDist) continue;
-
-                    string nm = "Zombie";
-                    try { nm = CleanName(c.gameObject.name); } catch { }
-
-                    result.Add(new Entry { Z = c, Name = nm, World = wp, Distance = dist, Alive = true });
+                        Z = t.C,
+                        Name = CleanName(t.Name),
+                        World = t.Pos,
+                        Distance = t.Dist,
+                        Alive = true,
+                        Hp = t.Hp,
+                        MaxHp = t.MaxHp
+                    });
                 }
             }
             catch (Exception e)
@@ -201,15 +178,29 @@ namespace ZedZone.UltimateAssistant.Core
                 }
                 GUI.color = old;
 
+                // 血量条（参考 EnemyHealthBar：hp / FullHP）
+                if ((ModConfig.EspShowHealth?.Value ?? true) && e.MaxHp > 0f && !offscreen)
+                {
+                    float hpRatio = Mathf.Clamp01(e.Hp / e.MaxHp);
+                    var barBg = new Rect(r.x, r.yMax + 1f, r.width, 3f);
+                    GUI.color = new Color(0f, 0f, 0f, 0.6f);
+                    GUI.DrawTexture(barBg, Texture2D.whiteTexture);
+                    GUI.color = new Color(0.95f, 0.25f, 0.25f, 0.95f);
+                    GUI.DrawTexture(new Rect(barBg.x, barBg.y, barBg.width * hpRatio, barBg.height), Texture2D.whiteTexture);
+                }
+
                 // 文本：名称 + 距离
                 string label = null;
                 if (showName && showDist) label = e.Name + "  " + e.Distance.ToString("0") + "m";
                 else if (showName) label = e.Name;
                 else if (showDist) label = e.Distance.ToString("0") + "m";
 
+                if (e.MaxHp > 0f && (ModConfig.EspShowHealth?.Value ?? true))
+                    label = (label == null ? "" : label + "  ") + Mathf.CeilToInt(e.Hp) + "/" + Mathf.CeilToInt(e.MaxHp);
+
                 if (label != null)
                 {
-                    var tr = new Rect(r.x - 20f, r.yMax + 1f, 140f, 16f);
+                    var tr = new Rect(r.x - 20f, r.yMax + 5f, 150f, 16f);
                     GUI.color = ColBg;
                     GUI.DrawTexture(tr, Texture2D.whiteTexture);
                     GUI.color = ColText;
@@ -242,5 +233,7 @@ namespace ZedZone.UltimateAssistant.Core
             => $"ZombieEsp={(Features.ZombieEspOn ? "开" : "关")} 目标={_lastCount}";
     }
 }
+
+
 
 

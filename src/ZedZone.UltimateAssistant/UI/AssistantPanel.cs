@@ -24,6 +24,9 @@ namespace ZedZone.UltimateAssistant.UI
         private bool _conflictChecked;
         private bool _firstSync = true;
         private KeyCode _key = KeyCode.Insert;
+        private bool _radSelfTested;
+        private int _radTestTries;
+        private float _nextRadTest;
         private float _lastToggleAt = -10f;
 
         private void Awake()
@@ -83,6 +86,29 @@ namespace ZedZone.UltimateAssistant.UI
                     try { DurabilityLock.TickGuns(); } catch (Exception e) { Log.ErrorOnce("durgun", e); }
                     try { WeaponUtil.ClearMalfunction(); } catch (Exception e) { Log.ErrorOnce("jamclear", e); }
                     try { AutoSupply.TickBoat(); } catch (Exception e) { Log.ErrorOnce("supplyboat", e); }
+                    try { RadiationControl.Tick(); } catch (Exception e) { Log.ErrorOnce("rad", e); }
+                    try { AutoClicker.UpdateFocus(); } catch (Exception e) { Log.ErrorOnce("clicker", e); }
+                    if (!_radSelfTested && (ModConfig.RadiationSelfTest?.Value ?? false))
+                    {
+                        try
+                        {
+                            // 必须等玩家对象就绪（主菜单时 statusData 为空，自检无意义）。
+                            // 最多尝试 3 次，每次间隔 3 秒；成功或失败都会记录证据。
+                            if (Time.unscaledTime >= _nextRadTest)
+                            {
+                                var rp = PlayerAccessor.Resolve(out _, out _);
+                                if (rp != null)
+                                {
+                                    _radTestTries++;
+                                    _nextRadTest = Time.unscaledTime + 3f;
+                                    Log.Info($"[rad] 自检第 {_radTestTries}/3 次（玩家已就绪）");
+                                    bool ok = RadiationControl.SelfTest();
+                                    if (ok || _radTestTries >= 3) _radSelfTested = true;
+                                }
+                            }
+                        }
+                        catch (Exception e) { Log.ErrorOnce("radtest", e); }
+                    }
                     try { Il2CppMetaDiag.Tick(); } catch (Exception e) { Log.ErrorOnce("metadiag", e); }
                 }
             }
@@ -214,6 +240,13 @@ namespace ZedZone.UltimateAssistant.UI
         }
     }
 }
+
+
+
+
+
+
+
 
 
 

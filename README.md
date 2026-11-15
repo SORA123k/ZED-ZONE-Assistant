@@ -45,7 +45,7 @@
 | 工具/近战耐久 Tool / Melee Durability | 工具、近战、装备耐久不消耗（只增不减） |
 | 枪械耐久 Gun Durability | 枪械耐久保持在最大值（写入 `ItemData.properties[0]`） |
 | 取消过热 No Overheat | 自己枪械温度恒为 0（不影响 NPC） |
-| 自动补充材料 Auto Supply | 制造/修复时视为材料充足；岛屿船可强制完成建造 |
+| 一键维修小船 Boat Repair | 靠近可维修船只时自动补齐材料并尝试完成建造；同时放宽制造/修复材料判定 |
 
 ### 玩家（Player）
 
@@ -63,7 +63,9 @@
 
 | 功能 | 说明 |
 |---|---|
-| 僵尸 ESP | 标记已加载僵尸（名称/距离/方框，含视野外屏幕边缘指示） |
+| 僵尸 ESP | 标记已加载僵尸（名称/距离/方框/血量数字与血条，含视野外屏幕边缘指示） |
+| 立即清空辐射 / 保持 0 辐射 | 一键清零辐射值，或持续保持 0（`CharacterStatusData.radiationDose`） |
+| 连点器 Auto Clicker | 0–1000ms 系统级左键连续点击，仅游戏前台生效 |
 | 地图全亮 Full Bright | 夜间提升场景亮度（URP 2D 全局光 + 环境光），不改时间/天气/AI |
 
 ### 设置（Settings）
@@ -360,3 +362,4 @@ docs/                       文档地图见 docs/README.md
 ## 许可
 
 [MIT](LICENSE) © 2026 SORA123k
+

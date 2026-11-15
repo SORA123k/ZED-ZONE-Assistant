@@ -23,6 +23,7 @@ namespace ZedZone.UltimateAssistant.Core
         private static bool _patchesInstalled;
         private static bool _playerPatchesInstalled;
         private static bool _movePatchesInstalled;
+        private static bool _radPatchesInstalled;
 
         internal static bool InfiniteAmmoOn { get; private set; }
         internal static bool NoReloadOn { get; private set; }
@@ -39,6 +40,8 @@ namespace ZedZone.UltimateAssistant.Core
         internal static bool FullBrightOn { get; private set; }
         internal static bool PerformanceModeOn { get; private set; }
         internal static bool AutoSupplyOn { get; private set; }
+        internal static bool RadiationLockOn { get; private set; }
+        internal static bool LeftClickerOn { get; private set; }
         internal static float LastFireAt { get; set; }
         internal static bool NoOverheatOn { get; private set; }
         internal static bool JamBypassOn { get; private set; }
@@ -112,6 +115,8 @@ namespace ZedZone.UltimateAssistant.Core
             bool wantFullBright = ModConfig.FullBright?.Value ?? false;
             bool wantPerf = ModConfig.PerformanceMode?.Value ?? false;
             bool wantSupply = ModConfig.AutoSupply?.Value ?? false;
+            bool wantRad = ModConfig.RadiationLock?.Value ?? false;
+            bool wantClicker = ModConfig.LeftClicker?.Value ?? false;
             bool wantAmmo = ModConfig.InfiniteAmmo?.Value ?? false;
             bool wantReload = ModConfig.NoReload?.Value ?? false;
             bool wantEsp = ModConfig.ZombieEsp?.Value ?? false;
@@ -146,6 +151,8 @@ namespace ZedZone.UltimateAssistant.Core
             SetFullBright(wantFullBright);
             SetPerformanceMode(wantPerf);
             SetAutoSupply(wantSupply);
+            SetRadiationLock(wantRad);
+            SetLeftClicker(wantClicker);
             SetZombieEsp(wantEsp);
         }
 
@@ -216,6 +223,27 @@ namespace ZedZone.UltimateAssistant.Core
             AutoSupplyOn = on;
             Apply();
             Log.Info("[features] AutoSupply = " + on);
+        }
+
+        internal static void SetRadiationLock(bool on)
+        {
+            if (RadiationLockOn == on) return;
+            RadiationLockOn = on;
+            Apply();
+            Log.Info("[features] RadiationLock = " + on);
+        }
+
+        internal static void SetLeftClicker(bool on)
+        {
+            if (LeftClickerOn == on) return;
+            LeftClickerOn = on;
+            try
+            {
+                if (on) AutoClicker.Start();
+                else AutoClicker.Stop();
+            }
+            catch (Exception e) { Log.ErrorOnce("features.clicker", e); }
+            Log.Info("[features] LeftClicker = " + on);
         }
 
         internal static void SetPerformanceMode(bool on)
@@ -367,6 +395,23 @@ namespace ZedZone.UltimateAssistant.Core
                 }
             }
             catch (Exception e) { Log.ErrorOnce("features.apply.move", e); }
+
+            // 辐射补丁（仅"保持 0 辐射"开启时安装）
+            try
+            {
+                if (RadiationLockOn && !_radPatchesInstalled)
+                {
+                    if (_harmony == null) _harmony = new Harmony(Plugin.PluginGuid);
+                    Patch.RadiationPatches.Install(_harmony);
+                    _radPatchesInstalled = true;
+                }
+                else if (!RadiationLockOn && _radPatchesInstalled)
+                {
+                    Patch.RadiationPatches.Uninstall(_harmony);
+                    _radPatchesInstalled = false;
+                }
+            }
+            catch (Exception e) { Log.ErrorOnce("features.apply.rad", e); }
         }
 
         internal static void Shutdown()
@@ -374,6 +419,7 @@ namespace ZedZone.UltimateAssistant.Core
             try { if (_patchesInstalled) Patch.WeaponPatches.Uninstall(_harmony); } catch { }
             try { if (_playerPatchesInstalled) Patch.PlayerPatches.Uninstall(_harmony); } catch { }
             try { if (_movePatchesInstalled) Patch.PlayerMovePatches.Uninstall(_harmony); } catch { }
+            try { if (_radPatchesInstalled) Patch.RadiationPatches.Uninstall(_harmony); } catch { }
             try { FullBright.Restore(); } catch { }
             try { ZombieEsp.Clear(); } catch { }
             try { DurabilityLock.Reset(); } catch { }
@@ -383,10 +429,15 @@ namespace ZedZone.UltimateAssistant.Core
             InfiniteAmmoOn = NoReloadOn = ZombieEspOn = false;
             WeaponDurabilityOn = NoOverheatOn = JamBypassOn = ItemDurabilityLockOn = false;
             NoHpLossOn = NoStaminaLossOn = NoHungerLossOn = NoThirstLossOn = NoJamOn = false;
-            AlwaysSprintOn = MoveSpeedOn = FullBrightOn = PerformanceModeOn = AutoSupplyOn = false;
+            AlwaysSprintOn = MoveSpeedOn = FullBrightOn = PerformanceModeOn = AutoSupplyOn = RadiationLockOn = LeftClickerOn = false;
         }
 
         internal static string StatusText()
             => $"弹药={(InfiniteAmmoOn ? "开" : "关")} 免换弹={(NoReloadOn ? "开" : "关")} ESP={(ZombieEspOn ? "开" : "关")}";
     }
 }
+
+
+
+
+

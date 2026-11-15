@@ -38,6 +38,13 @@ namespace ZedZone.UltimateAssistant.Core
         internal static ConfigEntry<float> MoveSpeedMultiplier;
         internal static ConfigEntry<bool> FullBright;
         internal static ConfigEntry<bool> AutoSupply;
+        internal static ConfigEntry<bool> RadiationLock;
+        internal static ConfigEntry<string> SoundOnPath;
+        internal static ConfigEntry<string> SoundOffPath;
+        internal static ConfigEntry<bool> LeftClicker;
+        internal static ConfigEntry<int> LeftClickInterval;
+        internal static ConfigEntry<bool> EspShowHealth;
+        internal static ConfigEntry<bool> RadiationSelfTest;
         internal static ConfigEntry<bool> PerformanceMode;
 
         // ---- Zombie ESP 选项 ----
@@ -255,6 +262,21 @@ namespace ZedZone.UltimateAssistant.Core
             MoveSpeedMultiplier = cfg.Bind("Features", "MoveSpeedMultiplier", 1.0f,
                 new ConfigDescription("移动速度倍率（1.0 - 20.0）。", new AcceptableValueRange<float>(1f, 20f)));
             AutoSupply = cfg.Bind("Features", "AutoSupply", false, "自动补充材料：制造/修复时视为材料充足（不再因缺少材料失败）。默认关闭。");
+
+            SoundOnPath = cfg.Bind("Sound", "OnPath", "", "启用提示音 wav 路径（留空则自动查找 sounds\\on.wav）。");
+            SoundOffPath = cfg.Bind("Sound", "OffPath", "", "关闭提示音 wav 路径（留空则自动查找 sounds\\off.wav）。");
+            LeftClicker = cfg.Bind("Features", "LeftClicker", false, "连点器：按设定间隔自动左键单击（走玩家自己的攻击入口）。默认关闭。");
+            LeftClickInterval = cfg.Bind("Features", "LeftClickInterval", 100, new ConfigDescription("连点间隔（毫秒，0=每帧一次，最大 1000）。", new AcceptableValueRange<int>(0, 1000)));
+
+
+
+
+
+
+
+            EspShowHealth = cfg.Bind("Esp", "EspShowHealth", true, "ESP 显示敌人血量数字与血条。");
+            RadiationLock = cfg.Bind("Features", "RadiationLock", false, "保持 0 辐射：持续把本地玩家 radiationDose 清 0（含 RadiationDose.Step 兜底）。默认关闭。");
+            RadiationSelfTest = cfg.Bind("Diagnostics", "RadiationSelfTest", false, "辐射读写自检（启动后执行一次，写入极小测试值并立即还原）。默认关闭。");
             PerformanceMode = cfg.Bind("Features", "PerformanceMode", false, "性能模式：降低 ESP/耐久/诊断的刷新频率以提升帧数（功能不变，响应略慢）。默认关闭。");
             FullBright = cfg.Bind("Features", "FullBright", false,
                 "地图全亮：夜间提升场景环境亮度（仅影响画面，不改变时间/天气/AI）。默认关闭。");
@@ -295,6 +317,15 @@ namespace ZedZone.UltimateAssistant.Core
         }
     }
 }
+
+
+
+
+
+
+
+
+
 
 
 

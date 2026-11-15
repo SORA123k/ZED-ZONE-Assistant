@@ -84,7 +84,7 @@
 | `ItemDurabilityLock` | `false` | 工具/近战/装备耐久只增不减。 |
 | `WeaponDurability` | `false` | 枪械耐久保持在历史最高（写 `ItemData.properties[0]`，会随存档保存）。 |
 | `NoOverheat` | `false` | 自己枪械温度恒为 0（不影响 NPC）。 |
-| `AutoSupply` | `false` | 制造/修复视为材料充足；岛屿船可强制完成建造。会改变任务流程，注意备份存档。 |
+| `AutoSupply` | `false` | 一键维修小船：靠近可维修船只时自动补齐材料并尝试完成建造；同时放宽制造/修复材料判定。会改变任务流程，注意备份存档。 |
 | `NoHpLoss` | `false` | 本地玩家受伤不掉血。 |
 | `NoStaminaLoss` | `false` | 奔跑/跳跃不消耗体力。 |
 | `NoHungerLoss` | `false` | 饱食度不减少（进食仍增加）。 |
@@ -93,7 +93,11 @@
 | `MoveSpeed` | `false` | 移动加速开关。 |
 | `MoveSpeedMultiplier` | `1.0` | 加速倍率，1.0–20.0（含翻滚加速）。 |
 | `FullBright` | `false` | 夜间提升场景亮度（只影响画面，不改时间/天气/AI）。 |
+| `EspShowHealth` | `true` | ESP 显示血量数字与血条（hp / FullHP）。 |
 | `ZombieEsp` | `false` | 僵尸 ESP（名称/距离/方框/屏幕边缘指示）。 |
+| `LeftClicker` | `false` | 连点器：按设定间隔自动左键单击（走玩家攻击入口）。 |
+| `LeftClickInterval` | `100` | 0–1000 | 连点间隔（毫秒，0=每帧）。 |
+| `RadiationLock` | `false` | 保持 0 辐射：持续把本地玩家 `radiationDose` 清 0，并给 `RadiationDose.Step` 打后置补丁返回 0。 |
 | `PerformanceMode` | `false` | 降低 ESP/耐久/诊断刷新频率，响应略慢但更省帧。 |
 
 ## [Esp]
@@ -119,6 +123,18 @@
 | `BlockGameInput` | `true` | — | 菜单打开时阻止角色操作（移动/射击/使用物品）。 |
 | `ShowLimbs` | `true` | — | 在 Player 页显示肢体状态（只读）。 |
 
+## [Sound]（开关提示音）
+
+默认不内置音频文件；把 `on.wav` / `off.wav` 放到
+`<游戏目录>\Mods\ZedZone.UltimateAssistant\sounds\`（或 `BepInEx\plugins\ZedZone.UltimateAssistant\sounds\`）即可。
+
+| 键 | 默认 | 说明 |
+|---|---|---|
+| `OnPath` | 空 | 启用提示音 wav 路径（绝对路径或相对游戏目录）；留空自动查找 `on.wav`。 |
+| `OffPath` | 空 | 关闭提示音 wav 路径；留空自动查找 `off.wav`。 |
+
+---
+
 ## [Diagnostics]（只读诊断，排查问题时才开）
 
 全部为**只读**：只打印/记录数值，不写游戏数据。默认全部关闭；打开后会写日志到
@@ -135,6 +151,7 @@
 | `LimbProbe` | `false` | — | 打印每个肢体的 index/hp/maxHP/受伤/流血。 |
 | `LimbProbeIntervalMs` | `500` | 100–5000 | 肢体探针采样间隔。 |
 | `LimbProbeHeartbeatSec` | `30` | 5–600 | 肢体探针心跳间隔。 |
+| `RadiationSelfTest` | `false` | — | 启动后对 `CharacterStatusData.radiationDose` 做一次读写自检（写入极小值后立即还原）。 |
 | `LimbProbeChangeFlushSec` | `1` | 1–60 | 肢体变化日志合并间隔（避免刷屏）。 |
 | `LimbApiProbe` | `false` | — | 校验恢复接口的参数空间（**只调用只读接口**）。 |
 | `MetaDiag` | `false` | — | IL2CPP 私有字段元数据探针，输出到 `Diagnostics\`。 |
@@ -160,6 +177,8 @@
 | `always_sprint` | 强制奔跑 |
 | `move_speed` | 移动加速 |
 | `esp` | 僵尸 ESP |
+| `rad_lock` | 保持 0 辐射 |
+| `auto_click` | 连点器 |
 | `fullbright` | 地图全亮 |
 | `auto_supply` | 自动补充材料 |
 | `performance` | 性能模式 |
@@ -189,3 +208,12 @@ EnableRestore = false
 
 - [README.md](../README.md) — 功能一览
 - [docs/COMPATIBILITY.md](COMPATIBILITY.md) — 游戏版本与适配
+
+
+
+
+
+
+
+
+
