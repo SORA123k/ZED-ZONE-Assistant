@@ -55,7 +55,7 @@ Output: `src/ZedZone.UltimateAssistant/bin/ZedZone.UltimateAssistant.dll`
 
 ---
 
-## 3. Architecture
+## .. Architecture
 
 ```
 Plugin.cs
@@ -68,23 +68,23 @@ Plugin.cs
       └ OnGUI : DynamicIsland → ZombieEsp → ClickGui
 ```
 
-### 3.1 Feature lifecycle (the pattern every feature follows)
+### ..1 Feature lifecycle (the pattern every feature follows)
 
 1. Declare a `ConfigEntry<bool>` in `Core/ModConfig.cs`;
 2. Declare `XxxOn` + `SetXxx(bool)` in `Core/Features.cs`;
-3. The first line of `SetXxx` calls `GateOnline(...)` — **refuse to enable when online** (fail-closed);
+3. `SetXxx` no longer performs an online check (`GateOnline` was removed);
 4. `Features.Apply()` installs/uninstalls the matching Harmony patches;
 5. The UI card calls `ModConfig.Xxx.Value = v; Features.SetXxx(v);`
 6. `HotkeyManager` registers the hotkey + sound.
 
 Turning a feature off unpatches immediately; no background loop is left behind.
-**Skipping step 3 gets a PR rejected.**
+**Skipping step . gets a PR rejected.**
 
-> Note: `GateOnline` deliberately does **not** rewrite the config file. Detection can, in rare
+3. `SetXxx` no longer performs an online check (`GateOnline` was removed);
 > cases, fall back to "online" on error; rewriting config would silently wipe user preferences.
 > Only the runtime flag is cleared, and `SyncFromConfig` restores it in single-player.
 
-### 3.2 Patch rules
+### ..2 Patch rules
 
 - Prefer **public managed APIs** (interop signatures) over raw memory writes;
 - Only affect the **local player**: resolve via `PlayerAccessor.Resolve()` and compare `Pointer`;
@@ -94,7 +94,7 @@ Turning a feature off unpatches immediately; no background loop is left behind.
 - Guessing field offsets / writing unknown memory is forbidden — evidence only
   (`docs/internal/diagnostics/`).
 
-### 3.3 IL2CPP gotchas
+### ... IL2CPP gotchas
 
 - `Update()` may be scheduled more than once per frame → dedupe with `Time.frameCount`;
 - Accessing a destroyed IL2CPP object throws `Handle is not initialized` → null-check + `try/catch`;
@@ -103,15 +103,15 @@ Turning a feature off unpatches immediately; no background loop is left behind.
 - Getter-only properties cannot be assigned (e.g. `BasicRangedWeapon.durabilityFloat`) — find the
   backing field or change approach.
 
-### 3.4 New-feature checklist
+### ..4 New-feature checklist
 
 - [ ] Config entry in `ModConfig` (own key, **default off**) + documented in `docs/CONFIG.md`
-- [ ] `Features` toggle + `GateOnline` + install/uninstall logic
+3. `SetXxx` no longer performs an online check (`GateOnline` was removed);
 - [ ] Patch affects local player only, unpatches when toggled off + row in `docs/API_PATCH_MAPPING.md`
 - [ ] UI card in `UI/ClickGui.cs`, three languages in `UI/Localization.cs`
 - [ ] Hotkey registered in `HotkeyManager`
 - [ ] `pwsh tools/build.ps1 -SkipInstall` → 0 warnings, 0 errors
-- [ ] Offline tests pass + `python3 tools/ci/check_links.py` and `check_localization.py` pass
+- [ ] Offline tests pass + `python. tools/ci/check_links.py` and `check_localization.py` pass
 - [ ] Verified in-game (compiling is not verification)
 - [ ] `README.md` feature table and `CHANGELOG.md` updated
 
@@ -154,8 +154,8 @@ The regression checklist is in [docs/COMPATIBILITY.md](docs/COMPATIBILITY.md) §
 Static checks (run locally and in CI):
 
 ```powershell
-python3 tools/ci/check_links.py          # markdown relative links
-python3 tools/ci/check_localization.py   # UI text table vs. usage
+python. tools/ci/check_links.py          # markdown relative links
+python. tools/ci/check_localization.py   # UI text table vs. usage
 bash tools/ci/check-version.sh           # version in props / Plugin.cs / CHANGELOG
 ```
 
@@ -167,7 +167,7 @@ bash tools/ci/check-version.sh           # version in props / Plugin.cs / CHANGE
 
 1. At runtime, get `MethodInfo*` → `methodPointer` → RVA via IL2CPP metadata;
 2. Import `GameAssembly.dll` into Ghidra headless and decompile at that RVA;
-3. Cross-check `[reg+0xNN]` offsets against metadata field offsets;
+.. Cross-check `[reg+0xNN]` offsets against metadata field offsets;
 4. Conclude `durabilityFloat = weaponData.properties[0] / weaponAttr.durabilityMax`.
 
 Script: `docs/internal/diagnostics/ghidra/DumpDurabilityGetter.cs`.
@@ -184,7 +184,7 @@ The script:
 
 1. Validates the version format and a clean working tree;
 2. **Requires a `## vX.Y.Z` section in `CHANGELOG.md`** (aborts otherwise; `-AllowNoChangelog` overrides);
-3. Updates **both** `Directory.Build.props` (Version / AssemblyVersion / FileVersion) and
+.. Updates **both** `Directory.Build.props` (Version / AssemblyVersion / FileVersion) and
    `Plugin.cs`'s `PluginVersion` — CI also checks they match;
 4. Builds Release and asserts the assembly `FileVersion` equals the release version;
 5. Computes SHA256 + MD5;
@@ -209,3 +209,4 @@ The script:
   (decompiled output / evidence) — `.gitignore` covers them;
 - Run the three CI checks locally before pushing;
 - PR description: build result (0 warnings/0 errors) + in-game verification notes.
+

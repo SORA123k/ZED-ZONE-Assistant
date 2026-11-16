@@ -20,29 +20,18 @@ namespace ZedZone.UltimateAssistant.Core
     /// RefreshBodyPartRecoveryBuff / UseBandage / RemoveBandage / StartBleeding /
     /// StopAllBleeding / OnSleepTimeUpdate / OnAwakeTimeUpdate。
     ///
-    /// 默认关闭（`[Diagnostics] LimbApiProbe = false`），联机拒绝执行。
+    /// 默认关闭（`[Diagnostics] LimbApiProbe = false`）。
     /// </summary>
     internal static class LimbApiProbe
     {
         private static IntPtr _lastPtr = IntPtr.Zero;
         private static bool _done;
-        private static bool _refused;
 
         internal static bool Enabled => ModConfig.LimbApiProbe?.Value ?? false;
 
         internal static void Tick()
         {
             if (!Enabled) return;
-
-            if (PlayerWriteGate.IsMultiplayer(out string why))
-            {
-                if (!_refused)
-                {
-                    _refused = true;
-                    Log.Warn("[limbapi] 联机状态（" + why + "），只读校验探针拒绝执行。");
-                }
-                return;
-            }
 
             HumanCharacterController p = null;
             try { p = PlayerAccessor.Resolve(out _, out _); } catch { }
@@ -141,3 +130,7 @@ namespace ZedZone.UltimateAssistant.Core
         internal static string Status() => $"LimbApiProbe={(Enabled ? (_done ? "done" : "on") : "off")}";
     }
 }
+
+
+
+

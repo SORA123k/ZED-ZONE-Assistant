@@ -1,6 +1,6 @@
 # ZED ZONE Assistant (SORA Assistant)
 
-<p align="right"><a href="README.md">简体中文</a> | <b>English</b></p>
+<p align="right" <a href="README.md" 简体中文</a  | <b English</b </p 
 
 [![CI](https://github.com/SORA123k/ZED-ZONE-Assistant/actions/workflows/ci.yml/badge.svg)](https://github.com/SORA123k/ZED-ZONE-Assistant/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/SORA123k/ZED-ZONE-Assistant)](https://github.com/SORA123k/ZED-ZONE-Assistant/releases)
@@ -8,7 +8,7 @@
 
 A **single-player, offline-only** utility mod for **ZED ZONE** (Steam AppID `1211600`), built on **BepInEx 6 (IL2CPP)** + **HarmonyX**. It ships an in-game ClickGUI-style menu (default hotkey `INSERT`) with durability, ammo, protection, movement and visual helpers.
 
-> **Single-player / offline use only.** When an online session is detected, **every state-modifying feature** (ammo, durability, overheat, jam, HP/stamina/hunger/thirst, auto supply, movement) plus **ESP** is refused and forcibly turned off (fail-closed). Do not use it in multiplayer.
+  **Single-player / offline use only.** When an online session is detected, **every state-modifying feature** (ammo, durability, overheat, jam, HP/stamina/hunger/thirst, auto supply, movement) plus **ESP** is refused and forcibly turned off (fail-closed). Do not use it in multiplayer.
 
 ---
 
@@ -104,12 +104,12 @@ After a game update the `Assembly-CSharp` IL2CPP signatures may change. The plug
 3. Launch the game **through Steam**.
 4. The main menu shows `ZED MODS: N code mod(s) loaded` when the loader is active.
 
-This loader scans `Mods\<name>\*.dll` in the game folder (that's where this mod goes), DLLs from
+This loader scans `Mods\<name \*.dll` in the game folder (that's where this mod goes), DLLs from
 Workshop items / `.zedmod` archives, and `LocalLow\LevenLiu\ZEDZONE\Mods\Workspace`.
 Uninstall with `uninstall.cmd` in the same folder. BepInEx 6.0.0-be.793 is bundled (LGPL-2.1).
 
-> The loader and the steps above are provided by the Workshop author **star fox**;
-> they are summarized from the Workshop page. If anything differs, the Workshop page wins.
+  The loader and the steps above are provided by the Workshop author **star fox**;
+  they are summarized from the Workshop page. If anything differs, the Workshop page wins.
 
 **B. Manual BepInEx 6 (IL2CPP BleedingEdge)**
 
@@ -121,14 +121,14 @@ game root, then launch the game once so `BepInEx\interop\` is generated.
 1. Download `ZedZone.UltimateAssistant.dll` from **Releases** (optionally verify the SHA256 in the release notes).
 2. Copy it to:
    ```
-   <Game>\Mods\ZedZone.UltimateAssistant\ZedZone.UltimateAssistant.dll
+   <Game \Mods\ZedZone.UltimateAssistant\ZedZone.UltimateAssistant.dll
    ```
    (`BepInEx\plugins\` also works — pick **one** location only.)
 3. Launch the game, load a save, press **INSERT**.
 
 ### Verify
 
-Check `<Game>\BepInEx\LogOutput.log` for:
+Check `<Game \BepInEx\LogOutput.log` for:
 
 ```
 [Info   :ZED ZONE Ultimate Assistant] ZED ZONE Ultimate Assistant v1.0.1 loading
@@ -161,7 +161,7 @@ While the menu is open the mod blocks character input, disables the game's UI ra
 ## Configuration
 
 ```
-<Game>\BepInEx\config\zedzone.ultimateassistant.cfg
+<Game \BepInEx\config\zedzone.ultimateassistant.cfg
 ```
 
 - Changes made in the menu apply immediately and are written back to the file.
@@ -286,3 +286,4 @@ If you want to become a maintainer (write access), open an issue or contact the 
 ## License
 
 [MIT](LICENSE) © 2026 SORA123k
+

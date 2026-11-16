@@ -101,7 +101,7 @@ namespace ZedZone.UltimateAssistant
             CoreLog.Info("  只读功能          : 保留（7 个读取模块）");
             CoreLog.Info($"  Harmony 补丁数    : {patches}（特性开启后按需安装，关闭即卸载）");
             CoreLog.Info("  玩家引用缓存      : 否（每次 Resolve 重新解析）");
-            CoreLog.Info($"  联机门禁          : fail-closed（NetworkManager.isOnline/isHost/isClient）");
+            CoreLog.Info($"  联机门禁          : 已移除（不做自动检测/强制关闭）");
             CoreLog.Info($"  写入门总开关      : {(ModConfig.EnableRestore?.Value ?? false ? "开" : "关")}");
             CoreLog.Info($"  恢复项开关        : HP={(ModConfig.RestoreHealth?.Value ?? true)} " +
                           $"Energy={(ModConfig.RestoreEnergy?.Value ?? true)} " +
@@ -158,6 +158,7 @@ namespace ZedZone.UltimateAssistant
         }
     }
 }
+
 
 
 

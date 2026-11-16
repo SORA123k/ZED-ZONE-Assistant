@@ -183,16 +183,16 @@ Loader: Option A → `uninstall.cmd`; Option B → delete `winhttp.dll`, `doorst
 
 ## 7. Troubleshooting
 
-| Symptom | Check |
-|---|---|
-| `INSERT` does nothing | Is there a loading line in `LogOutput.log`? Is the DLL in only one place? Is BepInEx active? |
-| No `ZED MODS: N code mod(s) loaded` in the main menu | Workshop loader not installed: re-run `install.cmd` (as admin if needed) and launch through Steam |
-| Menu opens but the character keeps moving | Settings → "Block game input while menu is open" should be on |
-| No mouse cursor | The mod forces the cursor visible; if it still fails, open an issue with the log |
-| Game crashes on launch | Most likely BepInEx or game version mismatch; remove the mod first to confirm the game boots |
-| A feature does nothing | Is its toggle on? Some features only work in a loaded save (not the main menu) |
-| Toggles refuse to stay on in an online session | Expected: modification features are fail-closed (they auto-disable online) |
-| Save file looks wrong | Restore your backup immediately; report with `LogOutput.log` |
+  Symptom   Check  
+ --- --- 
+  `INSERT` does nothing   Is there a loading line in `LogOutput.log`? Is the DLL in only one place? Is BepInEx active?  
+  No `ZED MODS: N code mod(s) loaded` in the main menu   Workshop loader not installed: re-run `install.cmd` (as admin if needed) and launch through Steam  
+  Menu opens but the character keeps moving   Settings → "Block game input while menu is open" should be on  
+  No mouse cursor   The mod forces the cursor visible; if it still fails, open an issue with the log  
+  Game crashes on launch   Most likely BepInEx or game version mismatch; remove the mod first to confirm the game boots  
+  A feature does nothing   Is its toggle on? Some features only work in a loaded save (not the main menu)  
+| Toggles refuse to stay on in an online session | There is no online gate in this build; check config/hotkey conflicts |
+  Save file looks wrong   Restore your backup immediately; report with `LogOutput.log`  
 
 ---
 
@@ -208,3 +208,4 @@ Include:
 
 Security issues (save corruption, offline gating bypass, tampered release) → private channel in
 [SECURITY.md](SECURITY.md).
+

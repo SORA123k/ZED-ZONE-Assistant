@@ -8,7 +8,7 @@
 
 《ZED ZONE / 隔离区-丧尸末日生存》的**单人离线**辅助模组。基于 **BepInEx 6 (IL2CPP) + HarmonyX**，提供一套 ClickGUI 风格的游戏内菜单（默认 `INSERT` 打开），以及耐久、弹药、防护、移动、视觉等一整套辅助功能。
 
-> **仅供单人离线使用。** 检测到联机状态时，所有**修改类功能**（弹药 / 耐久 / 过热 / 卡壳 / 生命 / 体力 / 饱食 / 水分 / 自动补充 / 移动）与 **ESP** 都会被拒绝启用并主动关闭（fail-closed）。请勿用于多人游戏，也不要在联机模式下尝试启用。
+> **建议仅用于单人离线存档。** 本模组**不做联机检测、也不会自动关闭功能**；是否在联机房间使用由你自己决定并承担后果。
 
 ---
 
@@ -259,7 +259,7 @@ src/ZedZone.UltimateAssistant/
     ModConfig.cs            全部配置项
     Features.cs             功能开关 + 联机门禁 + 补丁生命周期
     PlayerAccessor.cs       玩家解析（不缓存）
-    PlayerWriteGate.cs      统一写入门（恢复功能 + fail-closed 联机判定）
+    PlayerWriteGate.cs      统一写入门（恢复功能 + 写入校验）
     StatRange.cs / RangeSelection.cs   动态上限读取
     RestoreService.cs       一键恢复
     DurabilityLock.cs       耐久锁定（物品/枪械）
@@ -305,7 +305,7 @@ docs/                       文档地图见 docs/README.md
 
 ## 已知限制
 
-- **仅离线单人**：联机时修改类功能与 ESP 会自动拒绝并关闭（含进入会话后才检测到的情况）。
+- **无联机门禁**：模组不检测、不自动关闭任何功能；请自行只在单人存档使用。
   这个保护只作用于本模组自身行为，**不能**保证联机服务端的判定。
 - **游戏版本绑定**：基于 1.0.17 的 IL2CPP interop 签名；不匹配时只会告警不会阻断，
   功能可能失效，适配步骤见 [docs/COMPATIBILITY.md](docs/COMPATIBILITY.md)。
@@ -362,4 +362,5 @@ docs/                       文档地图见 docs/README.md
 ## 许可
 
 [MIT](LICENSE) © 2026 SORA123k
+
 

@@ -67,7 +67,7 @@ namespace ZedZone.UltimateAssistant.Core
     /// 统一写入门 —— Phase 3 唯一允许修改玩家状态的入口。
     ///
     /// 固定检查顺序（不得调换，见 docs/PHASE_3_SAFETY_DESIGN.md §2.2）：
-    ///   1 配置开关 → 2 联机(fail-closed) → 3 验证状态 → 4 重取玩家 →
+    ///   1 配置开关 → 2 验证状态 → 4 重取玩家 →
     ///   5 死亡标志 → 6 重生窗口 → 7 **动态范围读取/校验** → 8 写入 → 9 回读校验
     ///
     /// 铁律：
@@ -121,10 +121,6 @@ namespace ZedZone.UltimateAssistant.Core
             // ---------- 1. 总开关 ----------
             if (!(ModConfig.EnableRestore?.Value ?? false))
                 return Reject(r, WriteOutcome.RejectedDisabled, "一键恢复总开关关闭");
-
-            // ---------- 2. 联机门禁（fail-closed） ----------
-            if (IsMultiplayer(out string why))
-                return Reject(r, WriteOutcome.RejectedMultiplayer, why);
 
             // ---------- 3. 功能开关 + 验证状态 ----------
             switch (stat)
@@ -307,3 +303,5 @@ namespace ZedZone.UltimateAssistant.Core
         }
     }
 }
+
+

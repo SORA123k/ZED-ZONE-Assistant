@@ -53,7 +53,7 @@ dotnet build src/ZedZone.UltimateAssistant -c Release -p:GameRoot="E:\...\ZED ZO
 
 ---
 
-## 3. 代码架构
+## .. 代码架构
 
 ```
 Plugin.cs
@@ -66,20 +66,20 @@ Plugin.cs
       └ OnGUI : DynamicIsland → ZombieEsp → ClickGui
 ```
 
-### 3.1 功能开关的统一模式
+### ..1 功能开关的统一模式
 
 每个功能遵循同一套生命周期（见 `Core/Features.cs`）：
 
 1. `ModConfig` 里声明 `ConfigEntry<bool>`；
 2. `Features` 里声明 `XxxOn` 与 `SetXxx(bool)`；
-3. `SetXxx` 第一行调用 `GateOnline(...)` —— **联机时拒绝启用**（fail-closed）；
+3. `SetXxx` 不再做联机判定（`GateOnline` 已移除）；
 4. `Features.Apply()` 里根据开关**安装/卸载**对应 Harmony 补丁；
 5. UI 卡片调用 `ModConfig.Xxx.Value = v; Features.SetXxx(v);`；
 6. `HotkeyManager` 注册该功能的快捷键与音效。
 
-关闭开关 → 立即 `Unpatch`，不留后台循环。**新增功能请沿用这个模式，漏掉第 3 步会被打回。**
+关闭开关 → 立即 `Unpatch`，不留后台循环。**新增功能请沿用这个模式，漏掉第 . 步会被打回。**
 
-### 3.2 补丁规范
+### ..2 补丁规范
 
 - 优先使用**公开托管 API**（interop 签名）而不是内存写入；
 - 只对**本地玩家**生效：`PlayerAccessor.Resolve()` 后比较 `Pointer`；
@@ -88,22 +88,22 @@ Plugin.cs
 - **不要修改全局 `GameConfigs`、存档结构、其它角色/NPC**；
 - 修改未知内存 / 猜测字段偏移是被禁止的（以 `docs/internal/diagnostics/` 里的逆向证据为准）。
 
-### 3.3 IL2CPP 注意事项
+### ... IL2CPP 注意事项
 
 - `Update()` 每帧可能被调度多次 → 用 `Time.frameCount` 去重；
 - 已销毁的 IL2CPP 对象访问会抛 `Handle is not initialized` → 每次使用前判空并 try/catch；
 - 对象引用**不要缓存**（`PlayerAccessor` 每次重新解析），避免死亡/重生/场景切换后指向旧对象；
 - 属性只有 getter 时不能赋值（如 `BasicRangedWeapon.durabilityFloat`），需要找底层字段或换方案。
 
-### 3.4 新增一个功能的检查清单
+### ..4 新增一个功能的检查清单
 
 - [ ] `ModConfig` 新增配置项（独立 key，**默认关闭**）+ `docs/CONFIG.md` 登记
-- [ ] `Features` 新增开关 + `GateOnline` 门禁 + 安装/卸载逻辑
+3. `SetXxx` 不再做联机判定（`GateOnline` 已移除）；
 - [ ] 补丁只作用于本地玩家，关闭即卸载 + `docs/API_PATCH_MAPPING.md` 补一行
 - [ ] UI 新增卡片（`UI/ClickGui.cs`），三语文案（`UI/Localization.cs`）
 - [ ] `HotkeyManager` 注册快捷键
 - [ ] `pwsh tools/build.ps1 -SkipInstall` 0 警告 0 错误
-- [ ] 离线测试通过 + `python3 tools/ci/check_links.py` 通过
+- [ ] 离线测试通过 + `python. tools/ci/check_links.py` 通过
 - [ ] 实机验证（不能只凭编译通过）
 - [ ] 更新 `README.md` 功能表与 `CHANGELOG.md`
 
@@ -150,7 +150,7 @@ dotnet run --project tests/ZedUaOfflineTests/ZedUaOfflineTests.csproj -c Release
 
 1. 运行期通过 IL2CPP 元数据 API 拿到 `MethodInfo*` → `methodPointer` → RVA；
 2. Ghidra headless 导入 `GameAssembly.dll`，在 RVA 处反编译；
-3. 用元数据字段偏移交叉验证反编译里的 `[reg+0xNN]`；
+.. 用元数据字段偏移交叉验证反编译里的 `[reg+0xNN]`；
 4. 最终定位 `durabilityFloat = weaponData.properties[0] / weaponAttr.durabilityMax`。
 
 脚本：`docs/internal/diagnostics/ghidra/DumpDurabilityGetter.java`。
@@ -169,7 +169,7 @@ pwsh tools/release.ps1 -Version 1.0.2
 
 1. 校验版本号格式（`x.y.z`）与工作区干净
 2. **校验 `CHANGELOG.md` 已存在 `## vX.Y.Z` 小节**（没有就中止，可用 `-AllowNoChangelog` 跳过）
-3. 同时修改 **`Directory.Build.props`**（Version / AssemblyVersion / FileVersion）
+.. 同时修改 **`Directory.Build.props`**（Version / AssemblyVersion / FileVersion）
    与 **`Plugin.cs` 的 `PluginVersion`** —— 两处必须一致，CI 也会校验
 4. `dotnet build -c Release`，并校验产物 `FileVersion` 与发布版本一致
 5. 计算 SHA256 + MD5
@@ -201,5 +201,6 @@ pwsh tools/release.ps1 -Version 1.0.2
 ```powershell
 dotnet run --project tests/ZedUaOfflineTests/ZedUaOfflineTests.csproj -c Release
 bash tools/ci/check-version.sh        # 需要 bash；Windows 可用 Git Bash / WSL
-python3 tools/ci/check_links.py
+python. tools/ci/check_links.py
 ```
+

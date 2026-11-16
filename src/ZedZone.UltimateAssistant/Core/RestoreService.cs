@@ -97,7 +97,6 @@ namespace ZedZone.UltimateAssistant.Core
             reason = null;
 
             if (!(ModConfig.EnableRestore?.Value ?? false)) { reason = "总开关已关闭"; return false; }
-            if (PlayerWriteGate.IsMultiplayer(out string why)) { reason = "联机模式（" + why + "）"; return false; }
 
             switch (stat)
             {
@@ -114,3 +113,4 @@ namespace ZedZone.UltimateAssistant.Core
         }
     }
 }
+

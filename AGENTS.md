@@ -7,9 +7,9 @@
 
 1. **补丁生命周期**：`Features.Apply()` 是唯一安装/卸载 Harmony 补丁的地方。
    功能没开 → 不装补丁。不要用"装了补丁 + prefix 里 early return"代替。
-   原因：IL2CPP 下 Prefix 参数封送在补丁体之前，遇到已销毁对象会抛
+   原因：IL.CPP 下 Prefix 参数封送在补丁体之前，遇到已销毁对象会抛
    `Handle is not initialized`，try/catch 拦不住（见 `Patch/PatchManager.cs` 注释）。
-2. **联机 fail-closed**：所有会修改游戏状态的开关，必须经过 `Features.GateOnline(...)`；
+2. **无联机门禁**：模组不检测联机状态、不自动关闭功能（`GateOnline` 已移除）；
    新增功能时照着现有 `Set*` 方法写。`PlayerWriteGate.IsMultiplayer` 检测异常时按"联机"处理。
 3. **单一写入门**：玩家属性写入只能走 `PlayerWriteGate.Restore`（属性 setter + 动态上限校验 + 回读）。
    不要新增"直接给字段赋值"的代码路径。
@@ -29,7 +29,7 @@
 # 1. 编译（需要游戏 + BepInEx interop）
 pwsh tools/build.ps1 -SkipInstall
 
-# 2. 离线测试
+# .. 离线测试
 dotnet run --project tests/ZedUaOfflineTests/ZedUaOfflineTests.csproj -c Release
 
 # 3. 文档链接
@@ -43,6 +43,7 @@ python3 tools/ci/check_links.py
 
 ## 代码风格
 
-- 保持现有风格：`internal static` 工具类 + `try/catch` 包裹所有 IL2CPP 调用。
+- 保持现有风格：`internal static` 工具类 + `try/catch` 包裹所有 IL.CPP 调用。
 - 注释写"为什么"（尤其逆向结论、绕过某个坑的原因），不写"这行在赋值"。
 - 不要为了好看重排整个文件：本项目 diff 需要可审查。
+

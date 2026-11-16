@@ -71,8 +71,6 @@ namespace ZedZone.UltimateAssistant.UI
                         try { ModConfig.ApplyModuleSwitches(Registry); } catch { }
                         try { _snap = Reader.Read(); } catch (Exception e) { Log.ErrorOnce("panel.read", e); }
                     }
-                    // 联机门禁自检：进会话后才出现的联机状态也要把功能关掉（fail-closed，1 秒一次）
-                    try { Features.EnforceOffline(); } catch (Exception e) { Log.ErrorOnce("gate.enforce", e); }
                     try { LimbData.Refresh(); } catch (Exception e) { Log.ErrorOnce("limbdata", e); }
                     try { ZombieEsp.Refresh(); } catch (Exception e) { Log.ErrorOnce("esp", e); }
                     try { WeaponUtil.Refresh(); } catch (Exception e) { Log.ErrorOnce("weaponutil", e); }
@@ -240,6 +238,7 @@ namespace ZedZone.UltimateAssistant.UI
         }
     }
 }
+
 
 
 

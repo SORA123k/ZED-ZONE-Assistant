@@ -10,11 +10,9 @@ namespace ZedZone.UltimateAssistant.Core
     /// 设计要点：
     ///  * 每个功能独立开关；
     ///  * **只在开启时装补丁**，关闭立刻卸载（IL2CPP 下"装了补丁+early return"≠"没装补丁"）；
-    ///  * **所有修改类功能**（弹药、耐久、过热、卡壳、生命/体力/饱食/水分、材料、移动）
-    ///    在联机状态下 fail-closed 拒绝启用，并在联机检测生效时主动关闭；
+    ///  * **所有修改类功能**（弹药、耐久、过热、卡壳、生命/体力/饱食/水分、材料、移动）    ///    任何情况下都不做联机检测/强制关闭（由用户自行决定何时使用）；
     ///  * ESP / 全亮为纯视觉，其中 ESP 同样在联机时禁用（项目规则）。
-    ///
-    /// 门禁的唯一入口是 <see cref="GateOnline"/>：菜单、快捷键、配置文件三条路径
+    ///    ///    没有联机门禁：菜单、快捷键、配置文件三条路径行为一致
     /// 最终都会经过 Set* 方法，因此只要在这里拦一次即可覆盖全部入口。
     /// </summary>
     internal static class Features
@@ -49,55 +47,6 @@ namespace ZedZone.UltimateAssistant.Core
         internal static string LastError { get; private set; }
         internal static int PatchCount => _patchesInstalled ? Patch.WeaponPatches.Installed : 0;
 
-        /// <summary>
-        /// 联机门禁（fail-closed）。
-        /// 返回 true 表示"这次启用请求被拒绝"，调用方应把 on 改回 false。
-        ///
-        /// 刻意**不改写配置文件**：检测本身有极小概率误判（异常按联机处理），
-        /// 自动写配置会把用户的偏好永久清掉。这里只关运行时开关，
-        /// 回到单机后 SyncFromConfig 会按配置自动恢复。
-        /// </summary>
-        private static bool GateOnline(string feature, bool want)
-        {
-            if (!want) return false;
-            if (!PlayerWriteGate.IsMultiplayer(out string why)) return false;
-
-            Log.WarnOnce("gate.online." + feature,
-                "[features] " + feature + " 已拒绝启用：检测到联机状态（" + why + "），fail-closed。" +
-                "（你的配置文件不会被改写，回到单机后自动恢复）");
-            return true;
-        }
-
-        /// <summary>联机时把已开启的修改类功能强制关掉（进会话前没检测到、进会话后检测到的情况）。</summary>
-        private static float _nextEnforceAt;
-        internal static void EnforceOffline()
-        {
-            if (Time.unscaledTime < _nextEnforceAt) return;
-            _nextEnforceAt = Time.unscaledTime + 1.0f;
-
-            if (!PlayerWriteGate.IsMultiplayer(out string why)) return;
-
-            int closed = 0;
-            if (InfiniteAmmoOn) { SetInfiniteAmmo(false); closed++; }
-            if (NoReloadOn) { SetNoReload(false); closed++; }
-            if (NoJamOn) { SetNoJam(false); closed++; }
-            if (JamBypassOn) { SetJamBypass(false); closed++; }
-            if (NoOverheatOn) { SetNoOverheat(false); closed++; }
-            if (WeaponDurabilityOn) { SetWeaponDurability(false); closed++; }
-            if (ItemDurabilityLockOn) { SetItemDurabilityLock(false); closed++; }
-            if (NoHpLossOn) { SetNoHpLoss(false); closed++; }
-            if (NoStaminaLossOn) { SetNoStaminaLoss(false); closed++; }
-            if (NoHungerLossOn) { SetNoHungerLoss(false); closed++; }
-            if (NoThirstLossOn) { SetNoThirstLoss(false); closed++; }
-            if (AutoSupplyOn) { SetAutoSupply(false); closed++; }
-            if (AlwaysSprintOn) { SetAlwaysSprint(false); closed++; }
-            if (MoveSpeedOn) { SetMoveSpeed(false); closed++; }
-            if (ZombieEspOn) { SetZombieEsp(false); closed++; }
-
-            if (closed > 0)
-                Log.WarnOnce("gate.enforce", "[features] 联机状态（" + why + "）：已强制关闭 " + closed + " 个功能。");
-        }
-
         /// <summary>从配置同步一次（可在菜单里调用）。</summary>
         internal static void SyncFromConfig()
         {
@@ -120,20 +69,6 @@ namespace ZedZone.UltimateAssistant.Core
             bool wantAmmo = ModConfig.InfiniteAmmo?.Value ?? false;
             bool wantReload = ModConfig.NoReload?.Value ?? false;
             bool wantEsp = ModConfig.ZombieEsp?.Value ?? false;
-
-            // 联机预检：一次判定，避免每个 Set* 各刷一条日志（细节拦截仍在 GateOnline 里）
-            if (PlayerWriteGate.IsMultiplayer(out string why))
-            {
-                if (wantAmmo || wantReload || wantDur || wantItemDur || wantHeat || wantJam ||
-                    wantNoJam || wantNoHpLoss || wantNoSta || wantNoHunger || wantNoThirst ||
-                    wantSupply || wantSprint || wantSpeed || wantEsp)
-                {
-                    Log.WarnOnce("feat.online", "[features] 联机状态（" + why + "），修改类功能与 ESP 已禁用。");
-                    wantAmmo = wantReload = wantDur = wantItemDur = wantHeat = wantJam = false;
-                    wantNoJam = wantNoHpLoss = wantNoSta = wantNoHunger = wantNoThirst = false;
-                    wantSupply = wantSprint = wantSpeed = wantEsp = false;
-                }
-            }
 
             SetInfiniteAmmo(wantAmmo);
             SetNoReload(wantReload);
@@ -158,7 +93,6 @@ namespace ZedZone.UltimateAssistant.Core
 
         internal static void SetInfiniteAmmo(bool on)
         {
-            if (GateOnline("InfiniteAmmo", on)) on = false;
             if (InfiniteAmmoOn == on) return;
             InfiniteAmmoOn = on;
             Apply();
@@ -167,7 +101,6 @@ namespace ZedZone.UltimateAssistant.Core
 
         internal static void SetNoReload(bool on)
         {
-            if (GateOnline("NoReload", on)) on = false;
             if (NoReloadOn == on) return;
             NoReloadOn = on;
             Apply();
@@ -181,7 +114,6 @@ namespace ZedZone.UltimateAssistant.Core
         /// </summary>
         internal static void SetWeaponDurability(bool on)
         {
-            if (GateOnline("WeaponDurability", on)) on = false;
             if (WeaponDurabilityOn == on) return;
             WeaponDurabilityOn = on;
             if (!on) DurabilityLock.Reset();
@@ -191,7 +123,6 @@ namespace ZedZone.UltimateAssistant.Core
 
         internal static void SetNoOverheat(bool on)
         {
-            if (GateOnline("NoOverheat", on)) on = false;
             if (NoOverheatOn == on) return;
             NoOverheatOn = on;
             Apply();
@@ -200,7 +131,6 @@ namespace ZedZone.UltimateAssistant.Core
 
         internal static void SetAlwaysSprint(bool on)
         {
-            if (GateOnline("AlwaysSprint", on)) on = false;
             if (AlwaysSprintOn == on) return;
             AlwaysSprintOn = on;
             Apply();
@@ -209,7 +139,6 @@ namespace ZedZone.UltimateAssistant.Core
 
         internal static void SetMoveSpeed(bool on)
         {
-            if (GateOnline("MoveSpeed", on)) on = false;
             if (MoveSpeedOn == on) return;
             MoveSpeedOn = on;
             Apply();
@@ -218,7 +147,6 @@ namespace ZedZone.UltimateAssistant.Core
 
         internal static void SetAutoSupply(bool on)
         {
-            if (GateOnline("AutoSupply", on)) on = false;
             if (AutoSupplyOn == on) return;
             AutoSupplyOn = on;
             Apply();
@@ -263,7 +191,6 @@ namespace ZedZone.UltimateAssistant.Core
 
         internal static void SetNoHungerLoss(bool on)
         {
-            if (GateOnline("NoHungerLoss", on)) on = false;
             if (NoHungerLossOn == on) return;
             NoHungerLossOn = on;
             Apply();
@@ -272,7 +199,6 @@ namespace ZedZone.UltimateAssistant.Core
 
         internal static void SetNoThirstLoss(bool on)
         {
-            if (GateOnline("NoThirstLoss", on)) on = false;
             if (NoThirstLossOn == on) return;
             NoThirstLossOn = on;
             Apply();
@@ -281,7 +207,6 @@ namespace ZedZone.UltimateAssistant.Core
 
         internal static void SetNoJam(bool on)
         {
-            if (GateOnline("NoJam", on)) on = false;
             if (NoJamOn == on) return;
             NoJamOn = on;
             Apply();
@@ -290,7 +215,6 @@ namespace ZedZone.UltimateAssistant.Core
 
         internal static void SetNoHpLoss(bool on)
         {
-            if (GateOnline("NoHpLoss", on)) on = false;
             if (NoHpLossOn == on) return;
             NoHpLossOn = on;
             Apply();
@@ -299,7 +223,6 @@ namespace ZedZone.UltimateAssistant.Core
 
         internal static void SetNoStaminaLoss(bool on)
         {
-            if (GateOnline("NoStaminaLoss", on)) on = false;
             if (NoStaminaLossOn == on) return;
             NoStaminaLossOn = on;
             Apply();
@@ -308,7 +231,6 @@ namespace ZedZone.UltimateAssistant.Core
 
         internal static void SetItemDurabilityLock(bool on)
         {
-            if (GateOnline("ItemDurabilityLock", on)) on = false;
             if (ItemDurabilityLockOn == on) return;
             ItemDurabilityLockOn = on;
             if (!on) DurabilityLock.Reset();
@@ -318,7 +240,6 @@ namespace ZedZone.UltimateAssistant.Core
 
         internal static void SetJamBypass(bool on)
         {
-            if (GateOnline("JamBypass", on)) on = false;
             if (JamBypassOn == on) return;
             JamBypassOn = on;
             Apply();
@@ -327,7 +248,6 @@ namespace ZedZone.UltimateAssistant.Core
 
         internal static void SetZombieEsp(bool on)
         {
-            if (GateOnline("ZombieEsp", on)) on = false;
             if (ZombieEspOn == on) return;
             ZombieEspOn = on;
             if (!on) ZombieEsp.Clear();
@@ -436,6 +356,8 @@ namespace ZedZone.UltimateAssistant.Core
             => $"弹药={(InfiniteAmmoOn ? "开" : "关")} 免换弹={(NoReloadOn ? "开" : "关")} ESP={(ZombieEspOn ? "开" : "关")}";
     }
 }
+
+
 
 
 

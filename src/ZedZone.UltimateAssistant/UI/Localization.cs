@@ -112,7 +112,7 @@ namespace ZedZone.UltimateAssistant.UI
             ["clear"]        = new[]{ "清除", "Clear", "清除" },
             ["press_key"]    = new[]{ "按键…", "Press key…", "按鍵…" },
             ["not_bound"]    = new[]{ "未绑定", "Not bound", "未綁定" },
-            ["footer_hint"]  = new[]{ "全部功能仅作用于本地玩家；联机自动禁用", "All features affect the local player only; disabled online", "全部功能僅作用於本地玩家；連線時自動停用" },
+            ["footer_hint"]  = new[]{ "全部功能仅作用于本地玩家", "All features affect the local player only", "全部功能僅作用於本地玩家" },
 
             // ---- 状态 ----
             ["st_off"]       = new[]{ "关", "off", "關" },
@@ -175,6 +175,7 @@ namespace ZedZone.UltimateAssistant.UI
             => code == "en" ? "English" : (code == "zhTW" ? "繁體中文" : "简体中文");
     }
 }
+
 
 
 

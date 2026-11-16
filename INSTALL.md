@@ -181,16 +181,16 @@ Get-FileHash .\ZedZone.UltimateAssistant.dll -Algorithm SHA256
 
 ## 7. 常见问题
 
-| 现象 | 排查 |
-|---|---|
-| 按 INSERT 没反应 | 检查 `LogOutput.log` 是否有加载日志；确认没有把 DLL 放两份；确认 BepInEx 生效 |
-| 主菜单没有 `ZED MODS: N code mod(s) loaded` | 创意工坊加载器没装成功：重跑 `install.cmd`（必要时管理员），并从 Steam 启动 |
-| 菜单打开但游戏还在动 | 设置里确认「打开菜单时阻止游戏操作」为开 |
-| 菜单里看不到鼠标 | 本模组会强制显示光标；若仍不可见，请在仓库提 Issue 附日志 |
-| 游戏启动即闪退 | 大概率是 BepInEx 版本或游戏版本不匹配；先移除本模组确认游戏可启动 |
-| 功能无效果 | 确认对应开关为开；部分功能需在存档内（非主菜单）才生效 |
-| 联机时开关点不开 | 预期行为：联机状态下修改类功能 fail-closed，会自动拒绝并关闭 |
-| 存档异常 | 立即用备份还原；这类问题请附上 `LogOutput.log` 提 Issue |
+  现象   排查  
+ --- --- 
+  按 INSERT 没反应   检查 `LogOutput.log` 是否有加载日志；确认没有把 DLL 放两份；确认 BepInEx 生效  
+  主菜单没有 `ZED MODS: N code mod(s) loaded`   创意工坊加载器没装成功：重跑 `install.cmd`（必要时管理员），并从 Steam 启动  
+  菜单打开但游戏还在动   设置里确认「打开菜单时阻止游戏操作」为开  
+  菜单里看不到鼠标   本模组会强制显示光标；若仍不可见，请在仓库提 Issue 附日志  
+  游戏启动即闪退   大概率是 BepInEx 版本或游戏版本不匹配；先移除本模组确认游戏可启动  
+  功能无效果   确认对应开关为开；部分功能需在存档内（非主菜单）才生效  
+| 联机时开关点不开 | 本版本没有联机门禁；若点不开请检查配置或热键冲突 |
+  存档异常   立即用备份还原；这类问题请附上 `LogOutput.log` 提 Issue  
 
 ---
 
@@ -206,3 +206,4 @@ Get-FileHash .\ZedZone.UltimateAssistant.dll -Algorithm SHA256
 
 安全问题（存档损坏、联机门禁失效、发布物被篡改）请走
 [SECURITY.md](SECURITY.md) 里的私有渠道。
+

@@ -16,8 +16,7 @@ namespace ZedZone.UltimateAssistant.Core
     ///   * 不安装任何 Harmony Patch。
     ///
     /// 安全：
-    ///   * 默认关闭（`[Diagnostics] LimbProbe = false`）；
-    ///   * **联机一律拒绝执行**（fail-closed，沿用已实机验证的 NetworkManager 判定）；
+    ///   * 默认关闭（`[Diagnostics] LimbProbe = false`）；    ///   * 不做联机检测（由用户自行决定）。
     ///   * 每次采样都重新解析玩家对象，绝不缓存。
     ///
     /// 输出：
@@ -56,7 +55,6 @@ namespace ZedZone.UltimateAssistant.Core
         private static float _nextHeartbeatAt;
         private static int _samples;
         private static int _changes;
-        private static bool _refusedLogged;
 
         // 变化合并（避免肢体自然恢复导致日志刷屏）
         private static float _nextFlushAt;
@@ -72,18 +70,6 @@ namespace ZedZone.UltimateAssistant.Core
             int intervalMs = Mathf.Clamp(ModConfig.LimbProbeIntervalMs?.Value ?? 500, 100, 5000);
             if (now * 1000f < _nextSampleAt) return;
             _nextSampleAt = now * 1000f + intervalMs;
-
-            // ---- 联机拒绝（fail-closed） ----
-            if (PlayerWriteGate.IsMultiplayer(out string why))
-            {
-                if (!_refusedLogged)
-                {
-                    _refusedLogged = true;
-                    Log.Warn("[limb] 联机状态（" + why + "），肢体采集模块拒绝执行。");
-                }
-                return;
-            }
-
             // ---- 每次重新解析玩家（禁止缓存） ----
             HumanCharacterController p = null;
             try { p = PlayerAccessor.Resolve(out _, out _); } catch { }
@@ -418,3 +404,7 @@ namespace ZedZone.UltimateAssistant.Core
         }
     }
 }
+
+
+
+

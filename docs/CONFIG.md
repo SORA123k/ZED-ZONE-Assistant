@@ -44,7 +44,7 @@
 
 ## [Restore]（一键恢复）
 
-写入走唯一的写入门 `PlayerWriteGate`：总开关 → 联机 fail-closed → 死亡/重生窗口 → 动态上限校验 → 写入 → 回读。
+写入走唯一的写入门 `PlayerWriteGate`：总开关 → 死亡/重生窗口 → 动态上限校验 → 写入 → 回读。
 
 | 键 | 默认 | 说明 |
 |---|---|---|
@@ -72,7 +72,7 @@
 
 ## [Features]（修改类功能）
 
-> **联机保护**：本段所有功能在检测到联机状态时会拒绝启用，并主动关闭
+> **无联机门禁**：本段功能不检测联机状态，也不会自动关闭
 > （fail-closed，见 `Features.GateOnline` / `EnforceOffline`）。
 
 | 键 | 默认 | 说明 |
@@ -190,7 +190,7 @@
 ## 常见改法
 
 ```ini
-; 想默认就开无敌，但只在单机：改 Features 段（联机时会自动关掉）
+; 想默认就开无敌：改 Features 段
 [Features]
 NoHpLoss = true
 NoHungerLoss = true
@@ -208,6 +208,7 @@ EnableRestore = false
 
 - [README.md](../README.md) — 功能一览
 - [docs/COMPATIBILITY.md](COMPATIBILITY.md) — 游戏版本与适配
+
 
 
 
