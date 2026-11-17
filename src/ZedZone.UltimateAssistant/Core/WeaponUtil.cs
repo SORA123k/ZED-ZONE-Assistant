@@ -60,6 +60,7 @@ namespace ZedZone.UltimateAssistant.Core
 
             // 耐久开关：持续把携带物耐久补回（每次刷新最多执行一次）
                         try { ProbeDurabilityFields(); } catch { }
+            try { DumpAmmoPropsOnce(); } catch { }
             try { ResetGunTemperature(); } catch { }
             try { ProbeHeldWeapon(); } catch { }
                     }
@@ -183,6 +184,59 @@ namespace ZedZone.UltimateAssistant.Core
 
         private static readonly Dictionary<IntPtr, ItemSig> _prevSigs = new Dictionary<IntPtr, ItemSig>();
         private static bool _propsDumped;
+
+        private static bool _ammoDumpDone;
+
+        /// <summary>一次性打印玩家手上武器的全部属性键值（定位"已装弹药/弹匣容量"的存储键）。</summary>
+        internal static void DumpAmmoPropsOnce()
+        {
+            if (_ammoDumpDone || !Features.InfiniteAmmoOn) return;
+            try
+            {
+                var p = PlayerAccessor.Resolve(out _, out _);
+                if (p == null) return;
+                var arr = Resources.FindObjectsOfTypeAll<BasicRangedWeapon>();
+                if (arr == null) return;
+
+                for (int i = 0; i < arr.Length; i++)
+                {
+                    var w = arr[i];
+                    if (w == null) continue;
+                    BasicCharacterController ch = null;
+                    try { ch = w.character; } catch { }
+                    if (ch == null) continue;
+                    try { if (ch.Pointer != p.Pointer) continue; } catch { continue; }
+
+                    var it = w.weaponData;
+                    if (it == null) continue;
+                    _ammoDumpDone = true;
+                    Log.Info($"[ammo] 武器 itemId={it.itemId} num={it.itemNumberFloat:0.##}");
+
+                    var pairs = it.itemPropertyPairs;
+                    if (pairs != null)
+                    {
+                        for (int k = 0; k < pairs.Count; k++)
+                        {
+                            var kv = pairs[k];
+                            if (kv == null) continue;
+                            string key = "?", val = "?";
+                            try { key = kv.key; } catch { }
+                            try { val = kv.value; } catch { }
+                            Log.Info($"[ammo]   {key} = {val}");
+                        }
+                    }
+
+                    try
+                    {
+                        var mag = w.reloadMagazineData;
+                        if (mag != null) Log.Info($"[ammo] reloadMagazineData itemId={mag.itemId} num={mag.itemNumberFloat:0.##}");
+                    }
+                    catch { }
+                    return;
+                }
+            }
+            catch (Exception e) { Log.WarnOnce("ammo.dump", "[ammo] 属性导出失败: " + e.GetType().Name); }
+        }
 
         internal static void ProbeDurabilityFields()
         {
@@ -439,7 +493,7 @@ namespace ZedZone.UltimateAssistant.Core
                 if (pairs == null || pairs.Count == 0) return "-";
                 var sb = new System.Text.StringBuilder();
                 int n = 0;
-                for (int i = 0; i < pairs.Count && n < 6; i++)
+                for (int i = 0; i < pairs.Count && n < 24; i++)
                 {
                     var kv = pairs[i];
                     if (kv == null) continue;
@@ -645,6 +699,9 @@ namespace ZedZone.UltimateAssistant.Core
             => $"武器={_playerWeapons.Count} 耐久修复={(Features.WeaponDurabilityOn ? "开" : "关")} 过热={(Features.NoOverheatOn ? "已取消" : "正常")}";
     }
 }
+
+
+
 
 
 

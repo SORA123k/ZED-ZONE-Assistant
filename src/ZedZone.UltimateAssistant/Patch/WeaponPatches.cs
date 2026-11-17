@@ -46,12 +46,12 @@ namespace ZedZone.UltimateAssistant.Patch
                 Installed++;
             });
 
-            Try(harmony, "GetInventoryAmmoTotal", () =>
+            // 无限弹药（弹匣层）：直接把"弹匣里已装子弹数"读成无限，不再依赖背包弹药
+            Try(harmony, "GetLoadedAmmo", () =>
             {
-                var m = AccessTools.Method(typeof(BasicRangedWeapon), "GetInventoryAmmoTotal",
-                    new[] { typeof(BasicCharacterController), typeof(ItemData), typeof(int) });
-                if (m == null) { Log.Warn("[weapons] 未找到 GetInventoryAmmoTotal"); return; }
-                harmony.Patch(m, prefix: new HarmonyMethod(typeof(WeaponPatches), nameof(AmmoTotalPrefix)));
+                var m = AccessTools.Method(typeof(BasicRangedWeapon), "GetLoadedAmmo", new[] { typeof(ItemData) });
+                if (m == null) { Log.Warn("[weapons] 未找到 GetLoadedAmmo"); return; }
+                harmony.Patch(m, postfix: new HarmonyMethod(typeof(WeaponPatches), nameof(LoadedAmmoPostfix)));
                 Installed++;
             });
 
@@ -188,6 +188,26 @@ namespace ZedZone.UltimateAssistant.Patch
                 return false;
             }
             catch { return true; }
+        }
+
+        private static int _logLoadedAmmo;
+        private const int InfiniteMag = 999;
+
+        /// <summary>
+        /// 无限弹药（弹匣层）：把弹匣内已装子弹数读成 999。
+        /// 这样 HUD 显示的是"弹匣里很多子弹"，不需要换弹，也不再依赖背包弹药。
+        /// </summary>
+        internal static void LoadedAmmoPostfix(ItemData m_weaponData, ref int __result)
+        {
+            try
+            {
+                if (!Features.InfiniteAmmoOn) return;
+                if (m_weaponData == null) return;
+                if (!WeaponUtil.IsPlayerItem(m_weaponData.Pointer)) return;
+                __result = InfiniteMag;
+                Once(ref _logLoadedAmmo, "GetLoadedAmmo 已拦截 → 弹匣内子弹视为无限");
+            }
+            catch { }
         }
 
         /// <summary>无限弹药：不真正扣除弹药物品。</summary>
@@ -397,6 +417,11 @@ namespace ZedZone.UltimateAssistant.Patch
         }
     }
 }
+
+
+
+
+
 
 
 

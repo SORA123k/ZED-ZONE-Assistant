@@ -27,7 +27,7 @@ namespace ZedZone.UltimateAssistant
     {
         public const string PluginGuid = "zedzone.ultimateassistant";
         public const string PluginName = "ZED ZONE Ultimate Assistant";
-        public const string PluginVersion = "1.2.1";
+        public const string PluginVersion = "1.2.2";
 
         internal static Plugin Instance;
         internal static ModuleRegistry Registry;
@@ -115,7 +115,7 @@ namespace ZedZone.UltimateAssistant
         }
 
         /// <summary>本项目适配并实机验证过的游戏版本（见 docs/COMPATIBILITY.md）。</summary>
-        internal const string TestedGameVersion = "1.0.17";
+        internal const string TestedGameVersion = "1.0.19";
 
         /// <summary>
         /// 游戏版本兼容性提示（只提示，不阻断）。
@@ -158,6 +158,8 @@ namespace ZedZone.UltimateAssistant
         }
     }
 }
+
+
 
 
 

@@ -38,6 +38,42 @@ namespace ZedZone.UltimateAssistant.Patch
             });
 
             // 停火自动奔跑：开火中不奔跑、停火后自动奔跑
+            // 保持奔跑：允许在奔跑状态下换弹（不再靠"暂停奔跑"绕过）
+            Try(harmony, "CanStartReloadAction", () =>
+            {
+                var m = AccessTools.Method(typeof(BasicRangedWeapon), "CanStartReloadAction");
+                if (m == null) { Log.Warn("[move] 未找到 CanStartReloadAction"); return; }
+                harmony.Patch(m, prefix: new HarmonyMethod(typeof(PlayerMovePatches), nameof(CanReloadWhileRunningPrefix)));
+                Installed++;
+            });
+
+            // 保持奔跑：奔跑时不收枪（收枪会取消换弹）
+            Try(harmony, "HolsterWeapon", () =>
+            {
+                var m = AccessTools.Method(typeof(HumanCharacterController), "HolsterWeapon",
+                    new[] { typeof(bool), typeof(bool) });
+                if (m == null) { Log.Warn("[move] 未找到 HolsterWeapon"); return; }
+                harmony.Patch(m, prefix: new HarmonyMethod(typeof(PlayerMovePatches), nameof(HolsterPrefix)));
+                Installed++;
+            });
+
+            // 保持奔跑：奔跑时不打断换弹
+            Try(harmony, "CancelReloadAndCharging", () =>
+            {
+                var m = AccessTools.Method(typeof(BasicRangedWeapon), "CancelReloadAndCharging");
+                if (m == null) { Log.Warn("[move] 未找到 CancelReloadAndCharging"); return; }
+                harmony.Patch(m, prefix: new HarmonyMethod(typeof(PlayerMovePatches), nameof(NoCancelReloadPrefix)));
+                Installed++;
+            });
+
+            Try(harmony, "InterruptReloadOrCharging", () =>
+            {
+                var m = AccessTools.Method(typeof(BasicRangedWeapon), "InterruptReloadOrCharging");
+                if (m == null) { Log.Warn("[move] 未找到 InterruptReloadOrCharging"); return; }
+                harmony.Patch(m, prefix: new HarmonyMethod(typeof(PlayerMovePatches), nameof(NoCancelReloadPrefix)));
+                Installed++;
+            });
+
             Try(harmony, "IsSprintRequested", () =>
             {
                 var m = AccessTools.Method(typeof(CharacterInput), "IsSprintRequested");
@@ -127,13 +163,172 @@ namespace ZedZone.UltimateAssistant.Patch
         ///  * 最近 0.35 秒内开过枪 → 不请求奔跑（避免"状态无法开枪"）；
         ///  * 停火超过 0.35 秒 → 请求奔跑（自动恢复）。
         /// </summary>
-        internal static void SprintRequestPostfix(ref bool __result)
+        private static float _reloadHoldUntil;
+        private static float _nextWeaponScan;
+
+        /// <summary>
+        /// 换弹期间必须允许"非奔跑"状态，否则按住奔跑会取消换弹（霰弹枪尤其明显）。
+        /// 这里同时用三条判据：R 键刚按下、武器 isReloading、reloadTimeFlag 仍在推进。
+        /// </summary>
+        private static bool IsReloadBlocking()
+        {
+            try
+            {
+                if (Input.GetKeyDown(KeyCode.R)) _reloadHoldUntil = Time.unscaledTime + 2.5f;
+            }
+            catch { }
+            if (Time.unscaledTime < _reloadHoldUntil) return true;
+
+            try
+            {
+                var p = PlayerAccessor.Resolve(out _, out _);
+                if (p == null) return false;
+
+                if (Time.unscaledTime >= _nextWeaponScan)
+                {
+                    _nextWeaponScan = Time.unscaledTime + 1f;
+                    _cachedWeapon = null;
+                    var arr = Resources.FindObjectsOfTypeAll<BasicRangedWeapon>();
+                    if (arr != null)
+                    {
+                        for (int i = 0; i < arr.Length; i++)
+                        {
+                            var w = arr[i];
+                            if (w == null) continue;
+                            try { if (w.character != null && w.character.Pointer == p.Pointer) { _cachedWeapon = w; break; } } catch { }
+                        }
+                    }
+                }
+
+                var wp = _cachedWeapon;
+                if (wp == null) return false;
+                try { if (wp.isReloading) return true; } catch { }
+                try { if (wp._isReloading) return true; } catch { }
+                try { if (wp.reloadTimeFlag > 0f) return true; } catch { }
+            }
+            catch { }
+            return false;
+        }
+
+        private static BasicRangedWeapon _cachedWeapon;
+
+        private static float _nextSprintDiag;
+
+        /// <summary>
+        /// 把判定写回游戏内部的所有冲刺标志。
+        /// 换弹后卡"行走"的根因是：内部缓存的冲刺状态没被重新置位，
+        /// 只覆盖返回值没有意义（游戏读的是这些字段）。
+        /// </summary>
+        private static void SyncSprintFlag(CharacterInput inst, bool value)
+        {
+            try
+            {
+                if (inst == null) return;
+                try { inst.sprintRequestResult = value; } catch { }
+                try { inst.controllerSprintFlag = value; } catch { }
+                try { inst.keyboardSprintToggleFlag = value; } catch { }
+            }
+            catch { }
+
+            if (Time.unscaledTime >= _nextSprintDiag)
+            {
+                _nextSprintDiag = Time.unscaledTime + 1f;
+                try
+                {
+                    string info = "-";
+                    try
+                    {
+                        var p = PlayerAccessor.Resolve(out _, out _);
+                        if (p != null) info = "isRunning=" + p.isRunning + " reloading=" + IsReloadBlocking();
+                    }
+                    catch { }
+                    Log.Info($"[move] 冲刺状态 result={value} {info}");
+                }
+                catch { }
+            }
+        }
+
+        private static float _nextRunKick;
+
+        private static bool IsLocalHcc(HumanCharacterController inst)
+        {
+            try
+            {
+                if (inst == null) return false;
+                var p = PlayerAccessor.Resolve(out _, out _);
+                return p != null && inst.Pointer == p.Pointer;
+            }
+            catch { return false; }
+        }
+
+        /// <summary>保持奔跑：奔跑时不要收枪（收枪会取消换弹）。</summary>
+        internal static bool HolsterPrefix(HumanCharacterController __instance)
+        {
+            try
+            {
+                if (!Features.AlwaysSprintOn) return true;
+                if (!IsLocalHcc(__instance)) return true;
+                return false;   // 跳过收枪
+            }
+            catch { return true; }
+        }
+
+        /// <summary>保持奔跑：不要因为奔跑打断换弹。</summary>
+        internal static bool NoCancelReloadPrefix(BasicRangedWeapon __instance)
+        {
+            try
+            {
+                if (!Features.AlwaysSprintOn) return true;
+                if (__instance == null) return true;
+                try { if (__instance.character == null) return true; } catch { return true; }
+                if (!IsLocalHcc(__instance.character.TryCast<HumanCharacterController>())) return true;
+                return false;   // 跳过取消/打断换弹
+            }
+            catch { return true; }
+        }
+
+        /// <summary>保持奔跑：奔跑/冲刺时不阻止换弹。</summary>
+        internal static bool CanReloadWhileRunningPrefix(BasicRangedWeapon __instance, ref bool __result)
+        {
+            try
+            {
+                if (!Features.AlwaysSprintOn) return true;
+                if (__instance == null) return true;
+                var p = PlayerAccessor.Resolve(out _, out _);
+                if (p == null) return true;
+                try { if (__instance.character == null || __instance.character.Pointer != p.Pointer) return true; } catch { return true; }
+                __result = true;
+                return false;
+            }
+            catch { return true; }
+        }
+
+        internal static void SprintRequestPostfix(CharacterInput __instance, ref bool __result)
         {
             try
             {
                 if (!Features.AlwaysSprintOn) return;
+
+                // 不再暂停奔跑（暂停/恢复会与游戏内部冲刺状态机不同步，
+                // 导致换弹结束后卡在"行走"）。改为始终奔跑，并单独放行换弹闸门。
+                if (Time.unscaledTime >= _nextRunKick)
+                {
+                    _nextRunKick = Time.unscaledTime + 0.2f;
+                    try
+                    {
+                        var p = PlayerAccessor.Resolve(out _, out _);
+                        if (p != null)
+                        {
+                            bool running = false;
+                            try { running = p.isRunning; } catch { }
+                            if (!running) { try { p.RunInput(false); } catch { } }
+                        }
+                    }
+                    catch { }
+                }
                 bool firing = (Time.unscaledTime - Features.LastFireAt) < 0.35f;
                 __result = !firing;
+                SyncSprintFlag(__instance, __result);
                 if (_sprintLog < 3)
                 {
                     _sprintLog++;
@@ -144,6 +339,15 @@ namespace ZedZone.UltimateAssistant.Patch
         }
     }
 }
+
+
+
+
+
+
+
+
+
 
 
 

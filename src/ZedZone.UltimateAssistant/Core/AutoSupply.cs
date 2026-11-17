@@ -195,10 +195,6 @@ namespace ZedZone.UltimateAssistant.Core
         }
 
         private static float _nextBoatTick;
-        private static float _nextBoatDiag;
-        private static float _nextBoatDiag2;
-        private static readonly System.Collections.Generic.Dictionary<IntPtr, float> _lastRepair = new System.Collections.Generic.Dictionary<IntPtr, float>();
-        private static int _repairLog;
         private static readonly System.Collections.Generic.Dictionary<int, float> _lastSpawn = new System.Collections.Generic.Dictionary<int, float>();
 
         /// <summary>
@@ -220,24 +216,7 @@ namespace ZedZone.UltimateAssistant.Core
                 Vector3 ppos = pl.transform.position;
 
                 var tods = Resources.FindObjectsOfTypeAll<TerrainObject>();
-                if (tods == null) { Log.WarnOnce("supply.tods", "[supply] TerrainObject 枚举为空"); return; }
-
-                // 诊断：最近 TOD 距离 + 邻近 TOD 的成本数量
-                int near = 0; float nearest = 999f; int nearestIdx = -1;
-                for (int i = 0; i < tods.Length; i++)
-                {
-                    var t = tods[i];
-                    if (t == null) continue;
-                    float d = 999f;
-                    try { d = Vector3.Distance(t.transform.position, ppos); } catch { continue; }
-                    if (d < nearest) { nearest = d; nearestIdx = i; }
-                    if (d <= 8f) near++;
-                }
-                if (Time.unscaledTime >= _nextBoatDiag)
-                {
-                    _nextBoatDiag = Time.unscaledTime + 3f;
-                    Log.Info($"[supply] TOD 总数={tods.Length} 8米内={near} 最近距离={nearest:0.##}");
-                }
+                if (tods == null) return;
 
                 for (int i = 0; i < tods.Length; i++)
                 {
@@ -254,59 +233,9 @@ namespace ZedZone.UltimateAssistant.Core
                             var plan = MeleeWeapon_RepairHammer.ComputeTodRepairPlan(tod);
                             costs = plan.costs;
                         }
-                        catch (Exception ex)
-                        {
-                            if (_repairLog < 5) { _repairLog++; Log.Info($"[supply] ComputeTodRepairPlan 异常: {ex.GetType().Name}（改为直接 RepairToFull）"); }
-                        }
-                        if (Time.unscaledTime >= _nextBoatDiag2 && i == nearestIdx)
-                        {
-                            _nextBoatDiag2 = Time.unscaledTime + 3f;
-                            Log.Info($"[supply] 最近TOD(0x{tod.Pointer.ToInt64():X}) costs={(costs == null ? -1 : costs.Count)} 距离={Vector3.Distance(tp, ppos):0.##} repairable={SafeRepairable(tod)} hp={SafeHp(tod)}");
-                            if (costs != null)
-                            {
-                                for (int q = 0; q < costs.Count && q < 10; q++)
-                                {
-                                    var ce = costs[q];
-                                    Log.Info($"[supply]   cost[{q}] itemId={ce.itemId} x{ce.count}");
-                                }
-                            }
-                        }
-                        if (costs == null || costs.Count == 0)
-                        {
-                            // 强制完成建造：该船是"待建造"对象，RepairToFull() 实测返回 False，
-                            // 因此改为调用 TerrainObject.OnBuildFinish()（游戏自己的建造完成入口）
-                            // 并兜底把 objectData.craftFinishFlag 置 true。
-                            try
-                            {
-                                IntPtr tp2 = tod.Pointer;
-                                if (!_lastRepair.TryGetValue(tp2, out float lastT) || Time.unscaledTime - lastT > 5f)
-                                {
-                                    _lastRepair[tp2] = Time.unscaledTime;
+                        catch { }
 
-                                    bool okRepair = false;
-                                    try { okRepair = tod.RepairToFull(); } catch { }
-
-                                    bool okBuild = false;
-                                    try { tod.OnBuildFinish(); okBuild = true; } catch (Exception ex1) { Log.WarnOnce("supply.buildfin", "[supply] OnBuildFinish 失败: " + ex1.GetType().Name); }
-
-                                    bool flagSet = false;
-                                    try
-                                    {
-                                        var od = tod.objectData;
-                                        if (od != null && !od.craftFinishFlag) { od.craftFinishFlag = true; flagSet = true; }
-                                    }
-                                    catch { }
-
-                                    if (_repairLog < 10)
-                                    {
-                                        _repairLog++;
-                                        Log.Info($"[supply] 强制完成建造 TOD 0x{tp2.ToInt64():X} RepairToFull={okRepair} OnBuildFinish={okBuild} craftFinishFlagSet={flagSet}");
-                                    }
-                                }
-                            }
-                            catch (Exception e) { Log.WarnOnce("supply.repairfull", "[supply] 强制完成建造失败: " + e.GetType().Name); }
-                            continue;
-                        }
+                        if (costs == null || costs.Count == 0) continue;
 
                         var inv = pl.characterData?.inventoryData;
                         if (inv == null) continue;
@@ -320,7 +249,7 @@ namespace ZedZone.UltimateAssistant.Core
                             int need = Mathf.CeilToInt(e.count - have);
                             if (_lastSpawn.TryGetValue(e.itemId, out float last) && Time.unscaledTime - last < 3f) continue;
                             _lastSpawn[e.itemId] = Time.unscaledTime;
-                            Log.Info($"[supply] 岛屿船需求 itemId={e.itemId} need={e.count} have={have:0.#} → 生成 +{need}");
+                            Log.Info($"[supply] 船只缺料 itemId={e.itemId} need={e.count} have={have:0.#} → 生成 +{need}");
                             TrySpawnGround(e.itemId, need);
                         }
                     }
@@ -329,22 +258,6 @@ namespace ZedZone.UltimateAssistant.Core
             }
             catch (Exception e) { Log.WarnOnce("supply.boat", "[supply] 岛屿船补货异常: " + e.GetType().Name); }
         }
-
-        private static string SafeRepairable(TerrainObject t)
-        {
-            try { return t.isRepairable.ToString(); } catch { return "?"; }
-        }
-
-        private static string SafeHp(TerrainObject t)
-        {
-            try
-            {
-                var d = t.objectData;
-                return d == null ? "null" : d.hp.ToString("0.##");
-            }
-            catch { return "?"; }
-        }
-
         private static float SumById(InventoryData inv, int id)
         {
             try
@@ -363,6 +276,8 @@ namespace ZedZone.UltimateAssistant.Core
         }
     }
 }
+
+
 
 
 

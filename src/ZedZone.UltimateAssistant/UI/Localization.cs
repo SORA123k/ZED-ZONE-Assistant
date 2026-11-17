@@ -25,9 +25,9 @@ namespace ZedZone.UltimateAssistant.UI
             // ---- 战斗 ----
             ["sec_combat"]   = new[]{ "战斗辅助", "COMBAT", "戰鬥輔助" },
             ["infinite_ammo"]= new[]{ "无限弹药", "Infinite Ammo", "無限彈藥" },
-            ["infinite_ammo_d"]= new[]{ "射击不消耗备用弹药（仅本地玩家）", "Shots do not consume reserve ammo (local player only)", "射擊不消耗備用彈藥（僅本地玩家）" },
+            ["infinite_ammo_d"]= new[]{ "射击不消耗弹药", "Firing does not consume ammo", "射擊不消耗彈藥" },
             ["no_reload"]    = new[]{ "无需换弹", "No Reload", "無需換彈" },
-            ["no_reload_d"]  = new[]{ "弹匣为 0 也能射击；按 R 仍可正常换弹", "Fire even with an empty magazine; R still reloads normally", "彈匣為 0 也能射擊；按 R 仍可正常換彈" },
+            ["no_reload_d"]  = new[]{ "无需换弹，提高射速并取消狙击枪后摇", "No reload, faster fire rate, no sniper bolt delay", "無需換彈，提高射速並取消狙擊槍後搖" },
             ["no_jam"]       = new[]{ "不会卡壳", "No Jam", "不會卡殼" },
             ["no_jam_d"]     = new[]{ "阻止枪械卡壳，并清除已有卡壳标记", "Prevents weapon jams and clears existing jam flags", "阻止槍械卡殼，並清除已有卡殼標記" },
             ["item_dur"]     = new[]{ "工具/近战耐久", "Tool / Melee Durability", "工具/近戰耐久" },
@@ -175,6 +175,8 @@ namespace ZedZone.UltimateAssistant.UI
             => code == "en" ? "English" : (code == "zhTW" ? "繁體中文" : "简体中文");
     }
 }
+
+
 
 
 
